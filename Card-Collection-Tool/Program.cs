@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Card_Collection_Tool.Data;
-
+using Card_Collection_Tool.Services;
 
 
 
@@ -21,7 +21,6 @@ namespace Card_Collection_Tool
             builder.Services.AddControllersWithViews();
 
 
-
             // Register the database context with Identity support
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -29,6 +28,9 @@ namespace Card_Collection_Tool
             // Add Identity services
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // Register the ScryfallService with HttpClient
+            builder.Services.AddHttpClient<ScryfallService>();
 
 
             var app = builder.Build();
