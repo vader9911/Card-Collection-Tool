@@ -17,10 +17,28 @@ namespace Card_Collection_Tool.Services
 
         public async Task<List<ScryfallCard>> SearchCardsAsync(string query)
         {
-            // Use the Scryfall API to search for cards based on the query
-            var response = await _httpClient.GetFromJsonAsync<ScryfallApiResponse>($"https://api.scryfall.com/cards/search?q={query}");
+            try
+            {
+                var encodedQuery = Uri.EscapeDataString(query); // Encode the query to handle special characters
+                var response = await _httpClient.GetAsync($"https://api.scryfall.com/cards/autocomplete?q={encodedQuery}");
 
-            return response?.Data ?? new List<ScryfallCard>();
+                // Check if the response indicates success
+                response.EnsureSuccessStatusCode();
+
+                var apiResponse = await response.Content.ReadFromJsonAsync<ScryfallApiResponse>();
+
+                // Debugging: Log the response status and the count of returned cards
+                Console.WriteLine($"API Response Status: {response.StatusCode}");
+                Console.WriteLine($"Number of cards found: {apiResponse?.Data.Count ?? 0}");
+
+                return apiResponse?.Data ?? new List<ScryfallCard>();
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log the error to the console for debugging purposes
+                Console.WriteLine($"Error fetching data from Scryfall API: {ex.Message}");
+                return new List<ScryfallCard>(); // Return an empty list if there's an error
+            }
         }
     }
 
