@@ -19,8 +19,8 @@ namespace Card_Collection_Tool.Services
         {
             try
             {
-                var encodedQuery = Uri.EscapeDataString(query); // Encode the query to handle special characters
-                var response = await _httpClient.GetAsync($"https://api.scryfall.com/cards/autocomplete?q={encodedQuery}");
+                var encodedQuery = Uri.EscapeDataString(query);
+                var response = await _httpClient.GetAsync($"https://api.scryfall.com/cards/search?q={encodedQuery}");
 
                 // Check if the response indicates success
                 response.EnsureSuccessStatusCode();
@@ -57,14 +57,5 @@ namespace Card_Collection_Tool.Services
         public string TypeLine { get; set; } // Card type
         public string OracleText { get; set; } // Card description or rules text
     }
-
-
-
-
-
-
-
-
-
 
 }

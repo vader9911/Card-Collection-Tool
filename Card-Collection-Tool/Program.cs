@@ -30,10 +30,12 @@ namespace Card_Collection_Tool
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             // Register the ScryfallService with HttpClient
-            builder.Services.AddHttpClient<ScryfallService>();
+            builder.Services.AddHttpClient<ScryfallService>(client =>
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "Card-Collection-App/1.0");
+            });
 
-
-            var app = builder.Build();
+                var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
