@@ -12,6 +12,7 @@
 
 <h2>Search Cards</h2>
 
+<!-- Search field and button directly in Index.cshtml -->
 <div class="input-group mb-3">
     <input type="text" id="searchQuery" placeholder="Enter card name or keywords..." class="form-control" />
     <button id="searchButton" class="btn btn-primary">Search</button>
@@ -28,10 +29,15 @@
                 <div class="col-md-4 card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">@card.Name</h5>
-                        <p class="card-text">@card.TypeLine</p>
-                        <p class="card-text">@card.ManaCost</p>
-                        <img src="@card.ImageUri" alt="@card.Name" class="img-fluid" />
+
+                        <!-- Display card image -->
+                        @if (card.ImageUris != null && !string.IsNullOrEmpty(card.ImageUris.Normal))
+                        {
+                            <img src="@card.ImageUris.Normal" alt="@card.Name" class="img-fluid" />
+                        }
+
                         <p class="card-text"><small>@card.OracleText</small></p>
+                        <p class="card-text">Set: @card.SetName</p>
                     </div>
                 </div>
             }
@@ -48,6 +54,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             console.log("Document is ready, setting up button click event.");
 
+            // Set up the button click event
             document.getElementById("searchButton").addEventListener("click", function () {
                 console.log("Search button clicked.");
                 var query = document.getElementById("searchQuery").value;
@@ -58,7 +65,7 @@
                     return;
                 }
 
-                // Fetch request to the server-side endpoint
+                // Send a fetch request to the server-side endpoint
                 fetch('@Url.Action("SearchCards", "Cards")', {
                     method: 'POST',
                     headers: {
@@ -74,7 +81,8 @@
                             return;
                         }
 
-                        console.log("Fetch request successful. Rendering results.");
+                        console.log("Fetch request successful. Rendering results.", data); // Log the full response data for debugging
+
                         var resultsContainer = document.getElementById("searchResults");
                         resultsContainer.innerHTML = ""; // Clear previous results
 
@@ -82,14 +90,22 @@
                             var resultsHtml = "<h3>Results</h3><div class='row'>";
 
                             data.data.forEach(function (card) {
+                                console.log("Card data: ", card); // Log each card object for debugging
+
+                                // Check for null or undefined properties to avoid errors
+                                var name = card.name || "Unknown Name";
+                                var oracleText = card.oracle_text || "No description available.";
+                                var setName = card.set_name || "Unknown Set";
+                                var imageUrl = (card.image_uris.png && card.image_uris.normal) ? card.image_uris.normal : ''; // Check for image URL
+
+                                // Render the card information
                                 resultsHtml += `
                                         <div class="col-md-4 card mb-4">
                                             <div class="card-body">
-                                                <h5 class="card-title">${card.name}</h5>
-                                                <p class="card-text">${card.typeLine}</p>
-                                                <p class="card-text">${card.manaCost}</p>
-                                                <img src="${card.imageUri}" alt="${card.name}" class="img-fluid" />
-                                                <p class="card-text"><small>${card.oracleText}</small></p>
+                                                <h5 class="card-title">${name}</h5>
+                                                <img src="${imageUrl}" alt="${name}" class="img-fluid" />
+                                                <p class="card-text"><small>${oracleText}</small></p>
+                                                <p class="card-text">Set: ${setName}</p>
                                             </div>
                                         </div>
                                     `;

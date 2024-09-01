@@ -2,7 +2,7 @@
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-
+using System.Text.Json.Serialization;
 
 namespace Card_Collection_Tool.Services
 {
@@ -19,43 +19,79 @@ namespace Card_Collection_Tool.Services
         {
             try
             {
-                var encodedQuery = Uri.EscapeDataString(query);
+                var encodedQuery = query.Replace(" ", "+"); // Less aggressive encoding for search queries
+                Console.WriteLine($"Original Query: {query}");
+                Console.WriteLine($"Encoded Query: {encodedQuery}");
+
                 var response = await _httpClient.GetAsync($"https://api.scryfall.com/cards/search?q={encodedQuery}");
 
-                // Check if the response indicates success
                 response.EnsureSuccessStatusCode();
+
+                // Log the raw JSON response to check the structure
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Response Status: {response.StatusCode}");
+                Console.WriteLine($"Raw Response Content: {responseContent}");
 
                 var apiResponse = await response.Content.ReadFromJsonAsync<ScryfallApiResponse>();
 
-                // Debugging: Log the response status and the count of returned cards
-                Console.WriteLine($"API Response Status: {response.StatusCode}");
-                Console.WriteLine($"Number of cards found: {apiResponse?.Data.Count ?? 0}");
-
-                return apiResponse?.Data ?? new List<ScryfallCard>();
+                if (apiResponse != null && apiResponse.Data != null)
+                {
+                    Console.WriteLine($"Number of cards found: {apiResponse.Data.Count}");
+                    return apiResponse.Data;
+                }
+                else
+                {
+                    Console.WriteLine("No data returned from the Scryfall API.");
+                    return new List<ScryfallCard>();
+                }
             }
             catch (HttpRequestException ex)
             {
-                // Log the error to the console for debugging purposes
                 Console.WriteLine($"Error fetching data from Scryfall API: {ex.Message}");
-                return new List<ScryfallCard>(); // Return an empty list if there's an error
+                return new List<ScryfallCard>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error occurred: {ex.Message}");
+                return new List<ScryfallCard>();
             }
         }
     }
 
-    public class ScryfallApiResponse
-    {
-        public List<ScryfallCard> Data { get; set; }
-    }
+        public class ScryfallApiResponse
+{
+    [JsonPropertyName("data")]
+    public List<ScryfallCard> Data { get; set; }
+}
 
-    //Define ScryfallCard class model
-    public class ScryfallCard
-    {
-        public string Name { get; set; } // Card name
-        public string SetName { get; set; } // Card set name
-        public string ImageUri { get; set; } // URL to the card image
-        public string ManaCost { get; set; } // Mana cost of the card
-        public string TypeLine { get; set; } // Card type
-        public string OracleText { get; set; } // Card description or rules text
+public class ScryfallCard
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [JsonPropertyName("oracle_text")]
+    public string OracleText { get; set; }
+
+    [JsonPropertyName("set_name")]
+    public string SetName { get; set; }
+
+    [JsonPropertyName("image_uris")]
+    public ImageUris ImageUris { get; set; }
+}
+
+public class ImageUris
+{
+    [JsonPropertyName("small")]
+    public string Small { get; set; }
+
+    [JsonPropertyName("normal")]
+    public string Normal { get; set; }
+
+    [JsonPropertyName("large")]
+    public string Large { get; set; }
+
+    [JsonPropertyName("png")]
+    public string Png { get; set; }
     }
 
 }
