@@ -20,3 +20,19 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/*.card-img-top {
+    max-height: 150px;*/ /* Limit the max height to keep images uniform */
+    /*object-fit: cover;*/ /* Ensure images cover the area without stretching */
+/*}*/
+
+.card {
+    height: 100%; /* Make cards stretch to fill the available height */
+    display: flex;
+    flex-direction: column; /* Arrange content in a column layout */
+    justify-content: space-between; /* Distribute space evenly */
+    background-color: #f8f9fa; /* Light background color for cards */
+    border: none; /* Remove border */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    border-radius: 8px; /* Rounded corners */
+}

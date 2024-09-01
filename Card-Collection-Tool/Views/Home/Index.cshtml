@@ -15,49 +15,28 @@
 <!-- Search field and button directly in Index.cshtml -->
 <div class="input-group mb-3">
     <input type="text" id="searchQuery" placeholder="Enter card name or keywords..." class="form-control" />
-    <button id="searchButton" class="btn btn-primary">Search</button>
+    <button id="searchButton" class="btn btn-primary" type="button">Search</button>
 </div>
 
-<div id="searchResults">
-    <!-- Display search results -->
-    @if (Model != null && Model.Count > 0)
-    {
-        <h3>Results</h3>
-        <div class="row">
-            @foreach (var card in Model)
-            {
-                <div class="col-md-4 card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">@card.Name</h5>
-
-                        <!-- Display card image -->
-                        @if (card.ImageUris != null && !string.IsNullOrEmpty(card.ImageUris.Normal))
-                        {
-                            <img src="@card.ImageUris.Normal" alt="@card.Name" class="img-fluid" />
-                        }
-
-                        <p class="card-text"><small>@card.OracleText</small></p>
-                        <p class="card-text">Set: @card.SetName</p>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else if (Model != null)
-    {
-        <p>No cards found. Please try a different search.</p>
-    }
-</div>
+ <div class="row" id="searchResults" >
+               
+ </div>
+    
 
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            console.log("Document is ready, setting up button click event.");
+            console.log("Document is ready, setting up lazy loading."); // Debug log on load
 
-            // Set up the button click event
+            let page = 1; // Current page
+            const pageSize = 20; // Number of results per page
+            let query = ""; // Search query
+            let isLoading = false; // Flag to prevent multiple simultaneous requests
+
+            // Event listener for the search button click
             document.getElementById("searchButton").addEventListener("click", function () {
-                console.log("Search button clicked.");
-                var query = document.getElementById("searchQuery").value;
+                page = 1; // Reset to the first page
+                query = document.getElementById("searchQuery").value;
 
                 if (query.trim() === "") {
                     console.error("Search query is empty.");
@@ -65,62 +44,96 @@
                     return;
                 }
 
-                // Send a fetch request to the server-side endpoint
-                fetch('@Url.Action("SearchCards", "Cards")', {
+                loadCards(query, page, pageSize, true); // Load the initial set of results
+            });
+
+            function loadCards(query, page, pageSize, reset = false) {
+                if (isLoading) return; // Prevent additional requests while loading
+                isLoading = true;
+
+                fetch('@Url.Action("SearchCardsByName", "Cards")', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: new URLSearchParams({ query: query })
+                    body: new URLSearchParams({ query: query, page: page, pageSize: pageSize })
                 })
-                    .then(response => response.json()) // Parse the JSON response
+                    .then(response => response.json())
                     .then(data => {
+                        isLoading = false;
                         if (!data.success) {
                             console.error("Server error:", data.message);
                             alert(data.message);
                             return;
                         }
 
-                        console.log("Fetch request successful. Rendering results.", data); // Log the full response data for debugging
+                        console.log("Fetched data from backend: ", data); // Debugging log
 
-                        var resultsContainer = document.getElementById("searchResults");
-                        resultsContainer.innerHTML = ""; // Clear previous results
-
-                        if (data.data && data.data.length > 0) {
-                            var resultsHtml = "<h3>Results</h3><div class='row'>";
-
-                            data.data.forEach(function (card) {
-                                console.log("Card data: ", card); // Log each card object for debugging
-
-                                // Check for null or undefined properties to avoid errors
-                                var name = card.name || "Unknown Name";
-                                var oracleText = card.oracle_text || "No description available.";
-                                var setName = card.set_name || "Unknown Set";
-                                var imageUrl = (card.image_uris.png && card.image_uris.normal) ? card.image_uris.normal : ''; // Check for image URL
-
-                                // Render the card information
-                                resultsHtml += `
-                                        <div class="col-md-4 card mb-4">
-                                            <div class="card-body">
-                                                <h5 class="card-title">${name}</h5>
-                                                <img src="${imageUrl}" alt="${name}" class="img-fluid" />
-                                                <p class="card-text"><small>${oracleText}</small></p>
-                                                <p class="card-text">Set: ${setName}</p>
-                                            </div>
-                                        </div>
-                                    `;
-                            });
-
-                            resultsHtml += "</div>";
-                            resultsContainer.innerHTML = resultsHtml;
-                        } else {
-                            resultsContainer.innerHTML = "<p>No cards found. Please try a different search.</p>";
+                        if (reset) {
+                            document.getElementById("searchResults").innerHTML = ""; // Clear previous results
                         }
+
+                        renderCards(data.data);
+                        page++; // Increment the page number
                     })
                     .catch(error => {
+                        isLoading = false;
                         console.error("Error occurred during Fetch request:", error);
                         alert("An unexpected error occurred. Please try again later.");
                     });
+            }
+
+            function renderCards(cards) {
+                var resultsContainer = document.getElementById("searchResults");
+                var fragment = document.createDocumentFragment();
+
+                cards.forEach(function (card) {
+                    console.log("Card data: ", card); // Log each card object for debugging
+
+                    // Create Bootstrap-styled grid items
+                    var cardDiv = document.createElement("div");
+                    cardDiv.className = "col-md-3 mb-4"; // Bootstrap grid column with margin-bottom
+
+                    var cardBody = document.createElement("div");
+                    cardBody.className = "card h-100"; // Bootstrap card class with full height
+
+                    var cardContent = document.createElement("div");
+                    cardContent.className = "card-body"; // Card body for content
+
+                    var cardTitle = document.createElement("h5");
+                    cardTitle.className = "card-title";
+                    cardTitle.textContent = card.name || "Unknown Name";
+
+                    var cardImg = document.createElement("img");
+                    cardImg.className = "card-img-top max-img "; // Bootstrap classes for responsive images
+                    cardImg.src = card.image_uris || '';
+                    cardImg.alt = card.name;
+
+                    var cardText = document.createElement("p");
+                    cardText.className = "card-text";
+                    cardText.textContent = card.oracle_text || "No description available.";
+
+                    var setText = document.createElement("p");
+                    setText.className = "card-text";
+                    setText.textContent = "Set: " + (card.set_name || "Unknown Set");
+
+                    cardContent.appendChild(cardTitle);
+                    cardContent.appendChild(cardImg);
+                    cardContent.appendChild(cardText);
+                    cardContent.appendChild(setText);
+                    cardBody.appendChild(cardContent);
+                    cardDiv.appendChild(cardBody);
+                    fragment.appendChild(cardDiv);
+                });
+
+                resultsContainer.appendChild(fragment);
+            } 
+
+            window.addEventListener("scroll", function () {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !isLoading) {
+                    console.log("Loading more cards...");
+                    loadCards(query, page, pageSize);
+                }
             });
         });
     </script>

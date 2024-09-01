@@ -17,7 +17,7 @@ namespace Card_Collection_Tool.Controllers
 
         [HttpPost]
         [IgnoreAntiforgeryToken] // Temporarily disable CSRF protection for testing
-        public async Task<IActionResult> SearchCards(string query)
+        public async Task<IActionResult> SearchCardsByName(string query, int page = 1, int pageSize = 20)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -26,14 +26,26 @@ namespace Card_Collection_Tool.Controllers
 
             try
             {
+                // Fetch and parse the JSON response 
                 var cards = await _scryfallService.SearchCardsAsync(query);
 
-                // Debugging: Log the query and the number of cards returned
-                Console.WriteLine($"Search Query: {query}");
-                Console.WriteLine($"Cards Returned: {cards.Count}");
+                // Implement pagination on the backend
+                var paginatedCards = cards
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
 
-                // Return the card data as JSON
-                return Json(new { success = true, data = cards });
+                // Only send the necessary fields to the client
+                var result = paginatedCards.Select(card => new
+                {
+                    name = card.Name,
+                    oracle_text = card.OracleText,
+                    set_name = card.SetName,
+                    image_uris = card.ImageUris?.Normal
+                });
+                Console.WriteLine(Json(new { success = true, data = result }));
+                return Json(new { success = true, data = result });
+
             }
             catch (Exception ex)
             {

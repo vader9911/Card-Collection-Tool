@@ -19,7 +19,7 @@ namespace Card_Collection_Tool.Services
         {
             try
             {
-                var encodedQuery = query.Replace(" ", "+"); // Less aggressive encoding for search queries
+                var encodedQuery = query.Replace(" ", "+");
                 Console.WriteLine($"Original Query: {query}");
                 Console.WriteLine($"Encoded Query: {encodedQuery}");
 
