@@ -30,7 +30,7 @@ namespace Card_Collection_Tool.Services
                 // Log the raw JSON response to check the structure
                 var responseContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"API Response Status: {response.StatusCode}");
-                Console.WriteLine($"Raw Response Content: {responseContent}");
+                
 
                 var apiResponse = await response.Content.ReadFromJsonAsync<ScryfallApiResponse>();
 
@@ -67,13 +67,13 @@ namespace Card_Collection_Tool.Services
 public class ScryfallCardData
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonPropertyName("oracle_text")]
-    public string OracleText { get; set; }
+    public string? OracleText { get; set; }
 
     [JsonPropertyName("set_name")]
-    public string SetName { get; set; }
+    public string? SetName { get; set; }
 
     [JsonPropertyName("image_uris")]
     public ImageUris ImageUris { get; set; }
@@ -82,16 +82,16 @@ public class ScryfallCardData
 public class ImageUris
 {
     [JsonPropertyName("small")]
-    public string Small { get; set; }
+    public string? Small { get; set; }
 
     [JsonPropertyName("normal")]
-    public string Normal { get; set; }
+    public string? Normal { get; set; }
 
     [JsonPropertyName("large")]
-    public string Large { get; set; }
+    public string? Large { get; set; }
 
     [JsonPropertyName("png")]
-    public string Png { get; set; }
+    public string? Png { get; set; }
     }
 
 }

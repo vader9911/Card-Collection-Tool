@@ -1,18 +1,31 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Card_Collection_Tool.Models
 {
     public class ScryfallCard
     {
-        [Key]
-        public string Id { get; set; } // Card ID from Scryfall
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
 
+        [JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [JsonPropertyName("set_name")]
         public string SetName { get; set; }
-        public string ImageUri { get; set; }
-        public string ManaCost { get; set; }
-        public string TypeLine { get; set; }
-        public string OracleText { get; set; }
-        //TODO: Add other properties 
+
+        [JsonPropertyName("image_uri")]
+        public string? ImageUri { get; set; }
+
+        [JsonPropertyName("oracle_text")]
+        public string? OracleText { get; set; }
+
+        [JsonPropertyName("mana_cost")]
+        public string? ManaCost { get; set; }
+
+        
+
+        [JsonPropertyName("type_line")]
+        public string? TypeLine { get; set; }
     }
 }
