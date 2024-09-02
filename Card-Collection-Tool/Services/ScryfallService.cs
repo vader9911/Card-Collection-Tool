@@ -15,7 +15,7 @@ namespace Card_Collection_Tool.Services
             _httpClient = httpClient;
         }
 
-        public async Task<List<ScryfallCard>> SearchCardsAsync(string query)
+        public async Task<List<ScryfallCardData>> SearchCardsAsync(string query)
         {
             try
             {
@@ -42,18 +42,18 @@ namespace Card_Collection_Tool.Services
                 else
                 {
                     Console.WriteLine("No data returned from the Scryfall API.");
-                    return new List<ScryfallCard>();
+                    return new List<ScryfallCardData>();
                 }
             }
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"Error fetching data from Scryfall API: {ex.Message}");
-                return new List<ScryfallCard>();
+                return new List<ScryfallCardData>();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Unexpected error occurred: {ex.Message}");
-                return new List<ScryfallCard>();
+                return new List<ScryfallCardData>();
             }
         }
     }
@@ -61,10 +61,10 @@ namespace Card_Collection_Tool.Services
         public class ScryfallApiResponse
 {
     [JsonPropertyName("data")]
-    public List<ScryfallCard> Data { get; set; }
+    public List<ScryfallCardData> Data { get; set; }
 }
 
-public class ScryfallCard
+public class ScryfallCardData
 {
     [JsonPropertyName("name")]
     public string Name { get; set; }
