@@ -13,5 +13,6 @@ namespace Card_Collection_Tool.Data
 
         public DbSet<UserCardCollection> UserCardCollections { get; set; }
         public DbSet<ScryfallCard> ScryfallCards { get; set; }
+        public DbSet<AppSettings> AppSettings { get; set; }
     }
 }

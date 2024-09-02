@@ -35,7 +35,16 @@ namespace Card_Collection_Tool
                 client.DefaultRequestHeaders.Add("User-Agent", "Card-Collection-App/1.0");
             });
 
-                var app = builder.Build();
+            // Register the ScryfallSyncService with HttpClient for dependency injection
+            builder.Services.AddHttpClient<ScryfallSyncService>(client =>
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "Card-Collection-App/1.0");
+            });
+
+            // Register the hosted service for periodic data synchronization
+            builder.Services.AddHostedService<ScryfallSyncHostedService>();
+
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
