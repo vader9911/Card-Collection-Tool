@@ -1,4 +1,5 @@
 ﻿using Card_Collection_Tool.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
@@ -6,23 +7,28 @@ using System.Threading.Tasks;
 
 public class ScryfallSyncHostedService : IHostedService, IDisposable
 {
-    private readonly ScryfallSyncService _syncService;
+    private readonly IServiceProvider _serviceProvider; // Inject IServiceProvider
     private Timer _timer;
 
-    public ScryfallSyncHostedService(ScryfallSyncService syncService)
+    public ScryfallSyncHostedService(IServiceProvider serviceProvider)
     {
-        _syncService = syncService;
+        _serviceProvider = serviceProvider;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(1)); // Check data freshness every hour
+        // Set the timer to check every 24 hours
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
         return Task.CompletedTask;
     }
 
     private async void DoWork(object state)
     {
-        await _syncService.SyncScryfallDataAsync(); // Attempt to sync
+        using (var scope = _serviceProvider.CreateScope()) // Create a new scope
+        {
+            var syncService = scope.ServiceProvider.GetRequiredService<ScryfallSyncService>();
+            await syncService.SyncScryfallDataAsync(); // Perform the sync
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
