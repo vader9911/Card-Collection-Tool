@@ -60,28 +60,29 @@ namespace Card_Collection_Tool.Controllers
         //        Console.WriteLine($"Error occurred: {ex.Message}");
         //        return Json(new { success = false, message = "An error occurred while searching for cards. Please try again later." });
         //    }
-        //}
+        
+
 
         [HttpGet]
         public async Task<IActionResult> AutocompleteSearch(string query)
         {
-            
             var autocompleteResults = await _scryfallService.GetAutocompleteResultsAsync(query);
 
-            
             var matchingCards = await _context.ScryfallCards
-                .Where(card => autocompleteResults.Contains(card.Name))
-                .GroupBy(card => card.Name)
-                .Select(group => group.OrderByDescending(c => c.ReleaseDate).FirstOrDefault()) 
+                .Where(card => autocompleteResults.Contains(card.Name)) // Find cards with names matching the autocomplete results
+                .GroupBy(card => card.Name) // Group by card name
+                .Select(group => group.OrderByDescending(c => c.ReleaseDate).FirstOrDefault()) // Select the most recent card for each name
                 .ToListAsync();
 
- 
-            var result = matchingCards.Select(card => new
-            {
-                id = card.Id,
-                name = card.Name,
-                imageUri = card.ImageUris.Png ?? card.ImageUris.Normal ?? card.ImageUris.Large// Display image URI
-            });
+            var result = matchingCards
+                .Where(card => card != null && card.ImageUris != null) // Exclude null cards and null ImageUris
+                .Select(card => new
+                {
+                    id = card.Id,
+                    name = card.Name,
+                    imageUri = card.ImageUris.Png ?? card.ImageUris.Large ?? card.ImageUris.Normal ?? "default-image-url.png" // Fallback to a default image URL
+                })
+                .ToList();
 
             return Json(result);
         }

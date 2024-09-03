@@ -40,7 +40,9 @@ namespace Card_Collection_Tool.Services
 
 
     public class ScryfallCardData
-    {
+    { 
+        public string? Id { get; set; }
+    
         public string? Name { get; set; }
 
 

@@ -17,6 +17,7 @@ html {
   min-height: 100%;
 }
 
+
 body {
   margin-bottom: 60px;
 }
@@ -37,6 +38,13 @@ body {
     /*border-radius: 8px;*/ /* Rounded corners */
 /*}*/
 
+/* Container for card search bar */
+.autocomplete-container {
+    
+}
+
+
+
 /* Container for card search results */
 .search-results {
     display: flex;
@@ -48,8 +56,8 @@ body {
 
 
 .card-item {
-    flex: 0 1 150px;
-    max-width: 150px; 
+    flex: 0 1 450px;
+    max-width: 250px; 
     position: relative;
 }
 
@@ -57,7 +65,7 @@ body {
 .card-image {
     width: 100%;
     height: auto; 
-    max-height: 200px; 
+    max-height: 400px; 
     object-fit: cover; 
     cursor: pointer;
     border-radius: 8px; 
