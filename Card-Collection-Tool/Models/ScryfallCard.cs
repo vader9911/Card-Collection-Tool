@@ -33,13 +33,17 @@ public class ScryfallCard
 
     public string? Rarity { get; set; }
 
+    [JsonPropertyName("released_at")]
+
+    public string? ReleaseDate { get; set; }
+
     [JsonPropertyName("keywords")]
     public List<string>? Keywords { get; set; }
 
     [JsonPropertyName("image_uris")]
     public ImageUris? ImageUris { get; set; } // This will not directly map to a DB column
 
-    [JsonPropertyName("Prices")]
+    [JsonPropertyName("prices")]
     public Prices? Prices { get; set; }
 }
 
