@@ -13,10 +13,19 @@
 <h2>Search Cards</h2>
 
 <!-- Search field and button directly in Index.cshtml -->
+<!--
 <div class="input-group mb-3">
     <input type="text" id="searchQuery" placeholder="Enter card name or keywords..." class="form-control" />
     <button id="searchButton" class="btn btn-primary" type="button">Search</button>
 </div>
+-->
+
+<div class="autocomplete-container">
+    <input type="text" id="cardSearchInput" placeholder="Search for a card..." class="form-control" autocomplete="off" />
+    <div id="searchResults" class="search-results"></div>
+</div>
+
+
 
  <div class="row" id="searchResults" >
                
@@ -24,116 +33,163 @@
     
 
 @section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            console.log("Document is ready, setting up lazy loading."); // Debug log on load
+    <!--
+     <script>
+         document.addEventListener("DOMContentLoaded", function () {
+             console.log("Document is ready, setting up lazy loading."); // Debug log on load
 
-            let page = 1; // Current page
-            const pageSize = 20; // Number of results per page
-            let query = ""; // Search query
-            let isLoading = false; // Flag to prevent multiple simultaneous requests
+             let page = 1; // Current page
+             const pageSize = 20; // Number of results per page
+             let query = ""; // Search query
+             let isLoading = false; // Flag to prevent multiple simultaneous requests
 
-            // Event listener for the search button click
-            document.getElementById("searchButton").addEventListener("click", function () {
-                page = 1; // Reset to the first page
-                query = document.getElementById("searchQuery").value;
+             // Event listener for the search button click
+             document.getElementById("searchButton").addEventListener("click", function () {
+                 page = 1; // Reset to the first page
+                 query = document.getElementById("searchQuery").value;
 
-                if (query.trim() === "") {
-                    console.error("Search query is empty.");
-                    alert("Please enter a search query.");
-                    return;
-                }
+                 if (query.trim() === "") {
+                     console.error("Search query is empty.");
+                     alert("Please enter a search query.");
+                     return;
+                 }
 
-                loadCards(query, page, pageSize, true); // Load the initial set of results
-            });
+                 loadCards(query, page, pageSize, true); // Load the initial set of results
+             });
 
-            function loadCards(query, page, pageSize, reset = false) {
-                if (isLoading) return; // Prevent additional requests while loading
-                isLoading = true;
+             function loadCards(query, page, pageSize, reset = false) {
+                 if (isLoading) return; // Prevent additional requests while loading
+                 isLoading = true;
 
-                fetch('@Url.Action("SearchCardsByName", "Cards")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({ query: query, page: page, pageSize: pageSize })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        isLoading = false;
-                        if (!data.success) {
-                            console.error("Server error:", data.message);
-                            alert(data.message);
-                            return;
-                        }
+                 fetch('@Url.Action("SearchCardsByName", "Cards")', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/x-www-form-urlencoded'
+                     },
+                     body: new URLSearchParams({ query: query, page: page, pageSize: pageSize })
+                 })
+                     .then(response => response.json())
+                     .then(data => {
+                         isLoading = false;
+                         if (!data.success) {
+                             console.error("Server error:", data.message);
+                             alert(data.message);
+                             return;
+                         }
 
                         
 
-                        if (reset) {
-                            document.getElementById("searchResults").innerHTML = ""; // Clear previous results
-                        }
+                         if (reset) {
+                             document.getElementById("searchResults").innerHTML = ""; // Clear previous results
+                         }
 
-                        renderCards(data.data);
-                        page++; // Increment the page number
-                    })
-                    .catch(error => {
-                        isLoading = false;
-                        console.error("Error occurred during Fetch request:", error);
-                        alert("An unexpected error occurred. Please try again later.");
-                    });
-            }
+                         renderCards(data.data);
+                         page++; // Increment the page number
+                     })
+                     .catch(error => {
+                         isLoading = false;
+                         console.error("Error occurred during Fetch request:", error);
+                         alert("An unexpected error occurred. Please try again later.");
+                     });
+             }
 
-            function renderCards(cards) {
-                var resultsContainer = document.getElementById("searchResults");
-                var fragment = document.createDocumentFragment();
+             function renderCards(cards) {
+                 var resultsContainer = document.getElementById("searchResults");
+                 var fragment = document.createDocumentFragment();
 
-                cards.forEach(function (card) {
+                 cards.forEach(function (card) {
                     
 
-                    // Create Bootstrap-styled grid items
-                    var cardDiv = document.createElement("div");
-                    cardDiv.className = "col-md-3 mb-4"; // Bootstrap grid column with margin-bottom
+                     // Create Bootstrap-styled grid items
+                     var cardDiv = document.createElement("div");
+                     cardDiv.className = "col-md-3 mb-4"; // Bootstrap grid column with margin-bottom
 
-                    var cardBody = document.createElement("div");
-                    cardBody.className = "card h-100"; // Bootstrap card class with full height
+                     var cardBody = document.createElement("div");
+                     cardBody.className = "card h-100"; // Bootstrap card class with full height
 
-                    var cardContent = document.createElement("div");
-                    cardContent.className = "card-body"; // Card body for content
+                     var cardContent = document.createElement("div");
+                     cardContent.className = "card-body"; // Card body for content
 
-                    var cardTitle = document.createElement("h5");
-                    cardTitle.className = "card-title";
-                    cardTitle.textContent = card.name || "Unknown Name";
+                     var cardTitle = document.createElement("h5");
+                     cardTitle.className = "card-title";
+                     cardTitle.textContent = card.name || "Unknown Name";
 
-                    var cardImg = document.createElement("img");
-                    cardImg.className = "card-img-top max-img "; // Bootstrap classes for responsive images
-                    cardImg.src = card.image_uris || '';
-                    cardImg.alt = card.name;
+                     var cardImg = document.createElement("img");
+                     cardImg.className = "card-img-top max-img "; // Bootstrap classes for responsive images
+                     cardImg.src = card.image_uris || '';
+                     cardImg.alt = card.name;
 
-                    var cardText = document.createElement("p");
-                    cardText.className = "card-text";
-                    cardText.textContent = card.oracle_text || "No description available.";
+                     var cardText = document.createElement("p");
+                     cardText.className = "card-text";
+                     cardText.textContent = card.oracle_text || "No description available.";
 
-                    var setText = document.createElement("p");
-                    setText.className = "card-text";
-                    setText.textContent = "Set: " + (card.set_name || "Unknown Set");
+                     var setText = document.createElement("p");
+                     setText.className = "card-text";
+                     setText.textContent = "Set: " + (card.set_name || "Unknown Set");
 
-                    cardContent.appendChild(cardTitle);
-                    cardContent.appendChild(cardImg);
-                    cardContent.appendChild(cardText);
-                    cardContent.appendChild(setText);
-                    cardBody.appendChild(cardContent);
-                    cardDiv.appendChild(cardBody);
-                    fragment.appendChild(cardDiv);
-                });
+                     cardContent.appendChild(cardTitle);
+                     cardContent.appendChild(cardImg);
+                     cardContent.appendChild(cardText);
+                     cardContent.appendChild(setText);
+                     cardBody.appendChild(cardContent);
+                     cardDiv.appendChild(cardBody);
+                     fragment.appendChild(cardDiv);
+                 });
 
-                resultsContainer.appendChild(fragment);
-            } 
+                 resultsContainer.appendChild(fragment);
+             } 
 
-            window.addEventListener("scroll", function () {
-                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !isLoading) {
-                    console.log("Loading more cards...");
-                    loadCards(query, page, pageSize);
+             window.addEventListener("scroll", function () {
+                 if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !isLoading) {
+                     console.log("Loading more cards...");
+                     loadCards(query, page, pageSize);
+                 }
+             });
+         });
+     </script>
+     -->
+
+    <!-- Autocomplete Search Script -->
+    <script>
+        $(document).ready(function () {
+            let debounceTimer; // Timer for debouncing
+
+            $("#cardSearchInput").on("input", function () {
+                clearTimeout(debounceTimer);
+                var query = $(this).val();
+
+                if (query.length > 2) { // Only search when 3 or more characters are entered
+                    debounceTimer = setTimeout(function () {
+                        $.ajax({
+                            url: '@Url.Action("AutocompleteSearch", "Cards")',
+                            type: 'GET',
+                            data: { query: query },
+                            success: function (data) {
+                                $("#searchResults").empty(); // Clear previous results
+
+                                // Display card images returned from the server
+                                data.forEach(function (card) {
+                                    $("#searchResults").append(
+                                        `<div class="card-item">
+                                                <img src="${card.imageUri}" class="card-image" alt="${card.name}" data-id="${card.id}" />
+                                            </div>`
+                                    );
+                                });
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Error during AJAX request: " + error);
+                            }
+                        });
+                    }, 300); // Delay before making the API call (300ms debounce)
+                } else {
+                    $("#searchResults").empty(); // Clear results if less than 3 characters
                 }
+            });
+
+            // Handle click on card images
+            $("#searchResults").on("click", ".card-image", function () {
+                var cardId = $(this).data("id");
+                window.location.href = '@Url.Action("ViewCard", "Cards")' + "?id=" + cardId;
             });
         });
     </script>

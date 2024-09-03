@@ -58,6 +58,9 @@ public class ImageUris
 
     [JsonPropertyName("large")]
     public string? Large { get; set; }
+
+    [JsonPropertyName("png")]
+    public string? Png { get; set; }
 }
 
 public class Prices
