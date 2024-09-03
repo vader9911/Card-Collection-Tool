@@ -17,8 +17,8 @@ public class ScryfallSyncHostedService : IHostedService, IDisposable
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // Set the timer to check every 24 hours
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(24));
+        // Set the timer to check every 1 hours
+        _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(1));
         return Task.CompletedTask;
     }
 

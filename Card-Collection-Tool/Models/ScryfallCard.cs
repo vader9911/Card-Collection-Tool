@@ -6,19 +6,19 @@ public class ScryfallCard
     public string Id { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonPropertyName("oracle_text")]
-    public string OracleText { get; set; }
+    public string? OracleText { get; set; }
 
     [JsonPropertyName("mana_cost")]
-    public string ManaCost { get; set; }
+    public string? ManaCost { get; set; }
 
     [JsonPropertyName("set_name")]
-    public string SetName { get; set; }
+    public string? SetName { get; set; }
 
     [JsonPropertyName("type_line")]
-    public string TypeLine { get; set; }
+    public string? TypeLine { get; set; }
 
     [JsonPropertyName("scryfall_uri")]
     public string? ScryfallUri { get; set; }
@@ -30,15 +30,17 @@ public class ScryfallCard
     public string? Artist { get; set; }
 
     [JsonPropertyName("rarity")]
+
     public string? Rarity { get; set; }
+
     [JsonPropertyName("keywords")]
-    public string? Keywords { get; set; }
+    public List<string>? Keywords { get; set; }
 
     [JsonPropertyName("image_uris")]
-    public ImageUris ImageUris { get; set; } // This will not directly map to a DB column
+    public ImageUris? ImageUris { get; set; } // This will not directly map to a DB column
 
     [JsonPropertyName("Prices")]
-    public Prices Prices { get; set; }
+    public Prices? Prices { get; set; }
 }
 
 
