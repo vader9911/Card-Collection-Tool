@@ -21,4 +21,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties client-app_4tsconfig_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>
