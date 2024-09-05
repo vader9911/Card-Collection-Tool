@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
 namespace Card_Collection_Tool.Models
 {
-   public class UserCardCollection
+    public class UserCardCollection
     {
         [Key]
         public int Id { get; set; } // Primary Key
@@ -12,12 +11,9 @@ namespace Card_Collection_Tool.Models
         [Required]
         public string UserId { get; set; } // Foreign Key for the User
 
-        [ForeignKey("UserId")]
-        public virtual IdentityUser User { get; set; } // Navigation property for Identity User
-
         [Required]
-        public string CardName { get; set; } // Name of the Card
         public string CollectionName { get; set; } // Name of the Collection
-        public string CardId { get; set; } // Card Id
+
+        public List<int> CardIds { get; set; } = new List<int>(); // List of Card IDs
     }
 }

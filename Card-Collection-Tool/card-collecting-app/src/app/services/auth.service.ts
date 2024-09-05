@@ -43,6 +43,15 @@ export class AuthService {
     return this.authState.asObservable(); // Return authentication state as an observable
   }
 
+  getUserId(): string | null {
+    const token = this.getToken();
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
+      return payload['sub']; // Assuming the user ID is stored in the 'sub' claim
+    }
+    return null;
+  }
+
   getUserName(): string {
     const token = this.getToken();
     if (token) {

@@ -23,10 +23,17 @@ export class CollectionsService {
     return this.http.get<any[]>(this.baseUrl, { headers: this.getAuthHeaders() });
   }
 
-  createCollection(CollectionName: string): Observable<any> {
-    const body = JSON.stringify({ name: CollectionName }); // Convert data to JSON
+  createCollection(collectionName: string): Observable<any> {
+    const userId = this.authService.getUserId(); // Retrieve the user ID from AuthService
+    const body = JSON.stringify({
+      collectionName: collectionName,
+      userId: userId, // Include UserId
+      cardIds: [] // Initialize as empty list if there are no cards initially
+    });
+
     return this.http.post<any>(this.baseUrl, body, { headers: this.getAuthHeaders() });
   }
+
 
   addCardToCollection(id: number, CardId: number): Observable<any> {
     const body = JSON.stringify({ cardId: CardId }); // Convert data to JSON

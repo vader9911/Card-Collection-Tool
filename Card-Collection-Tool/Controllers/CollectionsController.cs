@@ -83,8 +83,32 @@ public class CollectionsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<UserCardCollection>> PostUserCardCollection([FromBody] UserCardCollection userCardCollection)
     {
+        // Retrieve the authenticated user's ID
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        userCardCollection.UserId = userId; // Ensure the collection is linked to the logged-in user
+
+        // Ensure the user is authenticated
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User is not authenticated.");
+        }
+
+        // Set the UserId from the authenticated user's claims
+        userCardCollection.UserId = userId;
+
+        // Validate that the collection name is provided
+        if (string.IsNullOrEmpty(userCardCollection.CollectionName))
+        {
+            return BadRequest("Collection name cannot be empty.");
+        }
+
+        // Check if a collection with the same name already exists for this user
+        var existingCollection = await _context.UserCardCollections
+            .FirstOrDefaultAsync(c => c.UserId == userId && c.CollectionName == userCardCollection.CollectionName);
+
+        if (existingCollection != null)
+        {
+            return BadRequest("A collection with this name already exists.");
+        }
 
         _context.UserCardCollections.Add(userCardCollection);
         await _context.SaveChangesAsync();

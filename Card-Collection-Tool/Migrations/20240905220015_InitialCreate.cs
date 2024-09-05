@@ -6,11 +6,25 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Card_Collection_Tool.Migrations
 {
     /// <inheritdoc />
-    public partial class AddUserCardCollection : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AppSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Key = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppSettings", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -48,6 +62,35 @@ namespace Card_Collection_Tool.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ScryfallCards",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OracleText = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ManaCost = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SetName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TypeLine = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ScryfallUri = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FlavorText = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Artist = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Rarity = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReleaseDate = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Keywords = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUris_Small = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUris_Normal = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUris_Large = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUris_Png = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Prices_USD = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Prices_USDFoil = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Prices_USDEtched = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScryfallCards", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -96,8 +139,8 @@ namespace Card_Collection_Tool.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -141,8 +184,8 @@ namespace Card_Collection_Tool.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -163,9 +206,8 @@ namespace Card_Collection_Tool.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CardName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SetName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUri = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    CollectionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CardIds = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -227,6 +269,9 @@ namespace Card_Collection_Tool.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AppSettings");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
@@ -240,6 +285,9 @@ namespace Card_Collection_Tool.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "ScryfallCards");
 
             migrationBuilder.DropTable(
                 name: "UserCardCollections");
