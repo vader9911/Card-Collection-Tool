@@ -16,21 +16,30 @@ namespace Card_Collection_Tool
         {
 
             var builder = WebApplication.CreateBuilder(args);
-            // Add services to the container. builder.Services.AddControllersWithViews();
+
+            // Add services to the container.
+            builder.Services.AddControllers(); 
+
+            // Add authorization services
+            builder.Services.AddAuthorization(); 
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline. if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Error"); app.UseHsts(); }
 
-            app.UseHttpsRedirection(); app.UseStaticFiles(); // Serve static files from wwwroot
+            app.UseHttpsRedirection(); 
+            app.UseStaticFiles(); // Serve static files from wwwroot
 
             app.UseRouting();
 
             app.UseAuthorization();
 
-            app.MapControllers(); app.MapFallbackToFile("index.html"); // Fallback route to serve Angular app
+            app.MapControllers(); 
+            app.MapFallbackToFile("index.html"); // Fallback route to serve Angular app
 
             app.Run();
+
+            /* Original app output using asp.net mvc */
 
             //var builder = WebApplication.CreateBuilder(args);
 
