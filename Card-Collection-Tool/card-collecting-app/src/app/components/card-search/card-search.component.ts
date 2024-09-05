@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, switchMap, filter } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, exhaustMap, filter, catchError } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service'; // Import ApiService
 import { CardListComponent } from '../card-list/card-list.component'
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-card-search',
@@ -23,16 +24,27 @@ export class CardSearchComponent implements OnInit {
   cards: any[] = []; // Holds the search results
   searchPerformed = false; // Flag to check if a search was performed
   noResultsReturned = false // Flag to check if any results were found
+  errorMessage: string = ''; // To display error messages to the user
   constructor(private ApiService: ApiService) { }
 
   ngOnInit() {
-    // Subscribe to changes in the search input
     this.searchControl.valueChanges
       .pipe(
-        debounceTime(300), // Wait 300ms after the last keystroke before considering the input
-        distinctUntilChanged(), // Only proceed if the new value is different from the previous value
+        debounceTime(300),
+        distinctUntilChanged(),
         filter((query): query is string => query !== null),
-        switchMap((query) => this.ApiService.searchCards(query)) // Switch to new observable for each input change
+        exhaustMap((query) =>
+          this.ApiService.searchCards(query).pipe(
+            catchError(error => {
+              if (error.status === 400) { // Check if the error is a 400 Bad Request
+                this.resetSearch(); 
+              }
+              this.errorMessage = 'Search failed. Please try again.';
+              console.error('Error fetching search results:', error);
+              return of([]); // Return an empty array on error to continue the stream
+            })
+          )
+        )
       )
       .subscribe(
         (results) => {
@@ -50,5 +62,12 @@ export class CardSearchComponent implements OnInit {
           this.searchPerformed = true;
         }
       );
+  }
+
+  resetSearch() {
+    this.searchControl.setValue(''); 
+    this.cards = [];
+    this.searchPerformed = false;
+    this.errorMessage = '';
   }
 }
