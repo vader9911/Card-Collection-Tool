@@ -1,9 +1,9 @@
-<div *ngIf="cards && cards.length > 0; else noResults">
+<div *ngIf="cards && cards.length > 0; else noResults" class="d-flex p-2 search-results" >
     <div *ngFor="let card of cards">
         <!-- Display each card -->
-        <div class="card">
-            <h3>{{ card.name }}</h3>
-            <p>{{ card.description }}</p>
+        <div class="card-item">
+            <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" />
+
             <!-- Add more fields when necessary -->
         </div>
     </div>
