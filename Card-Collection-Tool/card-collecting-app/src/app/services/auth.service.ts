@@ -1,28 +1,20 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // Replace with real authentication logic or use libraries like Auth0 or Firebase
-  private loggedIn = false;
-  private userName: string = 'Guest';
+  private baseUrl = 'https://localhost:7047/api/auth';
 
-  // Simulate checking if the user is logged in
-  isLoggedIn(): boolean {
-    // Replace with real logic to check login status
-    return this.loggedIn;
+  constructor(private http: HttpClient) { }
+
+  register(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/register`, { email, password });
   }
 
-  // Simulate getting the user's name
-  getUserName(): string {
-    // Replace with real logic to get the user's name
-    return this.userName;
-  }
-
-  // Simulate logging out
-  logout(): void {
-    // Implement logout logic here (e.g., clear tokens, call backend, etc.)
-    this.loggedIn = false;
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/login`, { email, password });
   }
 }

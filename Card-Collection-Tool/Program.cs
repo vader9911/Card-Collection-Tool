@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Card_Collection_Tool.Data;
 using Card_Collection_Tool.Services;
 
@@ -14,9 +17,6 @@ namespace Card_Collection_Tool
 
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddControllers();
-
             // Add authorization services
             builder.Services.AddAuthorization();
 
@@ -24,9 +24,34 @@ namespace Card_Collection_Tool
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Add Identity services
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            //// Add Identity services
+            //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            //    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // Configure Identity
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            // Configure JWT Authentication
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
 
             // Configure CORS
             builder.Services.AddCors(options =>
@@ -56,7 +81,8 @@ namespace Card_Collection_Tool
             builder.Services.AddHostedService<ScryfallSyncHostedService>();
 
 
-
+            // Add services to the container.
+            builder.Services.AddControllers();
 
             var app = builder.Build();
 
@@ -74,6 +100,8 @@ namespace Card_Collection_Tool
             app.UseRouting();
 
             app.UseCors("AllowSpecificOrigins");
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
