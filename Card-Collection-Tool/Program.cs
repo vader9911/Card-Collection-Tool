@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Card_Collection_Tool.Data;
 using Card_Collection_Tool.Services;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.IO;
-using System.Reflection.Metadata;
 
 
 
@@ -18,28 +15,76 @@ namespace Card_Collection_Tool
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers(); 
+            builder.Services.AddControllers();
 
             // Add authorization services
-            builder.Services.AddAuthorization(); 
+            builder.Services.AddAuthorization();
+
+            // Register the database context with Identity support
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Add Identity services
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins", builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200") // Replace with your Angular front end URL
+                           .AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials();
+                });
+            });
+
+            // Register the ScryfallService with HttpClient
+            builder.Services.AddHttpClient<ScryfallService>(client =>
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "Card-Collection-App/1.0");
+            });
+
+            // Register the ScryfallSyncService with HttpClient for dependency injection
+            builder.Services.AddHttpClient<ScryfallSyncService>(client =>
+            {
+                client.DefaultRequestHeaders.Add("User-Agent", "Card-Collection-App/1.0");
+            });
+
+            // Register the hosted service for periodic data synchronization
+            builder.Services.AddHostedService<ScryfallSyncHostedService>();
+
+
+
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline. if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Error"); app.UseHsts(); }
+            // Configure the HTTP request pipeline.
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
-            app.UseHttpsRedirection(); 
+
+            app.UseHttpsRedirection();
             app.UseStaticFiles(); // Serve static files from wwwroot
 
             app.UseRouting();
 
+            app.UseCors("AllowSpecificOrigins");
             app.UseAuthorization();
 
-            app.MapControllers(); 
+            app.MapControllers();
             app.MapFallbackToFile("index.html"); // Fallback route to serve Angular app
 
             app.Run();
+        }
+    }
+}
 
-            /* Original app output using asp.net mvc */
+           
 
             //var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +139,4 @@ namespace Card_Collection_Tool
             //app.MapRazorPages();
 
             //app.Run();
-        }
-    }
-}
+        
