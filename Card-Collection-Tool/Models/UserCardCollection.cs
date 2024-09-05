@@ -21,5 +21,6 @@ namespace Card_Collection_Tool.Models
         public string SetName { get; set; } // Optional: Set or edition name
 
         public string ImageUri { get; set; } // URL to the card image
+        public string CardId { get; set; } // Card Id
     }
 }
