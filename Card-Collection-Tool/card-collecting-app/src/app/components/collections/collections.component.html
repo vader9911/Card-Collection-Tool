@@ -1,11 +1,25 @@
-<div class="container">
-    <h2>Your Collections</h2>
-    <div *ngIf="collections.length === 0">You have no collections. Create a new one!</div>
-    <div *ngFor="let collection of collections">
-        <div (click)="viewCollection(collection.id)">
-            {{ collection.name }} ({{ collection.cardIds.length }} cards)
+<div class="container py-4">
+  <!-- Create Collections Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <input
+      type="text"
+      class="form-control w-50 me-2"
+      placeholder="Enter Collection Name"
+      [(ngModel)]="newCollectionName"
+    />
+    <button class="btn btn-primary" (click)="createCollection()">Create Collection</button>
+  </div>
+
+  <!-- Collection Cards Grid -->
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    <!-- Loop through collections and display each one as a card -->
+    <div class="col" *ngFor="let collection of collections">
+      <div class="card h-100 shadow-sm">
+        <img [src]="getFirstCardImage(collection)" class="card-img-top" alt="Card Image" />
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ collection.collectionName }}</h5>
         </div>
+      </div>
     </div>
-    <input type="text" placeholder="New Collection Name" #newCollectionName />
-    <button (click)="addNewCollection(newCollectionName.value)">Create Collection</button>
+  </div>
 </div>

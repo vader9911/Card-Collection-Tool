@@ -1,39 +1,66 @@
-import { Component, OnInit } from '@angular/core'; 
+import { Component, OnInit, NgModule } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { CollectionsService } from '../../services/collections.service';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-collections',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule
   ],
   templateUrl: './collections.component.html',
   styleUrl: './collections.component.scss'
 })
 export class CollectionsComponent implements OnInit {
-  collections: any[] = [];
+  collections: any[] = []; // Array to hold collection data
+  newCollectionName: string = ''; // New collection name
+  defaultImageUrl: string = 'https://archive.org/download/placeholder-image/placeholder-image.jpg'; // Defualt image for no card collections
 
-  constructor(private collectionsService: CollectionsService, private authService: AuthService) { }
+  constructor(private collectionsService: CollectionsService) { }
 
   ngOnInit(): void {
-    this.loadCollections();
+    this.loadCollections(); // Load collections when the component initializes
   }
 
-  loadCollections() {
-    this.collectionsService.getCollections().subscribe((collections) => {
-      this.collections = collections;
-    });
+  // Fetch collections from the server
+  loadCollections(): void {
+    this.collectionsService.getCollections().subscribe(
+      (response) => {
+        this.collections = response; // Store the fetched collections
+      },
+      (error) => {
+        console.error('Error fetching collections:', error);
+      }
+    );
   }
 
-  addNewCollection(collectionName: string) {
-    this.collectionsService.createCollection(collectionName).subscribe((newCollection) => {
-      this.collections.push(newCollection);
-    });
+  // Create a new collection
+  createCollection(): void {
+    if (this.newCollectionName.trim()) {
+      this.collectionsService.createCollection(this.newCollectionName).subscribe(
+        (response) => {
+          this.collections.push(response); // Add the new collection to the list
+          this.newCollectionName = ''; // Clear the input field
+        },
+        (error) => {
+          console.error('Error creating collection:', error);
+        }
+      );
+    } else {
+      alert('Please enter a collection name.');
+    }
   }
 
-  viewCollection(collectionId: number) {
-    // Logic to view collection details or navigate to the collection detail page
+  // Method to get the first card image URL from the collection
+  getFirstCardImage(collection: any): string {
+    if (collection.cardIds && collection.cardIds.length > 0) {
+      // Replace with actual logic to fetch card image based on card ID
+      return `https://your-image-source.com/cards/${collection.cardIds[0]}.jpg`;
+    }
+    return this.defaultImageUrl; // Return default image if no cards
   }
 }
