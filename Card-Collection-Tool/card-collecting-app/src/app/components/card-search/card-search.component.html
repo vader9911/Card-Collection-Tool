@@ -1,6 +1,6 @@
 <div class="search-bar">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Search for cards..." />
-    <button (click)="onSearch()">Search</button>
+    <!-- Bind the input to the reactive form control -->
+    <input type="text" [formControl]="searchControl" placeholder="Search for cards..." />
 </div>
 
 <!-- Display the card list component and pass the search results -->
