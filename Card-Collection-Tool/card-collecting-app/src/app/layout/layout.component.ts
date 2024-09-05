@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LoginComponent } from '../components/login/login.component';
 import { CollectionsComponent } from '../components/collections/collections.component';
 import { PrivacyComponent } from '../components/privacy/privacy.component';
@@ -12,6 +13,7 @@ import { CardListComponent } from '../components/card-list/card-list.component';
   selector: 'app-layout',
   standalone: true,
   imports: [
+    FormsModule,
     CommonModule,
     RouterModule,
     LoginComponent,

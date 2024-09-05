@@ -1,12 +1,18 @@
 import { Component } from '@angular/core';
-import { ApiService } from '../services/api.service'; // Import the service
+import { ApiService } from '../../services/api.service';
+import { CardListComponent } from '../card-list/card-list.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-card-search',
   standalone: true,
   templateUrl: './card-search.component.html',
   styleUrls: ['./card-search.component.scss'],
-  providers: [ApiService] // Provide the service if needed
+  providers: [ApiService],
+  imports: [
+    CardListComponent,
+    FormsModule
+  ]
 })
 export class CardSearchComponent {
   searchQuery: string = ''; // Holds the user search input

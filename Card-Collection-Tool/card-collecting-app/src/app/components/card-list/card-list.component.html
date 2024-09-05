@@ -1,1 +1,14 @@
-<p>card-list works!</p>
+<div *ngIf="cards && cards.length > 0; else noResults">
+    <div *ngFor="let card of cards">
+        <!-- Display each card -->
+        <div class="card">
+            <h3>{{ card.name }}</h3>
+            <p>{{ card.description }}</p>
+            <!-- Add more fields when necessary -->
+        </div>
+    </div>
+</div>
+
+<ng-template #noResults>
+    <p>No cards found. Try a different search.</p>
+</ng-template>
