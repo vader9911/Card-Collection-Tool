@@ -17,10 +17,7 @@ namespace Card_Collection_Tool.Models
 
         [Required]
         public string CardName { get; set; } // Name of the Card
-
-        public string SetName { get; set; } // Optional: Set or edition name
-
-        public string ImageUri { get; set; } // URL to the card image
+        public string CollectionName { get; set; } // Name of the Collection
         public string CardId { get; set; } // Card Id
     }
 }

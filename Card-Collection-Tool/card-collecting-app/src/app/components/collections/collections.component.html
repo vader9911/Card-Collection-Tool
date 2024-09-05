@@ -1,1 +1,11 @@
-<p>collections works!</p>
+<div class="container">
+    <h2>Your Collections</h2>
+    <div *ngIf="collections.length === 0">You have no collections. Create a new one!</div>
+    <div *ngFor="let collection of collections">
+        <div (click)="viewCollection(collection.id)">
+            {{ collection.name }} ({{ collection.cardIds.length }} cards)
+        </div>
+    </div>
+    <input type="text" placeholder="New Collection Name" #newCollectionName />
+    <button (click)="addNewCollection(newCollectionName.value)">Create Collection</button>
+</div>
