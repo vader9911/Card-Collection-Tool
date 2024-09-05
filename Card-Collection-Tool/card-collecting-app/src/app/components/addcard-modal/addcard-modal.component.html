@@ -1,0 +1,24 @@
+<div id="addToCollectionModal" class="modal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add to Collection</h5>
+                <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="selectCollection">Select Existing Collection:</label>
+                <select [(ngModel)]="selectedCollectionId" class="form-control mb-3">
+                    <option *ngFor="let collection of collections" [value]="collection.id">{{ collection.collectionName }}</option>
+                </select>
+                <button class="btn btn-primary mb-3" (click)="addToCollection()">Add to Selected Collection</button>
+                <hr />
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="New Collection Name" #newCollectionName />
+                    <button class="btn btn-success mt-2" (click)="createAndAddToCollection(newCollectionName.value)">Create and Add to New Collection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

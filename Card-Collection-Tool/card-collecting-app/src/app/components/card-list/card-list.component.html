@@ -4,8 +4,11 @@
         <div class="card-item">
             <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" />
         </div>
+        <button *ngIf="isLoggedIn" class="btn btn-primary btn-sm position-absolute bottom-0 end-0" (click)="openAddToCollectionModal(card.id)">+</button>
     </div>
 </div>
+
+<app-addcard-modal></app-addcard-modal>
 
 <ng-template #noResults>
     <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>
