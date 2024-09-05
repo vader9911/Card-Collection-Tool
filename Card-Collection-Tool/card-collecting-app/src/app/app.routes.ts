@@ -12,11 +12,7 @@ import { CardSearchComponent } from './components/card-search/card-search.compon
 
 export const appRoutes: Routes = [
   {
-    path: '',
-  component: LayoutComponent, // Main layout with the card search bar
-  children: [
-    { path: '', component: CardSearchComponent }, // Default child route for the search bar
-  ]
+    path: '', component: CardSearchComponent, // Main layout with the card search bar
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },

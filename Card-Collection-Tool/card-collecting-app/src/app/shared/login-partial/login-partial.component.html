@@ -7,7 +7,7 @@
 
     <!-- Register and Login buttons for guests -->
     <ng-template #guestLinks>
-        <button routerLink="/register" class="btn btn-primary btn-sm me-2">Register</button>
-        <button routerLink="/login" class="btn btn-success btn-sm">Log in</button>
+        <button [routerLink]="'/register'" class="btn btn-primary btn-sm me-2">Register</button>
+        <button [routerLink]="'/login'" class="btn btn-success btn-sm">Log in</button>
     </ng-template>
 </div>

@@ -1,13 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { LoginComponent } from '../../components/login/login.component'
 
 @Component({
   selector: 'app-login-partial',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    LoginComponent,
+    RouterLink
+
   ],
   templateUrl: './login-partial.component.html',
   styleUrls: ['./login-partial.component.scss']
