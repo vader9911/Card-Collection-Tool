@@ -1,0 +1,12 @@
+<div *ngIf="cards && cards.length > 0; else noResults" class="d-flex p-4 search-results" >
+    <div *ngFor="let card of cards">
+        <!-- Display each card -->
+        <div class="card-item">
+            <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" />
+        </div>
+    </div>
+</div>
+
+<ng-template #noResults>
+    <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>
+</ng-template>

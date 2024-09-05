@@ -1,10 +1,11 @@
-using Card_Collection_Tool.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Card_Collection_Tool.Controllers
 {
-    public class HomeController : Controller
+    [ApiController] 
+    [Route("api/[controller]")]
+    public class HomeController : ControllerBase
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -13,27 +14,11 @@ namespace Card_Collection_Tool.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Collections()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        // You may replace this with a suitable API method
+        [HttpGet("error")]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return Problem("An error occurred.", statusCode: 500);
         }
     }
 }
