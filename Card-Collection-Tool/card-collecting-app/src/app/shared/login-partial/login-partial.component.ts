@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service'; // Create an Angular service for authentication
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login-partial',
@@ -13,21 +13,24 @@ import { AuthService } from '../../services/auth.service'; // Create an Angular 
   styleUrls: ['./login-partial.component.scss']
 })
 export class LoginPartialComponent {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService) { }
 
-  // Function to check if the user is logged in
   isLoggedIn(): boolean {
-    return this.authService.isLoggedIn(); // Replace with your logic
+    return this.authService.getAuthStatus(); // Check if the user is logged in
   }
 
-  // Function to get the user's name
   getUserName(): string {
-    return this.authService.getUserName(); // Replace with your logic
+    // Retrieve the username from your AuthService
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Decode JWT token to get user information
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub; // Assume 'sub' contains the username or email
+    }
+    return '';
   }
 
-  // Function to log the user out
-  logout(): void {
-    this.authService.logout(); // Replace with your logic
-    this.router.navigate(['/']); // Redirect to home or another page after logout
+  logout() {
+    this.authService.logout(); // Call the AuthService to handle logout
   }
 }

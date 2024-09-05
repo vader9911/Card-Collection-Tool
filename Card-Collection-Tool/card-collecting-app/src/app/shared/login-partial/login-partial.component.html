@@ -1,11 +1,13 @@
-<div class="d-flex align-items-center">
-  
-  <span *ngIf="isLoggedIn()" class="me-3">Hello, {{ getUserName() }}!</span>
+<div class="d-flex align-items-center justify-content-end">
+    <!-- Display the greeting and logout button when the user is logged in -->
+    <ng-container *ngIf="isLoggedIn(); else guestLinks">
+        <span class="me-3">Hello, {{ getUserName() }}!</span>
+        <button (click)="logout()" class="btn btn-outline-danger btn-sm">Log out</button>
+    </ng-container>
 
-
-  <button *ngIf="isLoggedIn()" (click)="logout()" class="btn btn-outline-danger btn-sm">Log out</button>
-
-  <!-- Register and Login buttons when user is not signed in -->
-  <button *ngIf="!isLoggedIn()" routerLink="/register" class="btn btn-primary btn-sm me-2">Register</button>
-  <button *ngIf="!isLoggedIn()" routerLink="/login" class="btn btn-success btn-sm">Log in</button>
+    <!-- Register and Login buttons for guests -->
+    <ng-template #guestLinks>
+        <button routerLink="/register" class="btn btn-primary btn-sm me-2">Register</button>
+        <button routerLink="/login" class="btn btn-success btn-sm">Log in</button>
+    </ng-template>
 </div>
