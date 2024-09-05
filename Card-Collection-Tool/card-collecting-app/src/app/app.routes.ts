@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { LayoutComponent } from './layout.component';
-import { LoginComponent } from './login/login.component';
-import { CollectionsComponent } from './collections/collections.component';
-import { PrivacyComponent } from './privacy/privacy.component';
+import { LayoutComponent } from './layout/layout.component';
+import { LoginComponent } from './components/login/login.component';
+import { CollectionsComponent } from './components/collections/collections.component';
+import { PrivacyComponent } from './components/privacy/privacy.component';
 import { LoginPartialComponent } from './shared/login-partial/login-partial.component';
 
 

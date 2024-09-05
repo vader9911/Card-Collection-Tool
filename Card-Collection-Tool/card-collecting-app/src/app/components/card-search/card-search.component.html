@@ -1,0 +1,7 @@
+<div class="search-bar">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Search for cards..." />
+    <button (click)="onSearch()">Search</button>
+</div>
+
+<!-- Display the card list component and pass the search results -->
+<app-card-list [cards]="cards"></app-card-list>
