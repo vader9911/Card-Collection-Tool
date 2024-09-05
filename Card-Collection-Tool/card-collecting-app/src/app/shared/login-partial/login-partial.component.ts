@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginComponent } from '../../components/login/login.component'
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-login-partial',
@@ -10,31 +11,42 @@ import { LoginComponent } from '../../components/login/login.component'
   imports: [
     CommonModule,
     LoginComponent,
-    RouterLink
+    RouterLink,
 
   ],
   templateUrl: './login-partial.component.html',
   styleUrls: ['./login-partial.component.scss']
 })
-export class LoginPartialComponent {
-  constructor(private authService: AuthService) { }
+export class LoginPartialComponent implements OnInit, OnDestroy {
+  isAuthenticated: boolean = false; // Track the user's authentication status
+  userName: string = ''; // Store the user's name
+  private authSubscription!: Subscription;
+  constructor(private authService: AuthService, private router: Router) { }
 
-  isLoggedIn(): boolean {
-    return this.authService.getAuthStatus(); // Check if the user is logged in
-  }
-
-  getUserName(): string {
-    // Retrieve the username from your AuthService
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Decode JWT token to get user information
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.sub; // Assume 'sub' contains the username or email
-    }
-    return '';
+  ngOnInit() {
+    // Subscribe to authentication state changes
+    this.authSubscription = this.authService.isLoggedIn().subscribe((isLoggedIn) => {
+      this.isAuthenticated = isLoggedIn;
+      this.userName = isLoggedIn ? this.authService.getUserName() : ''; // Update userName based on login state
+    });
   }
 
   logout() {
-    this.authService.logout(); // Call the AuthService to handle logout
+    this.authService.logout();
+    this.router.navigate(['/login']); // Redirect to the login page after logout
+  }
+
+  goToRegister() {
+    this.router.navigate(['/register']);
+  }
+
+  goToLogin() {
+    this.router.navigate(['/login']);
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe(); // Clean up the subscription
+    }
   }
 }
