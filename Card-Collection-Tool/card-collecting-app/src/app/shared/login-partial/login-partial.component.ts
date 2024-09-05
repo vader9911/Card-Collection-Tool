@@ -1,9 +1,14 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service'; // Create an Angular service for authentication
 
 @Component({
   selector: 'app-login-partial',
+  standalone: true,
+  imports: [
+    CommonModule
+  ],
   templateUrl: './login-partial.component.html',
   styleUrls: ['./login-partial.component.scss']
 })
