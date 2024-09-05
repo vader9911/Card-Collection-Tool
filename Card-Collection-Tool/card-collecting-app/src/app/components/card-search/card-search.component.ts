@@ -21,7 +21,8 @@ import { CardListComponent } from '../card-list/card-list.component'
 export class CardSearchComponent implements OnInit {
   searchControl = new FormControl(''); // Reactive form control for the search input
   cards: any[] = []; // Holds the search results
-
+  searchPerformed = false; // Flag to check if a search was performed
+  noResultsReturned = false // Flag to check if any results were found
   constructor(private ApiService: ApiService) { }
 
   ngOnInit() {
@@ -36,9 +37,17 @@ export class CardSearchComponent implements OnInit {
       .subscribe(
         (results) => {
           this.cards = results; // Update the card list with the search results
+          this.searchPerformed = true;
+          if (this.cards.length === 0 && this.searchPerformed === true) {
+            this.noResultsReturned = true;
+          };
+          console.log(this.noResultsReturned);
+          console.log(this.cards);
         },
         (error) => {
           console.error('Error fetching search results:', error);
+          this.cards = []; // Clear results on error
+          this.searchPerformed = true;
         }
       );
   }

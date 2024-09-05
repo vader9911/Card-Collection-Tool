@@ -1,7 +1,13 @@
-<div class="search-bar">
-    <!-- Bind the input to the reactive form control -->
-    <input type="text" [formControl]="searchControl" placeholder="Search for cards..." />
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <input type="text" class="form-control form-control-lg rounded-pill shadow-sm" [formControl]="searchControl" placeholder="Search for cards..." />
+        </div>
+    </div>
 </div>
 
+
 <!-- Display the card list component and pass the search results -->
-<app-card-list [cards]="cards"></app-card-list>
+<div class="d-flex justify-content-center p-4">
+    <app-card-list [cards]="cards" [searchPerformed]="searchPerformed" [noResultsReturned]="noResultsReturned"></app-card-list>
+</div>
