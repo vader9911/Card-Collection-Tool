@@ -51,25 +51,19 @@ namespace Card_Collection_Tool.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CardName")
+                    b.Property<string>("CardIds")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageUri")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SetName")
+                    b.Property<string>("CollectionName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("UserCardCollections");
                 });
@@ -219,12 +213,10 @@ namespace Card_Collection_Tool.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -261,12 +253,10 @@ namespace Card_Collection_Tool.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -295,17 +285,14 @@ namespace Card_Collection_Tool.Migrations
                         .HasAnnotation("Relational:JsonPropertyName", "keywords");
 
                     b.Property<string>("ManaCost")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "mana_cost");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "name");
 
                     b.Property<string>("OracleText")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "oracle_text");
 
@@ -313,34 +300,25 @@ namespace Card_Collection_Tool.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "rarity");
 
+                    b.Property<string>("ReleaseDate")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "released_at");
+
                     b.Property<string>("ScryfallUri")
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "scryfall_uri");
 
                     b.Property<string>("SetName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "set_name");
 
                     b.Property<string>("TypeLine")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasAnnotation("Relational:JsonPropertyName", "type_line");
 
                     b.HasKey("Id");
 
                     b.ToTable("ScryfallCards");
-                });
-
-            modelBuilder.Entity("Card_Collection_Tool.Models.UserCardCollection", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -409,6 +387,10 @@ namespace Card_Collection_Tool.Migrations
                                 .HasColumnType("nvarchar(max)")
                                 .HasAnnotation("Relational:JsonPropertyName", "normal");
 
+                            b1.Property<string>("Png")
+                                .HasColumnType("nvarchar(max)")
+                                .HasAnnotation("Relational:JsonPropertyName", "png");
+
                             b1.Property<string>("Small")
                                 .HasColumnType("nvarchar(max)")
                                 .HasAnnotation("Relational:JsonPropertyName", "small");
@@ -444,17 +426,15 @@ namespace Card_Collection_Tool.Migrations
 
                             b1.ToTable("ScryfallCards");
 
-                            b1.HasAnnotation("Relational:JsonPropertyName", "Prices");
+                            b1.HasAnnotation("Relational:JsonPropertyName", "prices");
 
                             b1.WithOwner()
                                 .HasForeignKey("ScryfallCardId");
                         });
 
-                    b.Navigation("ImageUris")
-                        .IsRequired();
+                    b.Navigation("ImageUris");
 
-                    b.Navigation("Prices")
-                        .IsRequired();
+                    b.Navigation("Prices");
                 });
 #pragma warning restore 612, 618
         }

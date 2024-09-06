@@ -1,0 +1,57 @@
+<div *ngIf="isLoggedIn; else notLoggedIn">
+    <!-- Show collection details if loaded -->
+    <div *ngIf="collectionDetails; else noCollectionDetails">
+        <h2>{{ collectionDetails.collectionName }}</h2>
+
+        <!-- Toggle buttons for display formats -->
+        <div class="mb-3">
+            <button class="btn btn-primary me-2" (click)="toggleDisplayFormat('grid')">Grid View</button>
+            <button class="btn btn-secondary" (click)="toggleDisplayFormat('table')">Table View</button>
+        </div>
+
+        <!-- Grid View -->
+        <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4">
+            <div *ngFor="let card of collectionDetails.cards" class="card m-2" style="width: 18rem;">
+                <img class="card-img-top" [src]="card.imageUri" alt="{{ card.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ card.name }}</h5>
+                    <p class="card-text">Mana Cost: {{ card.manaCost }}</p>
+                    <p class="card-text">Type: {{ card.typeLine }}</p>
+                    <p class="card-text">{{ card.oracleText }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div *ngIf="displayFormat === 'table'" class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Mana Cost</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let card of collectionDetails.cards">
+                        <td>{{ card.name }}</td>
+                        <td>{{ card.manaCost }}</td>
+                        <td>{{ card.typeLine }}</td>
+                        <td>{{ card.oracleText }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- If no collection details are loaded -->
+    <ng-template #noCollectionDetails>
+        <p>No collection details found.</p>
+    </ng-template>
+</div>
+
+<!-- If the user is not logged in -->
+<ng-template #notLoggedIn>
+    <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view collection details.</p>
+</ng-template>
