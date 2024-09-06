@@ -2,11 +2,11 @@
     <div class="row">
         <!-- Card image on the left -->
         <div class="col-md-4">
-            <img [src]="cardDetails?.imageUri || 'default-image-url.jpg'" class="img-fluid rounded" alt="{{ cardDetails?.name }}" />
+            <img [src]="cardDetails?.imageUri" class="img-fluid rounded" alt="{{ cardDetails?.name }}" data-id="{{cardId.id}}" />
         </div>
 
         <!-- Card details on the right -->
-        <div class="col-md-8">
+        <div class="col-md-8" >
             <h2>{{ cardDetails?.name }}</h2>
             <table class="table">
                 <tbody>
@@ -19,13 +19,30 @@
                         <td>{{ cardDetails?.typeLine }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Description</th>
+                        <th scope="row">Oracle Text</th>
                         <td>{{ cardDetails?.oracleText }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Set</th>
+                        <td>{{ cardDetails?.setName }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Artist</th>
+                        <td>{{ cardDetails?.artist }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Rarity</th>
+                        <td>{{ cardDetails?.rarity }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Price</th>
+                        <td>${{ cardDetails?.prices }}</td>
                     </tr>
                     <!-- Add more card properties as needed -->
                 </tbody>
             </table>
-            <button class="btn btn-primary" (click)="openAddToCollectionModal()">Add to Collection</button>
-        </div>
+            <button *ngIf="isLoggedIn" class="btn btn-primary" (click)="openAddToCollectionModal(selectedCardId)">Add to Collection</button></div>
     </div>
 </div>
+
+<app-addcard-modal [cardId]="cardId"></app-addcard-modal>

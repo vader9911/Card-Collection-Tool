@@ -23,7 +23,7 @@ export const appRoutes: Routes = [
   { path: 'login-partial', component: LoginPartialComponent },
   { path: 'collections', component: CollectionsOverviewComponent },
   { path: 'collections/:collectionId/details', component: CollectionDetailsComponent },
-  { path: 'card/:cardId', component: CardDetailsComponent },
+  { path: 'cards/:cardId/details', component: CardDetailsComponent },
   { path: '**', redirectTo: '' } // Redirect any unknown paths to the home route
 ];
 

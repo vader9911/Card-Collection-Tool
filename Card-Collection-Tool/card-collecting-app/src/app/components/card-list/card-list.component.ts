@@ -47,10 +47,10 @@ export class CardListComponent implements OnInit {
 
   // Method to navigate to card details page
   viewCardDetails(cardId: string): void {
-    this.router.navigate(['/card', cardId]);
+    this.router.navigate(['/cards', cardId, 'details']);
   }
 
-  openAddToCollectionModal(cardId: number) {
+  openAddToCollectionModal(cardId: any) {
     console.log("modal for add card opened");
     this.selectedCardId = cardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');
