@@ -1,1 +1,28 @@
-<p>collections works!</p>
+<div class="container py-4">
+    <!-- Create Collections Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <input type="text"
+               class="form-control w-50 me-2"
+               placeholder="Enter Collection Name"
+               [(ngModel)]="newCollectionName" />
+        <button class="btn btn-primary" (click)="createCollection()">Create Collection</button>
+    </div>
+
+    <!-- Collection Cards Grid -->
+    <div class="container py-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            <!-- Loop through collections and display each one as a card -->
+            <div class="col" *ngFor="let collection of collections">
+                <div class="card h-100 shadow-sm" (click)="goToCollectionDetails(collection.id) ">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ collection.collectionName }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #notLoggedIn>
+        <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view your collections.</p>
+    </ng-template>
+

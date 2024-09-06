@@ -43,10 +43,10 @@ namespace Card_Collection_Tool.Services
 
             // Corrected absolute URL for the bulk data endpoint
             var bulkDataUrl = "https://api.scryfall.com/bulk-data";
-            Console.WriteLine(bulkDataUrl);
+            
             // Fetch the bulk data endpoint to get the download URI
             var bulkDataResponse = await _httpClient.GetFromJsonAsync<ScryfallBulkDataResponse>(bulkDataUrl);
-            Console.WriteLine(bulkDataResponse);
+            
             if (bulkDataResponse != null)
             {
                 // Find the "Default Cards" entry and get its download URI

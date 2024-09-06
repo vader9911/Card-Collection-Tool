@@ -1,11 +1,15 @@
-<div *ngIf="cards && cards.length > 0; else noResults" class="d-flex p-4 search-results" >
-    <div *ngFor="let card of cards">
+<div *ngIf="cards && cards.length > 0; else noResults" class="d-flex p-4 search-results">
+    <div *ngFor="let card of cards" class="position-relative card-item">
         <!-- Display each card -->
-        <div class="card-item">
+        <div class="position-relative">
             <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" />
+            <!-- Button positioned at the bottom of the card image -->
+            <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id)">+</button>
         </div>
     </div>
 </div>
+
+<app-addcard-modal [cardId]="selectedCardId"></app-addcard-modal>
 
 <ng-template #noResults>
     <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>
