@@ -1,0 +1,31 @@
+<div class="container mt-4">
+    <div class="row">
+        <!-- Card image on the left -->
+        <div class="col-md-4">
+            <img [src]="cardDetails?.imageUri || 'default-image-url.jpg'" class="img-fluid rounded" alt="{{ cardDetails?.name }}" />
+        </div>
+
+        <!-- Card details on the right -->
+        <div class="col-md-8">
+            <h2>{{ cardDetails?.name }}</h2>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th scope="row">Mana Cost</th>
+                        <td>{{ cardDetails?.manaCost }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Type</th>
+                        <td>{{ cardDetails?.typeLine }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Description</th>
+                        <td>{{ cardDetails?.oracleText }}</td>
+                    </tr>
+                    <!-- Add more card properties as needed -->
+                </tbody>
+            </table>
+            <button class="btn btn-primary" (click)="openAddToCollectionModal()">Add to Collection</button>
+        </div>
+    </div>
+</div>
