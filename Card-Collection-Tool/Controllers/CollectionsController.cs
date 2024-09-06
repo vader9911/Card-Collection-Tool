@@ -3,6 +3,7 @@ using Card_Collection_Tool.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.Claims;
 
 
@@ -29,12 +30,13 @@ public class CollectionsController : ControllerBase
     }
 
     // GET: api/Collections/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<UserCardCollection>> GetUserCardCollection(int id)
+    [HttpGet("{collectionId}")]
+    public async Task<ActionResult<UserCardCollection>> GetUserCardCollection(int collectionId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var userCardCollection = await _context.UserCardCollections
-            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+            .FirstOrDefaultAsync(c => c.Id == collectionId && c.UserId == userId);
+
 
         if (userCardCollection == null)
         {
@@ -186,4 +188,40 @@ public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody
 
         return Ok(new { message = "Card added to the collection successfully." });
     }
+
+    [HttpGet("{collectionId}/details")]
+    public async Task<IActionResult> GetCollectionDetails(int collectionId)
+    {
+        // Find the collection by its ID
+        var collection = await _context.UserCardCollections
+            .FirstOrDefaultAsync(c => c.Id == collectionId);
+
+        if (collection == null)
+        {
+            return NotFound(new { message = "Collection not found." });
+        }
+
+        // Extract the card IDs from the list of CardEntry objects
+        var cardIds = collection.CardIds.Select(entry => entry.CardId).ToList();
+
+        if (cardIds == null || !cardIds.Any())
+        {
+            return Ok(new { collectionName = collection.CollectionName, cards = new List<ScryfallCard>() });
+        }
+
+        // Fetch the full card details from the ScryfallCard table using the card IDs
+        var cardDetails = await _context.ScryfallCards
+            .Where(card => cardIds.Contains(card.Id))
+            .ToListAsync();
+
+        // Create a response object with the collection and the card details
+        var response = new
+        {
+            collectionName = collection.CollectionName,
+            cards = cardDetails
+        };
+
+        return Ok(response);
+    }
+
 }

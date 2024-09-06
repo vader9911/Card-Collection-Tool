@@ -20,7 +20,7 @@ export const appRoutes: Routes = [
   { path: 'privacy', component: PrivacyComponent },
   { path: 'login-partial', component: LoginPartialComponent },
   { path: 'collections', component: CollectionsOverviewComponent },
-  { path: 'collections/:id', component: CollectionDetailsComponent },
+  { path: 'collections/:collectionId/details', component: CollectionDetailsComponent },
   { path: '**', redirectTo: '' } // Redirect any unknown paths to the home route
 ];
 

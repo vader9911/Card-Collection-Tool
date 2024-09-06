@@ -25,7 +25,7 @@ export class CollectionsService {
 
   // Fetch details of a specific collection
   getCollectionDetails(collectionId: number | string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/${collectionId}`);
+    return this.http.get<any>(`${this.baseUrl}/${collectionId}/details`,{ headers: this.getAuthHeaders() });
   }
 
   createCollection(collectionName: string): Observable<any> {

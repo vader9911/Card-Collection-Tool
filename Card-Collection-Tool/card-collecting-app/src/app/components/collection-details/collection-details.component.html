@@ -1,13 +1,31 @@
-<div class="container py-4">
-    <h3>{{ collectionName }}</h3>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-        <div class="col" *ngFor="let card of cards">
-            <div class="card h-100 shadow-sm">
-                <img [src]="card.imageUri" class="card-img-top" alt="{{ card.name }}" />
-                <div class="card-body text-center">
-                    <h5 class="card-title">{{ card.name }}</h5>
+<div *ngIf="isLoggedIn; else notLoggedIn">
+    <!-- Show collection details if loaded -->
+    <div *ngIf="collectionDetails; else noCollectionDetails">
+        <h2>{{ collectionDetails.collectionName }}</h2>
+
+        <!-- Display cards in the collection -->
+        <div *ngIf="collectionDetails.cards && collectionDetails.cards.length > 0; else noCards">
+            <div class="card-grid">
+                <div *ngFor="let card of collectionDetails.cards" class="card-item">
+                    <img [src]="card.imageUri || 'default-image-url.jpg'" alt="{{ card.name }}" />
+                    <p>{{ card.name }}</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- If no collection details are loaded -->
+    <ng-template #noCollectionDetails>
+        <p>No collection details found.</p>
+    </ng-template>
 </div>
+
+<!-- If the user is not logged in -->
+<ng-template #notLoggedIn>
+    <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view collection details.</p>
+</ng-template>
+
+<!-- If no cards are found -->
+<ng-template #noCards>
+    <p>No cards found in this collection.</p>
+</ng-template>

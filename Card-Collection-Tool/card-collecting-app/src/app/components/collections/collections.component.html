@@ -13,7 +13,7 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
             <!-- Loop through collections and display each one as a card -->
             <div class="col" *ngFor="let collection of collections">
-                <div class="card h-100 shadow-sm" (click)="goToCollectionDetails(collection.id)">
+                <div class="card h-100 shadow-sm" (click)="goToCollectionDetails(collection.id) ">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ collection.collectionName }}</h5>
                     </div>
@@ -21,4 +21,8 @@
             </div>
         </div>
     </div>
+
+    <ng-template #notLoggedIn>
+        <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view your collections.</p>
+    </ng-template>
 

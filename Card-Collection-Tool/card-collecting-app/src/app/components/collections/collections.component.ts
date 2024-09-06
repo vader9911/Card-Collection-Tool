@@ -42,7 +42,7 @@ export class CollectionsComponent implements OnInit {
 
   // Navigate to collection details page
   goToCollectionDetails(collectionId: number): void {
-    this.router.navigate(['/collections', collectionId]);
+    this.router.navigate(['/collections', collectionId, 'details']);
   }
 
   // Create a new collection

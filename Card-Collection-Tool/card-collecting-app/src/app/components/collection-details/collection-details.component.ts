@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { CollectionsService } from '../../services/collections.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-collection-details',
@@ -10,33 +12,66 @@ import { CollectionsService } from '../../services/collections.service';
     CommonModule
   ],
   templateUrl: './collection-details.component.html',
-  styleUrl: './collection-details.component.css'
+  styleUrls: ['./collection-details.component.scss']
 })
 export class CollectionDetailsComponent implements OnInit {
-  collectionName: string = ''; // Name of the collection
-  cards: any[] = []; // List of cards in the collection
+  isLoggedIn: boolean = false;
+  collectionDetails: any = null;
+  authSubscription?: Subscription;
+  routeSubscription?: Subscription;
+  collectionId: number = 0;
 
-  constructor(private route: ActivatedRoute, private collectionsService: CollectionsService) { }
+  constructor(
+    private authService: AuthService,
+    private collectionsService: CollectionsService,
+    private route: ActivatedRoute,
+    private router: Router // Inject Router
+  ) { }
 
   ngOnInit(): void {
-    const collectionId = this.route.snapshot.paramMap.get('id');
-    this.loadCollectionDetails(collectionId);
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      this.collectionId = Number(params.get('collectionId'));
+      console.log('Collection ID from route:', this.collectionId);
+
+      if (isNaN(this.collectionId) || this.collectionId <= 0) {
+        console.error('Invalid collection ID:', this.collectionId);
+        this.router.navigate(['/']); // Redirect to default route if invalid
+        return;
+      }
+
+      this.authSubscription = this.authService.isLoggedIn().subscribe((status) => {
+        this.isLoggedIn = status;
+        if (this.isLoggedIn) {
+          this.loadCollectionDetails();
+        } else {
+          this.router.navigate(['/login']); // Redirect to login if not authenticated
+        }
+      });
+    });
   }
 
-  // Fetch collection details from the server
-  loadCollectionDetails(collectionId: number | string | null): void {
-    if (!collectionId) {
-      return;
+  ngOnDestroy(): void {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+  }
 
-    this.collectionsService.getCollectionDetails(collectionId).subscribe(
-      (response) => {
-        this.collectionName = response.collectionName;
-        this.cards = response.cards;
-      },
-      (error) => {
-        console.error('Error fetching collection details:', error);
-      }
-    );
+  loadCollectionDetails(): void {
+    if (this.collectionId) {
+      this.collectionsService.getCollectionDetails(this.collectionId).subscribe(
+        (details) => {
+          this.collectionDetails = details;
+          console.log('Collection details loaded:', this.collectionDetails);
+        },
+        (error) => {
+          console.error('Error loading collection details:', error);
+        }
+      );
+    } else {
+      console.error('Invalid collection ID');
+    }
   }
 }
