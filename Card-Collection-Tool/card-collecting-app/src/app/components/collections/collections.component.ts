@@ -1,8 +1,10 @@
 import { Component, OnInit, NgModule } from '@angular/core'; 
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CollectionsService } from '../../services/collections.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+
 
 @Component({
   selector: 'app-collections',
@@ -20,7 +22,7 @@ export class CollectionsComponent implements OnInit {
   newCollectionName: string = ''; // New collection name
   defaultImageUrl: string = 'https://archive.org/download/placeholder-image/placeholder-image.jpg'; // Defualt image for no card collections
 
-  constructor(private collectionsService: CollectionsService) { }
+  constructor(private collectionsService: CollectionsService, private router: Router) { }
 
   ngOnInit(): void {
     this.loadCollections(); // Load collections when the component initializes
@@ -36,6 +38,11 @@ export class CollectionsComponent implements OnInit {
         console.error('Error fetching collections:', error);
       }
     );
+  }
+
+  // Navigate to collection details page
+  goToCollectionDetails(collectionId: number): void {
+    this.router.navigate(['/collections', collectionId]);
   }
 
   // Create a new collection

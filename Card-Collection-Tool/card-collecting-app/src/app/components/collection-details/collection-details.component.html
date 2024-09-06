@@ -1,0 +1,13 @@
+<div class="container py-4">
+    <h3>{{ collectionName }}</h3>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+        <div class="col" *ngFor="let card of cards">
+            <div class="card h-100 shadow-sm">
+                <img [src]="card.imageUri" class="card-img-top" alt="{{ card.name }}" />
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ card.name }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

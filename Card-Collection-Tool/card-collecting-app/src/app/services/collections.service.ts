@@ -23,6 +23,11 @@ export class CollectionsService {
     return this.http.get<any[]>(this.baseUrl, { headers: this.getAuthHeaders() });
   }
 
+  // Fetch details of a specific collection
+  getCollectionDetails(collectionId: number | string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/${collectionId}`);
+  }
+
   createCollection(collectionName: string): Observable<any> {
     const userId = this.authService.getUserId(); // Retrieve the user ID from AuthService
     const body = JSON.stringify({
