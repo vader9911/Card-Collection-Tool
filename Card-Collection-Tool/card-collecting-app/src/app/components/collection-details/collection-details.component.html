@@ -7,7 +7,7 @@
         <div *ngIf="collectionDetails.cards && collectionDetails.cards.length > 0; else noCards">
             <div class="card-grid">
                 <div *ngFor="let card of collectionDetails.cards" class="card-item">
-                    <img [src]="card.imageUri || 'default-image-url.jpg'" alt="{{ card.name }}" />
+                    <img [src]="card.imageUri || 'default-image-url.png'" alt="{{ card.name }}" />
                     <p>{{ card.name }}</p>
                 </div>
             </div>

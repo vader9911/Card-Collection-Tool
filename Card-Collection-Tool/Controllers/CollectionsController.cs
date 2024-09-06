@@ -212,6 +212,16 @@ public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody
         // Fetch the full card details from the ScryfallCard table using the card IDs
         var cardDetails = await _context.ScryfallCards
             .Where(card => cardIds.Contains(card.Id))
+            .Select(card => new
+            {
+                card.Id,
+                card.Name,
+                ImageUri = card.ImageUris.Normal,
+                card.ManaCost, // Example: Additional property for card mana cost
+                card.TypeLine, // Example: Additional property for card type
+                card.OracleText // Example: Additional property for card description
+                                // Add more fields as needed
+            })
             .ToListAsync();
 
         // Create a response object with the collection and the card details
