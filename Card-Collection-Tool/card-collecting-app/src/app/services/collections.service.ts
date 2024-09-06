@@ -40,8 +40,19 @@ export class CollectionsService {
   }
 
 
-  addCardToCollection(id: number, CardId: number): Observable<any> {
-    const body = JSON.stringify({ cardId: CardId }); // Convert data to JSON
-    return this.http.post<any>(`${this.baseUrl}/${id}/cards`, body, { headers: this.getAuthHeaders() });
+  addCardToCollection(collectionId: number, CardId: number, Quantity : number): Observable<any> {
+    const payload = { CardId, Quantity };
+    const token = localStorage.getItem('auth_token');
+
+    console.log('Sending payload to server:', payload); // Log payload for debugging
+    console.log('Collection ID in request URL:', collectionId); // Log collectionId for debugging
+
+
+    return this.http.post<any>(`${this.baseUrl}/${collectionId}/addCard`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
   }
 }

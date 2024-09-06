@@ -24,6 +24,7 @@ export class CardListComponent implements OnInit {
 
   isLoggedIn: boolean = false; // Track user authentication status
   authSubscription?: Subscription;
+  selectedCardId: number | undefined;
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
@@ -41,15 +42,11 @@ export class CardListComponent implements OnInit {
   }
 
   openAddToCollectionModal(cardId: number) {
+    console.log("modal for add card opened");
+    this.selectedCardId = cardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');
     if (modal) {
       modal.style.display = 'block';
-    }
-
-    // Set the cardId for the modal
-    const modalComponent = document.querySelector('app-add-to-collection-modal') as any;
-    if (modalComponent) {
-      modalComponent.cardId = cardId;
     }
   }
 }

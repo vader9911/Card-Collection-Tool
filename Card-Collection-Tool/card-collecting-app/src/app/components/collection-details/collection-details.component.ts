@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { CollectionsService } from '../../services/collections.service';
 
 @Component({
   selector: 'app-collection-details',
   standalone: true,
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   templateUrl: './collection-details.component.html',
   styleUrl: './collection-details.component.css'
 })

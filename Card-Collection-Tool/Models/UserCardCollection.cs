@@ -14,6 +14,19 @@ namespace Card_Collection_Tool.Models
         [Required]
         public string CollectionName { get; set; } // Name of the Collection
 
-        public List<int> CardIds { get; set; } = new List<int>(); // List of Card IDs
+        public List<CardEntry> CardIds { get; set; } = new List<CardEntry>(); // List of Card IDs
     }
+
+    public class CardEntry
+    {
+        public string CardId { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    public class AddCardRequest
+    {
+        public string CardId { get; set; } // The ID of the card being added
+        public int Quantity { get; set; } // The quantity of the card being added
+    }
+
 }

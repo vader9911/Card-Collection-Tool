@@ -1,11 +1,14 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CollectionsService } from '../../services/collections.service';
 
 @Component({
   selector: 'app-collection-overview',
   standalone: true,
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   templateUrl: './collection-overview.component.html',
   styleUrl: './collection-overview.component.css'
 })

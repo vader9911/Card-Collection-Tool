@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
+
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -43,41 +44,41 @@ public class CollectionsController : ControllerBase
         return userCardCollection;
     }
 
-    // PUT: api/Collections/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutUserCardCollection(int id, UserCardCollection userCardCollection)
-    {
-        if (id != userCardCollection.Id)
-        {
-            return BadRequest();
-        }
+    //// PUT: api/Collections/5
+    //[HttpPut("{id}")]
+    //public async Task<IActionResult> PutUserCardCollection(int id, UserCardCollection userCardCollection)
+    //{
+    //    if (id != userCardCollection.Id)
+    //    {
+    //        return BadRequest();
+    //    }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userCardCollection.UserId != userId)
-        {
-            return Unauthorized();
-        }
+    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //    if (userCardCollection.UserId != userId)
+    //    {
+    //        return Unauthorized();
+    //    }
 
-        _context.Entry(userCardCollection).State = EntityState.Modified;
+    //    _context.Entry(userCardCollection).State = EntityState.Modified;
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!UserCardCollectionExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+    //    try
+    //    {
+    //        await _context.SaveChangesAsync();
+    //    }
+    //    catch (DbUpdateConcurrencyException)
+    //    {
+    //        if (!UserCardCollectionExists(id))
+    //        {
+    //            return NotFound();
+    //        }
+    //        else
+    //        {
+    //            throw;
+    //        }
+    //    }
 
-        return NoContent();
-    }
+    //    return NoContent();
+    //}
 
     // POST: api/Collections
     [HttpPost]
@@ -138,5 +139,51 @@ public class CollectionsController : ControllerBase
     private bool UserCardCollectionExists(int id)
     {
         return _context.UserCardCollections.Any(e => e.Id == id);
+    }
+
+    [HttpPost("{collectionId}/addCard")]
+public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody] AddCardRequest request)
+    {
+        Console.WriteLine($"Received collectionId: {collectionId}");
+        Console.WriteLine($"Received CardId: {request.CardId}");
+        Console.WriteLine($"Received Quantity: {request.Quantity}");
+
+        // Validate input
+        if (request == null || string.IsNullOrEmpty(request.CardId) || request.Quantity <= 0)
+        {
+            return BadRequest("Invalid card or quantity.");
+        }
+
+        // Find the collection by ID
+        var collection = await _context.UserCardCollections.FirstOrDefaultAsync(c => c.Id == collectionId);
+        if (collection == null)
+        {
+            return NotFound(new { message = "Collection not found." });
+        }
+
+        // Check if the card already exists in the collection
+        var existingCardEntry = collection.CardIds.FirstOrDefault(c => c.CardId == request.CardId);
+
+        if (existingCardEntry != null)
+        {
+            // If the card already exists, update the quantity
+            existingCardEntry.Quantity += request.Quantity;
+        }
+        else
+        {
+            // If the card does not exist, add it to the collection
+            var newCardEntry = new CardEntry
+            {
+                CardId = request.CardId,
+                Quantity = request.Quantity
+            };
+            collection.CardIds.Add(newCardEntry);
+        }
+
+        // Update the collection in the database
+        _context.UserCardCollections.Update(collection);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Card added to the collection successfully." });
     }
 }
