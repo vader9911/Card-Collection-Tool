@@ -12,7 +12,7 @@
         <!-- Grid View -->
         <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4">
             <div *ngFor="let card of collectionDetails.cards" class="card m-2" style="width: 18rem;">
-                <img class="card-img-top" [src]="card.imageUri || 'default-image-url.jpg'" alt="{{ card.name }}">
+                <img class="card-img-top" [src]="card.imageUri" alt="{{ card.name }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ card.name }}</h5>
                     <p class="card-text">Mana Cost: {{ card.manaCost }}</p>

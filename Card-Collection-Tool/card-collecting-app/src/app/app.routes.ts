@@ -9,6 +9,8 @@ import { AuthGuard } from './services/auth.guard.service';
 import { CardSearchComponent } from './components/card-search/card-search.component';
 import { CollectionsOverviewComponent } from './components/collection-overview/collection-overview.component';
 import { CollectionDetailsComponent } from './components/collection-details/collection-details.component';
+import { CardDetailsComponent } from './components/card-details/card-details.component';
+
 
 export const appRoutes: Routes = [
   {
@@ -21,6 +23,7 @@ export const appRoutes: Routes = [
   { path: 'login-partial', component: LoginPartialComponent },
   { path: 'collections', component: CollectionsOverviewComponent },
   { path: 'collections/:collectionId/details', component: CollectionDetailsComponent },
+  { path: 'cards/:cardId/details', component: CardDetailsComponent },
   { path: '**', redirectTo: '' } // Redirect any unknown paths to the home route
 ];
 

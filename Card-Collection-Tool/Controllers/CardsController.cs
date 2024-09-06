@@ -47,5 +47,42 @@ namespace Card_Collection_Tool.Controllers
 
             return Ok(result); // Return as JSON
         }
+
+        // GET: api/cards/{cardId}
+        [HttpGet("{cardId}/details")]
+        public async Task<IActionResult> GetCardDetails(string cardId)
+        {
+            Console.WriteLine($"Received request for card ID: {cardId}");
+            if (string.IsNullOrEmpty(cardId))
+            {
+                return BadRequest(new { message = "Card ID cannot be null or empty." });
+            }
+
+            var card = await _context.ScryfallCards
+                .Include(c => c.ImageUris) // Include related data if necessary
+                .Where(c => c.Id == cardId)
+                .Select(card => new
+                    {
+                        card.Id,
+                        card.Name,
+                        ImageUri = card.ImageUris.Normal,
+                        card.ManaCost,
+                        card.TypeLine,
+                        card.OracleText,
+                        card.SetName,
+                        card.Artist,
+                        card.Rarity,
+                        Prices = card.Prices.USD
+                    })
+                .FirstOrDefaultAsync();
+
+            if (card == null)
+            {
+                return NotFound(new { message = "Card not found." });
+            }
+
+       
+            return Ok(card);
+        }
     }
 }
