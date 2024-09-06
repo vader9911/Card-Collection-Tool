@@ -20,6 +20,7 @@ export class CollectionDetailsComponent implements OnInit {
   authSubscription?: Subscription;
   routeSubscription?: Subscription;
   collectionId: number = 0;
+  displayFormat: string = 'grid'; // Default display format is 'grid'
 
   constructor(
     private authService: AuthService,
@@ -73,5 +74,9 @@ export class CollectionDetailsComponent implements OnInit {
     } else {
       console.error('Invalid collection ID');
     }
+  }
+  // Method to toggle the display format
+  toggleDisplayFormat(format: string): void {
+    this.displayFormat = format;
   }
 }
