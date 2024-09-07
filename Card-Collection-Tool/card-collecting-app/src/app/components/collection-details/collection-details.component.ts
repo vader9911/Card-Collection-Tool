@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { CollectionsService } from '../../services/collections.service';
 import { Subscription } from 'rxjs';
+import * as bootstrap from 'bootstrap';
 
 @Component({
   selector: 'app-collection-details',
@@ -21,12 +22,13 @@ export class CollectionDetailsComponent implements OnInit {
   routeSubscription?: Subscription;
   collectionId: number = 0;
   displayFormat: string = 'grid'; // Default display format is 'grid'
+  deleteModal: any;
 
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
     private route: ActivatedRoute,
-    private router: Router // Inject Router
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -60,30 +62,32 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
-  // Method to delete the collection with confirmation
-  confirmDeleteCollection(): void {
-    const confirmed = window.confirm('Are you sure you want to delete this collection? This action cannot be undone.');
-    if (confirmed) {
-      this.collectionsService.deleteCollection(this.collectionId).subscribe(
-        () => {
-          console.log('Collection deleted successfully.');
-          alert('Collection has been deleted.'); // Optional: Alert to notify user
-          this.router.navigate(['/collections']); // Redirect to collections list after deletion
-        },
-        (error) => {
-          if (error.status === 401 || error.status === 403) {
-            console.error('You are not authorized to delete this collection.');
-            alert('You are not authorized to delete this collection.');
-          } else if (error.status === 404) {
-            console.error('Collection not found.');
-            alert('Collection not found.');
-          } else {
-            console.error('Error deleting collection:', error);
-            alert('An unexpected error occurred while deleting the collection.');
-          }
-        }
-      );
+  // Method to open the delete confirmation modal
+  openDeleteModal(): void {
+    const deleteModalElement = document.getElementById('deleteModal');
+    if (deleteModalElement) {
+      this.deleteModal = new bootstrap.Modal(deleteModalElement);
+      this.deleteModal.show();
     }
+  }
+
+  // Method to delete the collection
+  deleteCollection(): void {
+    // Hide the modal explicitly before deletion
+    if (this.deleteModal) {
+      this.deleteModal.hide();
+    }
+
+    this.collectionsService.deleteCollection(this.collectionId).subscribe(
+      () => {
+        console.log('Collection deleted successfully.');
+        this.router.navigate(['/collections']); // Redirect to collections list after deletion
+      },
+      (error) => {
+        console.error('Error deleting collection:', error);
+        alert('An unexpected error occurred while deleting the collection.');
+      }
+    );
   }
 
   loadCollectionDetails(): void {
