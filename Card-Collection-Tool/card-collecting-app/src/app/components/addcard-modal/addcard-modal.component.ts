@@ -46,7 +46,7 @@ export class AddToCollectionModalComponent implements OnInit {
 
       this.collectionsService.addCardToCollection(this.selectedCollectionId, this.cardId, this.quantity).subscribe(
         () => {
-          alert('Card added to collection successfully!');
+          //alert('Card added to collection successfully!');
           this.closeModal(); // Close the modal after adding the card
         },
         (error) => {

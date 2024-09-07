@@ -1,33 +1,38 @@
 <div id="addToCollectionModal" class="modal" style="display: none;">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <div class="modal-header border-secondary">
                 <h5 class="modal-title">Add to Collection</h5>
-                <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+                <button type="button" class="close position-absolute" style="top: 10px; right: 10px; color: red; font-size: 16px; border: none; background: transparent;" aria-label="Close" (click)="closeModal()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <!-- Dropdown to select an existing collection -->
-                <label for="selectCollection">Select Existing Collection:</label>
-                <select [(ngModel)]="selectedCollectionId" class="form-control mb-3">
-                    <option *ngFor="let collection of collections" [value]="collection.id">
-                        {{ collection.collectionName }}
-                    </option>
-                </select>
+                <div class="form-group">
+                    <label for="selectCollection" class="text-light">Select Existing Collection:</label>
+                    <select [(ngModel)]="selectedCollectionId" class="form-control mb-3 bg-dark text-light border-secondary">
+                        <option *ngFor="let collection of collections" [value]="collection.id">
+                            {{ collection.collectionName }}
+                        </option>
+                    </select>
+                </div>
 
                 <!-- Input for quantity -->
-                <label for="quantity">Quantity:</label>
-                <input type="number" [(ngModel)]="quantity" min="1" class="form-control mb-3" />
+                <div class="form-group">
+                    <label for="quantity" class="text-light">Quantity:</label>
+                    <input type="number" [(ngModel)]="quantity" min="1" class="form-control mb-3 bg-dark text-light border-secondary" />
+                </div>
 
                 <!-- Button to add to collection -->
-                <button class="btn btn-primary mb-3" (click)="addToCollection()">Add to Selected Collection</button>
-                <hr />
+                <button class="btn btn-primary mb-3 w-100" (click)="addToCollection()">Add to Selected Collection</button>
+                <hr class="bg-secondary" />
 
                 <!-- Create a new collection and add the card -->
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="New Collection Name" #newCollectionName />
-                    <button class="btn btn-success mt-2" (click)="createAndAddToCollection(newCollectionName.value)">
+                    <p>Create a new collection to add this card to:</p>
+                    <input type="text" class="form-control bg-dark text-light border-secondary" placeholder="New Collection Name" #newCollectionName />
+                    <button class="btn btn-success mt-2 w-100" (click)="createAndAddToCollection(newCollectionName.value)">
                         Create and Add to New Collection
                     </button>
                 </div>
