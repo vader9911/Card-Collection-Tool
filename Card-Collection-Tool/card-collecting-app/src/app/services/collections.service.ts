@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, delay, throwError } from 'rxjs';
 import { AuthService } from './auth.service'; // Import the AuthService
 
 @Injectable({
@@ -42,12 +42,18 @@ export class CollectionsService {
       cardIds: [] // Initialize as empty list if there are no cards initially
     });
 
-    return this.http.post<any>(this.baseUrl, body, { headers: this.getAuthHeaders() });
+    return this.http.post<any>(`${this.baseUrl}/create`, body, { headers: this.getAuthHeaders() }).pipe(
+      delay(200), // Add a slight delay (200 ms) to give the server time to commit the data
+      catchError((error) => {
+        console.error('Error creating collection:', error);
+        return throwError(error);
+      })
+    );
   }
 
   // Method to delete a collection by ID
   deleteCollection(collectionId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${collectionId}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<void>(`${this.baseUrl}/${collectionId}`,{ headers: this.getAuthHeaders() });
   }
 
 
