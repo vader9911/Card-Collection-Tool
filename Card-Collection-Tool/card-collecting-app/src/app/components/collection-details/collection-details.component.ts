@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { CollectionsService } from '../../services/collections.service';
 import { Subscription } from 'rxjs';
+import * as bootstrap from 'bootstrap';
 
 @Component({
   selector: 'app-collection-details',
@@ -21,12 +22,13 @@ export class CollectionDetailsComponent implements OnInit {
   routeSubscription?: Subscription;
   collectionId: number = 0;
   displayFormat: string = 'grid'; // Default display format is 'grid'
+  deleteModal: any;
 
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
     private route: ActivatedRoute,
-    private router: Router // Inject Router
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -60,6 +62,34 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
+  // Method to open the delete confirmation modal
+  openDeleteModal(): void {
+    const deleteModalElement = document.getElementById('deleteModal');
+    if (deleteModalElement) {
+      this.deleteModal = new bootstrap.Modal(deleteModalElement);
+      this.deleteModal.show();
+    }
+  }
+
+  // Method to delete the collection
+  deleteCollection(): void {
+    // Hide the modal explicitly before deletion
+    if (this.deleteModal) {
+      this.deleteModal.hide();
+    }
+
+    this.collectionsService.deleteCollection(this.collectionId).subscribe(
+      () => {
+        console.log('Collection deleted successfully.');
+        this.router.navigate(['/collections']); // Redirect to collections list after deletion
+      },
+      (error) => {
+        console.error('Error deleting collection:', error);
+        alert('An unexpected error occurred while deleting the collection.');
+      }
+    );
+  }
+
   loadCollectionDetails(): void {
     if (this.collectionId) {
       this.collectionsService.getCollectionDetails(this.collectionId).subscribe(
@@ -75,6 +105,12 @@ export class CollectionDetailsComponent implements OnInit {
       console.error('Invalid collection ID');
     }
   }
+
+  // Method to navigate to card details page
+  viewCardDetails(cardId: string): void {
+    this.router.navigate(['/cards', cardId, 'details']);
+  }
+
   // Method to toggle the display format
   toggleDisplayFormat(format: string): void {
     this.displayFormat = format;

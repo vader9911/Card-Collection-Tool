@@ -47,7 +47,7 @@ export class AuthService {
     const token = this.getToken();
     if (token) {
       const payload = JSON.parse(atob(token.split('.')[1])); // Decode the JWT payload
-      return payload['sub']; // Assuming the user ID is stored in the 'sub' claim
+      return payload['sub'];
     }
     return null;
   }

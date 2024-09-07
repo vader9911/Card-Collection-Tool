@@ -1,28 +1,36 @@
 <div class="container py-4">
-    <!-- Create Collections Bar -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <input type="text"
-               class="form-control w-50 me-2"
-               placeholder="Enter Collection Name"
-               [(ngModel)]="newCollectionName" />
-        <button class="btn btn-primary" (click)="createCollection()">Create Collection</button>
+   <section class="text-center p-4 mb-5 mx-auto my-2">
+    <div class="container">
+        <h2>Your Collections</h2>
     </div>
+    </section>
+        <!-- Create Collections Bar -->
+        <div class="d-flex justify-content-center align-items-center mb-4">
+            <input type="text" class="form-control w-50 me-2" placeholder="Enter Collection Name" [(ngModel)]="newCollectionName" />
+            <button class="btn btn-outline-success text-light" (click)="createCollection()">Create New Collection</button>
+        </div>
 
-    <!-- Collection Cards Grid -->
-    <div class="container py-4">
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-            <!-- Loop through collections and display each one as a card -->
-            <div class="col" *ngFor="let collection of collections">
-                <div class="card h-100 shadow-sm" (click)="goToCollectionDetails(collection.id) ">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ collection.collectionName }}</h5>
+        <!-- Collection Cards Grid -->
+        <div class="container py-4">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+                <!-- Loop through collections and display each one as a card -->
+                <div class="col" *ngFor="let collection of collections">
+                    <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden"
+                         (click)="goToCollectionDetails(collection.id)"
+                         [style.backgroundImage]="'url(' + (cardImages[collection.id] || defaultImageUrl) + ')'"
+                         style="background-size: cover; background-position: center; aspect-ratio: 3/4; width: 100%;">
+
+                        <!-- Info Box with Gradient Background -->
+                        <div class="info-box p-3 pb-5 text-light">
+                            <h3 class="card-title text-capitalize mb-1">{{ collection.collectionName }}</h3>
+                            <p class="medium mb-0">{{ collection.cardIds.length }} Cards</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <ng-template #notLoggedIn>
+            <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view your collections.</p>
+        </ng-template>
     </div>
-
-    <ng-template #notLoggedIn>
-        <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view your collections.</p>
-    </ng-template>
-

@@ -31,19 +31,25 @@ public class CollectionsController : ControllerBase
 
     // GET: api/Collections/5
     [HttpGet("{collectionId}")]
-    public async Task<ActionResult<UserCardCollection>> GetUserCardCollection(int collectionId)
+    public async Task<ActionResult<UserCardCollection>> GetUserCardCollection(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userCardCollection = await _context.UserCardCollections
-            .FirstOrDefaultAsync(c => c.Id == collectionId && c.UserId == userId);
 
+        // Ensure the user is authenticated
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User is not authenticated.");
+        }
+
+        var userCardCollection = await _context.UserCardCollections
+            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
         if (userCardCollection == null)
         {
             return NotFound();
         }
 
-        return userCardCollection;
+        return Ok(userCardCollection);
     }
 
     //// PUT: api/Collections/5
@@ -83,28 +89,23 @@ public class CollectionsController : ControllerBase
     //}
 
     // POST: api/Collections
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<ActionResult<UserCardCollection>> PostUserCardCollection([FromBody] UserCardCollection userCardCollection)
     {
-        // Retrieve the authenticated user's ID
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Ensure the user is authenticated
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized("User is not authenticated.");
         }
 
-        // Set the UserId from the authenticated user's claims
         userCardCollection.UserId = userId;
 
-        // Validate that the collection name is provided
         if (string.IsNullOrEmpty(userCardCollection.CollectionName))
         {
             return BadRequest("Collection name cannot be empty.");
         }
 
-        // Check if a collection with the same name already exists for this user
         var existingCollection = await _context.UserCardCollections
             .FirstOrDefaultAsync(c => c.UserId == userId && c.CollectionName == userCardCollection.CollectionName);
 
@@ -116,7 +117,8 @@ public class CollectionsController : ControllerBase
         _context.UserCardCollections.Add(userCardCollection);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetUserCardCollection", new { id = userCardCollection.Id }, userCardCollection);
+        // Correctly reference the action and provide necessary parameters
+        return Ok(userCardCollection);
     }
 
     // DELETE: api/Collections/5
@@ -217,10 +219,13 @@ public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody
                 card.Id,
                 card.Name,
                 ImageUri = card.ImageUris.Normal,
-                card.ManaCost, // Example: Additional property for card mana cost
-                card.TypeLine, // Example: Additional property for card type
-                card.OracleText // Example: Additional property for card description
-                                // Add more fields as needed
+                card.ManaCost,
+                card.TypeLine,
+                card.OracleText,
+                card.SetName,
+                card.Artist,
+                card.Rarity,
+                Prices = card.Prices.USD
             })
             .ToListAsync();
 

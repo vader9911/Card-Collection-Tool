@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, exhaustMap, filter, catchError } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service'; // Import ApiService
 import { CardListComponent } from '../card-list/card-list.component'
 import { Observable, of } from 'rxjs';
+import { SearchService } from '../../services/search.service';
 
 @Component({
   selector: 'app-card-search',
@@ -20,12 +21,13 @@ import { Observable, of } from 'rxjs';
   providers: [ApiService]
 })
 export class CardSearchComponent implements OnInit {
+  @Output() searchTermChanged = new EventEmitter<string>(); // Output event to emit search term
   searchControl = new FormControl(''); // Reactive form control for the search input
   cards: any[] = []; // Holds the search results
   searchPerformed = false; // Flag to check if a search was performed
   noResultsReturned = false // Flag to check if any results were found
   errorMessage: string = ''; // To display error messages to the user
-  constructor(private ApiService: ApiService) { }
+  constructor(private ApiService: ApiService, private searchService: SearchService) { }
 
   ngOnInit() {
     this.searchControl.valueChanges
@@ -70,4 +72,12 @@ export class CardSearchComponent implements OnInit {
     this.searchPerformed = false;
     this.errorMessage = '';
   }
+
+  onSearch(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    const term = inputElement.value;
+    this.searchTermChanged.emit(term);
+    this.searchService.setSearchActive(!!term); // Update the service with the search state
+  }
+
 }
