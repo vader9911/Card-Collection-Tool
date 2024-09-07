@@ -75,6 +75,12 @@ export class CollectionDetailsComponent implements OnInit {
       console.error('Invalid collection ID');
     }
   }
+
+  // Method to navigate to card details page
+  viewCardDetails(cardId: string): void {
+    this.router.navigate(['/cards', cardId, 'details']);
+  }
+
   // Method to toggle the display format
   toggleDisplayFormat(format: string): void {
     this.displayFormat = format;
