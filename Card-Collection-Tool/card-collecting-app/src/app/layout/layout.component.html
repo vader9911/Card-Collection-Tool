@@ -36,7 +36,10 @@
     </header>
 
     <!-- Welcome Section (only shown on home page) -->
-    <section *ngIf="isHomePage" class="welcome-section text-center p-5 mx-auto my-4">
+    <section *ngIf="showWelcomeSection"
+             [ngClass]="{'hidden': searchActive}"
+             (transitionend)="handleTransitionEnd()"
+             class="welcome-section text-center p-5 mx-auto my-4">
         <div class="container">
             <h1>Welcome to Mana Codex</h1>
             <p>Discover, collect, and manage your card collection with ease.</p>
@@ -44,12 +47,11 @@
         </div>
     </section>
 
-    <main class="container flex-grow-1 pb-3 pt-5 mt-5 text-light">
-
+    <main class="container flex-grow-1 pb-3 pt-5 text-light">
         <router-outlet></router-outlet>
     </main>
 
-    <footer class="border-top footer text-muted bg-dark">
+    <footer class="border-top footer text-light bg-dark">
         <div class="container p-5">
             &copy; 2024 - Card Collection Tool - <a routerLink="/privacy" class="text-secondary">Privacy</a>
         </div>
