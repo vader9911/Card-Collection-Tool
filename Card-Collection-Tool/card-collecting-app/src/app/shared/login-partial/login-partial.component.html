@@ -1,11 +1,11 @@
 <div class="d-flex align-items-center justify-content-end">
     <ng-container *ngIf="isAuthenticated; else guestLinks">
         <span class="me-3">Hello, {{ userName }}!</span>
-        <button (click)="logout()" class="btn btn-outline-danger btn-sm">Log out</button>
+        <a (click)="logout()" class="nav-link text-light">Log out</a>
     </ng-container>
 
     <ng-template #guestLinks>
-        <button class="btn btn-primary btn-sm me-2" (click)="goToRegister()">Register</button>
-        <button class="btn btn-success btn-sm" (click)="goToLogin()">Log in</button>
+        <a class="nav-link text-light me-2" (click)="goToRegister()">Register</a>
+        <a class="nav-link text-light" (click)="goToLogin()">Log in</a>
     </ng-template>
 </div>
