@@ -217,10 +217,13 @@ public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody
                 card.Id,
                 card.Name,
                 ImageUri = card.ImageUris.Normal,
-                card.ManaCost, // Example: Additional property for card mana cost
-                card.TypeLine, // Example: Additional property for card type
-                card.OracleText // Example: Additional property for card description
-                                // Add more fields as needed
+                card.ManaCost,
+                card.TypeLine,
+                card.OracleText,
+                card.SetName,
+                card.Artist,
+                card.Rarity,
+                Prices = card.Prices.USD
             })
             .ToListAsync();
 

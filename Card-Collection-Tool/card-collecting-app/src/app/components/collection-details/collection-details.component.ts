@@ -60,6 +60,32 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
+  // Method to delete the collection with confirmation
+  confirmDeleteCollection(): void {
+    const confirmed = window.confirm('Are you sure you want to delete this collection? This action cannot be undone.');
+    if (confirmed) {
+      this.collectionsService.deleteCollection(this.collectionId).subscribe(
+        () => {
+          console.log('Collection deleted successfully.');
+          alert('Collection has been deleted.'); // Optional: Alert to notify user
+          this.router.navigate(['/collections']); // Redirect to collections list after deletion
+        },
+        (error) => {
+          if (error.status === 401 || error.status === 403) {
+            console.error('You are not authorized to delete this collection.');
+            alert('You are not authorized to delete this collection.');
+          } else if (error.status === 404) {
+            console.error('Collection not found.');
+            alert('Collection not found.');
+          } else {
+            console.error('Error deleting collection:', error);
+            alert('An unexpected error occurred while deleting the collection.');
+          }
+        }
+      );
+    }
+  }
+
   loadCollectionDetails(): void {
     if (this.collectionId) {
       this.collectionsService.getCollectionDetails(this.collectionId).subscribe(

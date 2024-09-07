@@ -3,6 +3,9 @@
     <div *ngIf="collectionDetails; else noCollectionDetails">
         <h2>{{ collectionDetails.collectionName }}</h2>
 
+        <!-- Delete Collection Button -->
+        <button class="btn btn-danger mb-3" (click)="confirmDeleteCollection()">Delete Collection</button>
+
         <!-- Toggle buttons for display formats -->
         <div class="mb-3">
             <button class="btn btn-primary me-2" (click)="toggleDisplayFormat('grid')">Grid View</button>

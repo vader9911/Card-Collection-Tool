@@ -33,6 +33,7 @@ export class CollectionsService {
     return this.http.get<any>(`${this.baseUrl}/${collectionId}/details`,{ headers: this.getAuthHeaders() });
   }
 
+  // Method to create a collection
   createCollection(collectionName: string): Observable<any> {
     const userId = this.authService.getUserId(); // Retrieve the user ID from AuthService
     const body = JSON.stringify({
@@ -42,6 +43,11 @@ export class CollectionsService {
     });
 
     return this.http.post<any>(this.baseUrl, body, { headers: this.getAuthHeaders() });
+  }
+
+  // Method to delete a collection by ID
+  deleteCollection(collectionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${collectionId}`, { headers: this.getAuthHeaders() });
   }
 
 
