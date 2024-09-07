@@ -64,9 +64,9 @@ export class CollectionsComponent implements OnInit {
 
   // Method to get the first card image URL from the collection
   getFirstCardImage(collection: any): string {
-    if (collection.cardIds && collection.cardIds.length > 0) {
-      // Replace with actual logic to fetch card image based on card ID
-      return `https://your-image-source.com/cards/${collection.cardIds[0]}.jpg`;
+    if (collection.cards && collection.cards.length > 0) {
+      // Assuming collection.cards is an array of card objects and each card has an 'imageUrl' property
+      return collection.cards[0].imageUrl;
     }
     return this.defaultImageUrl; // Return default image if no cards
   }

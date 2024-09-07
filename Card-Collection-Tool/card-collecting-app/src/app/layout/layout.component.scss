@@ -13,4 +13,35 @@
 
 .main {
   padding-top: 3rem;
+ 
 }
+
+//body {
+//     background: linear-gradient(180deg, rgba(20, 20, 20, 0.8), transparent);
+//}
+
+.welcome-section {
+    background: linear-gradient(135deg, #3c2a63, #1b2c52); 
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), 0 0 10px rgba(27, 44, 82, 0.2); 
+    padding: 30px;
+    max-width: 800px;
+    color: #e0e0e0; 
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.welcome-section h1 {
+    
+    font-size: 2.6rem;
+    color: #dcdcdc;
+    margin-bottom: 10px;
+}
+
+.welcome-section p {
+    font-family: 'Crimson Text', serif;
+    font-size: 1.4rem;
+    color: #b0b0b0;
+}
+

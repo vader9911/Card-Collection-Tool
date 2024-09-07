@@ -23,6 +23,11 @@ export class CollectionsService {
     return this.http.get<any[]>(this.baseUrl, { headers: this.getAuthHeaders() });
   }
 
+  // Fetch card details by ID (new method)
+  getCardById(cardId: string): Observable<any> {
+    return this.http.get<any>(`/api/cards/${cardId}`);
+  }
+
   // Fetch details of a specific collection
   getCollectionDetails(collectionId: number | string): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/${collectionId}/details`,{ headers: this.getAuthHeaders() });
@@ -55,4 +60,7 @@ export class CollectionsService {
       }
     });
   }
+
+  
+
 }

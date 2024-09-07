@@ -1,8 +1,8 @@
 <body class="d-flex flex-column min-vh-100 bg-dark text-light">
     <header class="header-transparent position-relative">
         <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand text-light" routerLink="/">Card Collection Tool</a>
+            <div class="container">
+                <a class="navbar-brand text-light" routerLink="/">Mana Codex</a>
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
@@ -20,20 +20,32 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" [routerLink]="'/collections'">Collections</a>
                         </li>
+                        <!--
                         <li class="nav-item">
                             <a class="nav-link text-light" [routerLink]="'/privacy'">Privacy</a>
                         </li>
+                        -->
                     </ul>
-                   
+
                     <div class="vr mx-2 text-light"></div>
-                    
+
                     <app-login-partial></app-login-partial>
                 </div>
             </div>
         </nav>
     </header>
 
+    <!-- Welcome Section (only shown on home page) -->
+    <section *ngIf="isHomePage" class="welcome-section text-center p-5 mx-auto my-4">
+        <div class="container">
+            <h1>Welcome to Mana Codex</h1>
+            <p>Discover, collect, and manage your card collection with ease.</p>
+            <p>To get started, simply search for a card below. To start managing your collections, please login.</p>
+        </div>
+    </section>
+
     <main class="container flex-grow-1 pb-3 pt-5 mt-5 text-light">
+
         <router-outlet></router-outlet>
     </main>
 

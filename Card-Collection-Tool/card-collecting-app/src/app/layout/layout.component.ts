@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoginComponent } from '../components/login/login.component';
@@ -28,7 +28,11 @@ import { CardListComponent } from '../components/card-list/card-list.component';
   styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent {
-  constructor() {
-    console.log('LayoutComponent loaded');
+  isHomePage: boolean = false;
+
+  constructor(private router: Router) {
+    this.router.events.subscribe(() => {
+      this.isHomePage = this.router.url === '/';
+    });
   }
 }
