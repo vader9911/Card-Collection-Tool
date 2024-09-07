@@ -1,47 +1,42 @@
-<body class="d-flex flex-column min-vh-100">
-  <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-      <div class="container-fluid">
-        <!-- Navbar brand with routerLink to home -->
-        <a class="navbar-brand" routerLink="/">Card Collection Tool</a>
-        <!-- Navbar toggler for mobile view -->
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target=".navbar-collapse"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <!-- Navbar links and login partial -->
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-          <ul class="navbar-nav flex-grow-1">
-            <li class="nav-item">
-              <a class="nav-link text-dark" [routerLink]="'/'">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" [routerLink]="'/collections'">Collections</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" [routerLink]="'/privacy'">Privacy</a>
-            </li>
-          </ul>
-          <app-login-partial></app-login-partial>
+<body class="d-flex flex-column min-vh-100 bg-dark text-light">
+    <header class="header-transparent position-relative">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand text-light" routerLink="/">Card Collection Tool</a>
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-end">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" [routerLink]="'/'">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" [routerLink]="'/collections'">Collections</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" [routerLink]="'/privacy'">Privacy</a>
+                        </li>
+                    </ul>
+                    <app-login-partial></app-login-partial>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container flex-grow-1 pb-3 pt-5 mt-5 text-light">
+        <router-outlet></router-outlet>
+    </main>
+
+    <footer class="border-top footer text-muted bg-dark">
+        <div class="container p-5">
+            &copy; 2024 - Card Collection Tool - <a routerLink="/privacy" class="text-secondary">Privacy</a>
         </div>
-      </div>
-    </nav>
-  </header>
-
-  <main class="container flex-grow-1 pb-3">
-    <router-outlet></router-outlet>
-  </main>
-
-  <footer class="border-top footer text-muted">
-    <div class="container p-5">
-      &copy; 2024 - Card Collection Tool - <a routerLink="/privacy">Privacy</a>
-    </div>
-  </footer>
+    </footer>
 </body>
