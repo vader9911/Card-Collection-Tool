@@ -58,7 +58,7 @@ namespace Card_Collection_Tool
             {
                 options.AddPolicy("AllowSpecificOrigins", builder =>
                 {
-                    builder.WithOrigins("http://localhost:4200 && http://localhost:4200/collections") // Replace with your Angular front end URL
+                    builder.WithOrigins("http://localhost:4200")
                            .AllowAnyMethod()
                            .AllowAnyHeader()
                            .AllowCredentials();
