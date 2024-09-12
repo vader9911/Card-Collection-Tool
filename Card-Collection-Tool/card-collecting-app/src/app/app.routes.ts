@@ -10,12 +10,16 @@ import { CardSearchComponent } from './components/card-search/card-search.compon
 import { CollectionsOverviewComponent } from './components/collection-overview/collection-overview.component';
 import { CollectionDetailsComponent } from './components/collection-details/collection-details.component';
 import { CardDetailsComponent } from './components/card-details/card-details.component';
-
+import { DashboardComponent } from '../app/components/dashboard/dashboard.component' 
 
 export const appRoutes: Routes = [
-  {
-    path: '', component: CardSearchComponent, // Main layout with the card search bar
+  { path: '', component: DashboardComponent,
+    children: [
+      { path: 'collections', component: CollectionsComponent },
+      { path: 'search', component: CardSearchComponent }
+    ]
   },
+
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'collections', component: CollectionsComponent, canActivate: [AuthGuard] },

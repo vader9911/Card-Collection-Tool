@@ -1,0 +1,19 @@
+<div class="container-fluid p-0 d-flex">
+    <!-- Sidebar Section -->
+    <div class="sidebar bg-dark text-light p-3" [ngClass]="{ 'collapsed': isSidebarCollapsed }">
+        <h5 class="cursor-pointer" (click)="toggleSidebar()">Dashboard</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link text-light" routerLink="/collections" (click)="expandMainContent()">My Collections</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" routerLink="/search" (click)="expandMainContent()">Search Cards</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="main-content p-3 flex-grow-1" [ngClass]="{ 'expanded': isSidebarCollapsed }">
+        <router-outlet></router-outlet> <!-- Child routes will render here -->
+    </div>
+</div>
