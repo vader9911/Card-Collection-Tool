@@ -13,13 +13,7 @@ import { CardDetailsComponent } from './components/card-details/card-details.com
 import { DashboardComponent } from '../app/components/dashboard/dashboard.component' 
 
 export const appRoutes: Routes = [
-  { path: '', component: DashboardComponent,
-    children: [
-      { path: 'collections', component: CollectionsComponent },
-      { path: 'search', component: CardSearchComponent }
-    ]
-  },
-
+  { path: '', component: CardSearchComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'collections', component: CollectionsComponent, canActivate: [AuthGuard] },

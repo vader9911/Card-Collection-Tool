@@ -22,6 +22,7 @@ import { SearchService } from '../../services/search.service';
 })
 export class CardSearchComponent implements OnInit {
   @Output() searchTermChanged = new EventEmitter<string>(); // Output event to emit search term
+  @Output() searchEvent = new EventEmitter<void>();
   searchControl = new FormControl(''); // Reactive form control for the search input
   cards: any[] = []; // Holds the search results
   searchPerformed = false; // Flag to check if a search was performed
@@ -75,6 +76,10 @@ export class CardSearchComponent implements OnInit {
 
   onSearch(event: Event) {
     const inputElement = event.target as HTMLInputElement;
+
+    this.searchPerformed = true;
+    this.searchEvent.emit();
+
     const term = inputElement.value;
     this.searchTermChanged.emit(term);
     this.searchService.setSearchActive(!!term); // Update the service with the search state

@@ -6,6 +6,7 @@ import { CardSearchComponent } from '../../components/card-search/card-search.co
 import { CardListComponent } from '../../components/card-list/card-list.component';
 import { SearchService } from '../../services/search.service';
 import { AuthService } from '../../services/auth.service';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -20,13 +21,23 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
-  isSidebarCollapsed: boolean = false;
+  isSidebarCollapsed: boolean = false; // Track whether the sidebar is collapsed
+  isSearchExpanded: boolean = false; // Track whether the search view is expanded
 
+  // Toggle the sidebar's collapsed state
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
-  expandMainContent(): void {
-    this.isSidebarCollapsed = true;
+  // Handle search event to expand the search view
+  handleSearch(): void {
+    this.isSearchExpanded = true; // Set the state to expand the search view
+    this.isSidebarCollapsed = true; // Automatically collapse sidebar when search is expanded
+  }
+
+  // Method to reset the view to show both columns
+  resetView(): void {
+    this.isSearchExpanded = false; // Reset state to collapse the search view
+    this.isSidebarCollapsed = false; // Reset sidebar to its expanded state
   }
 }

@@ -67,6 +67,10 @@ export class LayoutComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/']); // Redirect to home page after logout
   }
+
+  collections() {
+    this.router.navigate(['/collections']);
+  }
 }
 
   //ngOnInit() {

@@ -12,12 +12,15 @@
                             <a class="nav-link text-light" (click)="logout()">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-light" (click)="logout()">Collections</a>
+                            <a class="nav-link text-light" (click)="collections()">Collections</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-light" (click)="logout()">Account</a>
+                            <a class="nav-link text-light " (click)="logout()">Account</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="border-end mx-4">
+
+                        </li>
+                        <li class="nav-item ">
                             <a class="nav-link text-light" (click)="logout()">Logout</a>
                         </li>
                     </ul>
@@ -29,7 +32,7 @@
     <!-- Main Content -->
     <main class="container flex-grow-1 pb-3 pt-5 text-light">
         <!-- Conditional Content Based on Authentication -->
-        <div *ngIf="!isLoggedIn; else dashboardContent">
+        <div *ngIf="!isLoggedIn; else mainContent">
             <!-- About and Login/Register Section -->
             <section class="text-center p-5 mx-auto my-4">
                 <h1 class="fs-1 fw-bolder m-5">Welcome to Mana Codex!</h1>
@@ -47,7 +50,7 @@
         </div>
 
         
-        <ng-template #dashboardContent>
+        <ng-template #mainContent>
             <router-outlet></router-outlet>
         </ng-template>
     </main>

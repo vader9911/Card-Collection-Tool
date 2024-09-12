@@ -1,19 +1,27 @@
 <div class="container-fluid p-0 d-flex">
-    <!-- Sidebar Section -->
-    <div class="sidebar bg-dark text-light p-3" [ngClass]="{ 'collapsed': isSidebarCollapsed }">
-        <h5 class="cursor-pointer" (click)="toggleSidebar()">Dashboard</h5>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link text-light" routerLink="/collections" (click)="expandMainContent()">My Collections</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-light" routerLink="/search" (click)="expandMainContent()">Search Cards</a>
-            </li>
-        </ul>
-    </div>
+  <!-- Collections Sidebar -->
+  <div 
+    class="collections-sidebar bg-dark text-light p-3 position-relative"
+    [ngClass]="{'collapsed': isSidebarCollapsed, 'expanded': !isSidebarCollapsed}">
+    <!-- Retract/Expand Button -->
+    <button 
+      class="toggle-btn btn bg-black"
+      (click)="toggleSidebar()"
+    >
+      <i [ngClass]="{'fas fa-chevron-left': !isSidebarCollapsed, 'fas fa-chevron-right': isSidebarCollapsed}"></i> <!-- Dynamic Arrow Icon -->
+    </button>
 
-    <!-- Main Content Section -->
-    <div class="main-content p-3 flex-grow-1" [ngClass]="{ 'expanded': isSidebarCollapsed }">
-        <router-outlet></router-outlet> <!-- Child routes will render here -->
+    <!-- Sidebar Content -->
+    <div *ngIf="!isSidebarCollapsed">
+      <h5>My Collections</h5>
+      <app-collections></app-collections>
     </div>
+  </div>
+
+  <!-- Search Column -->
+  <div 
+    class="search-view text-dark p-3 flex-grow-1"
+    [ngClass]="{'col-12': isSidebarCollapsed, 'col-md-8': !isSidebarCollapsed}">
+    <app-card-search (searchEvent)="handleSearch()"></app-card-search>
+  </div>
 </div>
