@@ -1,13 +1,39 @@
-<div class="container mt-5 ">
-    <div class="row justify-content-center">
-        <div class="col-md-9">
-            <input type="text" class="form-control form-control-lg rounded-pill shadow-sm" [formControl]="searchControl" (input)="onSearch($event)" placeholder="Search for a card to get started..." />
+<div class="container mt-5">
+    <!-- Central Search Bar -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <input type="text"
+                   class="form-control form-control-lg rounded-pill shadow-sm"
+                   [formControl]="searchControl"
+                   (input)="onSearch($event)"
+                   placeholder="Search for a card..." />
         </div>
     </div>
-</div>
 
+    <!-- Filter and Sort Options -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 d-flex justify-content-between">
+            <!-- Filters Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Filter
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                    <li><a class="dropdown-item" href="#" (click)="filterResults('type')">Type</a></li>
+                    <li><a class="dropdown-item" href="#" (click)="filterResults('rarity')">Rarity</a></li>
+                    <li><a class="dropdown-item" href="#" (click)="filterResults('set')">Set</a></li>
+                </ul>
+            </div>
 
-<!-- Display the card list component and pass the search results -->
-<div class="d-flex justify-content-center p-4">
-    <app-card-list [cards]="cards" [searchPerformed]="searchPerformed" [noResultsReturned]="noResultsReturned"></app-card-list>
-</div>
+            <!-- Sort Options -->
+            <div>
+                <button class="btn btn-outline-secondary" (click)="sortResults('name')">Sort by Name</button>
+                <button class="btn btn-outline-secondary" (click)="sortResults('date')">Sort by Date</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display the card list component and pass the search results -->
+    <div class="d-flex justify-content-center p-4">
+        <app-card-list [cards]="cards" [searchPerformed]="searchPerformed" [noResultsReturned]="noResultsReturned"></app-card-list>
+    </div>

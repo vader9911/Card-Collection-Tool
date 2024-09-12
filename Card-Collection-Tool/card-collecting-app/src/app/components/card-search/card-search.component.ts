@@ -85,4 +85,17 @@ export class CardSearchComponent implements OnInit {
     this.searchService.setSearchActive(!!term); // Update the service with the search state
   }
 
+
+  // Filter results based on selected filter
+  filterResults(filter: string): void {
+    // Update filters and apply them to search logic
+  }
+
+  // Sort results by selected criteria
+  sortResults(criteria: string): void {
+    // Implement sort logic here
+  }
+
+
+
 }
