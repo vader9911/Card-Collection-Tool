@@ -21,32 +21,59 @@ namespace Card_Collection_Tool.Controllers
         }
 
         // Endpoint for autocomplete search
-        [HttpGet("autocomplete")]
-        public async Task<IActionResult> AutocompleteSearch(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                return BadRequest("Query cannot be empty.");
+        //[HttpGet("autocomplete")]
+        //public async Task<IActionResult> AutocompleteSearch(string query)
+        //{
+        //    if (string.IsNullOrWhiteSpace(query))
+        //        return BadRequest("Query cannot be empty.");
 
-            var autocompleteResults = await _scryfallService.GetAutocompleteResultsAsync(query);
+        //    var autocompleteResults = await _scryfallService.GetAutocompleteResultsAsync(query);
+
+        //    var matchingCards = await _context.ScryfallCards
+        //        .Where(card => autocompleteResults.Contains(card.Name))
+        //        .GroupBy(card => card.Name)
+        //        .Select(group => group.OrderByDescending(c => c.ReleaseDate).FirstOrDefault())
+        //        .ToListAsync();
+
+        //    var result = matchingCards
+        //        .Where(card => card != null && card.ImageUris != null)
+        //        .Select(card => new
+        //        {
+        //            id = card.Id,
+        //            name = card.Name,
+        //            imageUri = card.ImageUris.Png ?? card.ImageUris.Large ?? card.ImageUris.Normal ?? "default-image-url.png"
+        //        })
+        //        .ToList();
+
+        //    return Ok(result); // Return as JSON
+        //}
+
+        [HttpGet("autocomplete")]
+        public async Task<IActionResult> GetCardAutocomplete([FromQuery] string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return BadRequest("Search cannot be empty.");
+            }
 
             var matchingCards = await _context.ScryfallCards
-                .Where(card => autocompleteResults.Contains(card.Name))
-                .GroupBy(card => card.Name)
-                .Select(group => group.OrderByDescending(c => c.ReleaseDate).FirstOrDefault())
-                .ToListAsync();
-
-            var result = matchingCards
-                .Where(card => card != null && card.ImageUris != null)
+                .Where(card => card.Name.Contains(query))
+                .OrderBy(card => card.Name)
                 .Select(card => new
                 {
                     id = card.Id,
                     name = card.Name,
                     imageUri = card.ImageUris.Png ?? card.ImageUris.Large ?? card.ImageUris.Normal ?? "default-image-url.png"
                 })
-                .ToList();
+                .Take(20)
+                .Distinct()
+                .ToListAsync();
 
-            return Ok(result); // Return as JSON
+          
+
+            return Ok(matchingCards);
         }
+
 
         // GET: api/cards/{cardId}
         [HttpGet("{cardId}/details")]
