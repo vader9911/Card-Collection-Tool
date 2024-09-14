@@ -30,6 +30,7 @@ namespace Card_Collection_Tool.Data
             // Configure ImageUris as an owned entity type
             modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.ImageUris);
             modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.Prices);
+            modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.Legalities);
             modelBuilder.Entity<UserCardCollection>()
                 .Property(c => c.CardIds)
                 .HasConversion(

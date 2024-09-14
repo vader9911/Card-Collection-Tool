@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 public class ScryfallCard
 {
@@ -14,14 +15,26 @@ public class ScryfallCard
     [JsonPropertyName("mana_cost")]
     public string? ManaCost { get; set; }
 
-    [JsonPropertyName("set_name")]
-    public string? SetName { get; set; }
+    [JsonPropertyName("cmc")]
+    public float? Cmc { get; set; } // Converted Mana Cost
 
     [JsonPropertyName("type_line")]
     public string? TypeLine { get; set; }
 
-    [JsonPropertyName("scryfall_uri")]
-    public string? ScryfallUri { get; set; }
+    [JsonPropertyName("set_name")]
+    public string? SetName { get; set; }
+
+    [JsonPropertyName("set")]
+    public string? Set { get; set; }
+
+    [JsonPropertyName("set_id")]
+    public string? SetId { get; set; }
+
+    [JsonPropertyName("rarity")]
+    public string? Rarity { get; set; }
+
+    [JsonPropertyName("released_at")]
+    public string? ReleaseDate { get; set; }
 
     [JsonPropertyName("flavor_text")]
     public string? FlavorText { get; set; }
@@ -29,22 +42,68 @@ public class ScryfallCard
     [JsonPropertyName("artist")]
     public string? Artist { get; set; }
 
-    [JsonPropertyName("rarity")]
+    [JsonPropertyName("collector_number")]
+    public string? CollectorNumber { get; set; }
 
-    public string? Rarity { get; set; }
+    [JsonPropertyName("digital")]
+    public bool? Digital { get; set; }
 
-    [JsonPropertyName("released_at")]
+    [JsonPropertyName("full_art")]
+    public bool? FullArt { get; set; }
 
-    public string? ReleaseDate { get; set; }
+    [JsonPropertyName("games")]
+    public List<string>? Games { get; set; }
+
+    [JsonPropertyName("image_uris")]
+    public ImageUris? ImageUris { get; set; }
+
+    [JsonPropertyName("colors")]
+    public List<string>? Colors { get; set; }
+
+    [JsonPropertyName("color_identity")]
+    public List<string>? ColorIdentity { get; set; }
 
     [JsonPropertyName("keywords")]
     public List<string>? Keywords { get; set; }
 
-    [JsonPropertyName("image_uris")]
-    public ImageUris? ImageUris { get; set; } // This will not directly map to a DB column
+    [JsonPropertyName("legalities")]
+    public Legalities? Legalities { get; set; }
+
+    [JsonPropertyName("power")]
+    public string? Power { get; set; }
+
+    [JsonPropertyName("toughness")]
+    public string? Toughness { get; set; }
+
+    [JsonPropertyName("reprint")]
+    public bool? Reprint { get; set; }
+
+    [JsonPropertyName("variation")]
+    public bool? Variation { get; set; }
+
+    [JsonPropertyName("variation_of")]
+    public string? VariationOf { get; set; }
 
     [JsonPropertyName("prices")]
     public Prices? Prices { get; set; }
+
+    [JsonPropertyName("scryfall_uri")]
+    public string? ScryfallUri { get; set; }
+}
+
+public class Legalities
+{
+    [JsonPropertyName("legal")]
+    public string? Legal { get; set; }
+
+    [JsonPropertyName("not_legal")]
+    public string? NotLegal { get; set; }
+
+    [JsonPropertyName("restricted")]
+    public string? Restricted { get; set; }
+
+    [JsonPropertyName("banned")]
+    public string? Banned { get; set; }
 }
 
 
@@ -64,13 +123,13 @@ public class ImageUris
 }
 
 public class Prices
-    {
-        [JsonPropertyName("usd")]
-        public string? USD { get; set; }
+{
+    [JsonPropertyName("usd")]
+    public string? USD { get; set; }
 
-        [JsonPropertyName("usd_foil")]
-        public string? USDFoil { get; set; }
+    [JsonPropertyName("usd_foil")]
+    public string? USDFoil { get; set; }
 
-        [JsonPropertyName("usd_etched")]
-        public string? USDEtched { get; set; }
+    [JsonPropertyName("usd_etched")]
+    public string? USDEtched { get; set; }
 }
