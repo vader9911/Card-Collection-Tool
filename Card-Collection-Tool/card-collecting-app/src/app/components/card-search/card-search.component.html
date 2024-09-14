@@ -5,35 +5,42 @@
             <input type="text"
                    class="form-control form-control-lg rounded-pill shadow-sm"
                    [formControl]="searchControl"
-                   (input)="onSearch($event)"
-                   placeholder="Search for a card..." />
+                   placeholder="Search for a card by name..." />
         </div>
     </div>
 
-    <!-- Filter and Sort Options -->
+    <!-- Filter Options -->
     <div class="row justify-content-center mb-4">
-        <div class="col-md-8 d-flex justify-content-between">
-            <!-- Filters Dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    Filter
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
-                    <li><a class="dropdown-item" href="#" (click)="filterResults('type')">Type</a></li>
-                    <li><a class="dropdown-item" href="#" (click)="filterResults('rarity')">Rarity</a></li>
-                    <li><a class="dropdown-item" href="#" (click)="filterResults('set')">Set</a></li>
-                </ul>
-            </div>
-
-            <!-- Sort Options -->
-            <div>
-                <button class="btn btn-outline-secondary" (click)="sortResults('name')">Sort by Name</button>
-                <button class="btn btn-outline-secondary" (click)="sortResults('date')">Sort by Date</button>
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col">
+                    <input type="text" class="form-control" [formControl]="typeControl" placeholder="Type (e.g., Creature, Sorcery)" />
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" [formControl]="oracleTextControl" placeholder="Oracle Text" />
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Display the card list component and pass the search results -->
-    <div class="d-flex justify-content-center p-4">
-        <app-card-list [cards]="cards" [searchPerformed]="searchPerformed" [noResultsReturned]="noResultsReturned"></app-card-list>
+    <!-- Checkbox to Show All Versions -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <div class="form-check">
+                <input type="checkbox"
+                       class="form-check-input"
+                       id="showAllVersionsCheckbox"
+                       [(ngModel)]="showAllVersions"
+                       (change)="toggleShowAllVersions()" />
+                <label class="form-check-label" for="showAllVersionsCheckbox">Show All Versions</label>
+            </div>
+        </div>
     </div>
+
+    <!-- Search Results Section -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <app-card-list [cards]="cards"></app-card-list>
+        </div>
+    </div>
+</div>

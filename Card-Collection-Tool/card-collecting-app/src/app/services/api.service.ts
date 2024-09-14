@@ -10,11 +10,7 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  // Method to call the autocomplete endpoint
-  searchCards(query: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/autocomplete?query=${query}`);
-  }
-
+ 
   // Method to fetch card details by ID
   getCardDetails(cardId: string): Observable<any> {
     console.log(cardId);
