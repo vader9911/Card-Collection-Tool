@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Data;
+using Microsoft.AspNetCore.Mvc;
 using Card_Collection_Tool.Data;
 using Card_Collection_Tool.Services;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Card_Collection_Tool.Controllers
 {
@@ -20,93 +24,69 @@ namespace Card_Collection_Tool.Controllers
             _scryfallService = scryfallService;
         }
 
-
-
         [HttpGet("search")]
         public async Task<IActionResult> SearchCards(
-     [FromQuery] string query,
-     [FromQuery] bool showAllVersions,
-     [FromQuery] string type = null,
-     [FromQuery] string oracleText = null)
+ 
+  )
         {
-            if (string.IsNullOrEmpty(query))
-            {
-                return BadRequest("Query parameter is required.");
-            }
+            var sql = new StringBuilder("SELECT * FROM ScryfallCards WHERE 1=1");
+            var parameters = new List<SqlParameter>();
 
-            // Build base query for cards
-            var cardQuery = _context.ScryfallCards
-                .Where(c => c.Name.Contains(query));
 
-            // Apply filters
-            if (!string.IsNullOrEmpty(type))
+            // Execute the query using ADO.NET
+            var results = new List<ScryfallCard>();
+            using (var connection = new SqlConnection("Server=DESKTOP-O35BQH4\\SQLEXPRESS;Database=Card-Collecting-Tool;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True")) 
             {
-                cardQuery = cardQuery.Where(c => c.TypeLine.Contains(type));
+                using (var command = new SqlCommand(sql.ToString(), connection))
+                {
+                    command.Parameters.AddRange(parameters.ToArray());
+                    connection.Open();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            // Safely retrieve and convert each column
+                            var card = new ScryfallCard
+                            {
+                                Id = reader["Id"] != DBNull.Value ? reader["Id"].ToString() : string.Empty,
+                                Name = reader["Name"] != DBNull.Value ? reader["Name"].ToString() : string.Empty,
+                                Cmc = reader["Cmc"] != DBNull.Value ? Convert.ToSingle(reader["Cmc"]) : (float?)null,
+                                ColorIdentity = reader["ColorIdentity"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["ColorIdentity"].ToString()) : new List<string>(),
+                                Colors = reader["Colors"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["Colors"].ToString()) : new List<string>(),
+                                Keywords = reader["Keywords"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["Keywords"].ToString()) : new List<string>(),
+                                Legalities = reader["Legalities"] != DBNull.Value ? JsonConvert.DeserializeObject<Legalities>(reader["Legalities"].ToString()) : null,
+                                ManaCost = reader["ManaCost"] != DBNull.Value ? reader["ManaCost"].ToString() : string.Empty,
+                                Power = reader["Power"] != DBNull.Value ? reader["Power"].ToString() : string.Empty,
+                                Toughness = reader["Toughness"] != DBNull.Value ? reader["Toughness"].ToString() : string.Empty,
+                                TypeLine = reader["TypeLine"] != DBNull.Value ? reader["TypeLine"].ToString() : string.Empty,
+                                Artist = reader["Artist"] != DBNull.Value ? reader["Artist"].ToString() : string.Empty,
+                                CollectorNumber = reader["CollectorNumber"] != DBNull.Value ? reader["CollectorNumber"].ToString() : string.Empty,
+                                Digital = reader["Digital"] != DBNull.Value && Convert.ToBoolean(reader["Digital"]),
+                                FlavorText = reader["FlavorText"] != DBNull.Value ? reader["FlavorText"].ToString() : string.Empty,
+                                FullArt = reader["FullArt"] != DBNull.Value && Convert.ToBoolean(reader["FullArt"]),
+                                Games = reader["Games"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["Games"].ToString()) : new List<string>(),
+                                ImageUris = reader["ImageUris"] != DBNull.Value ? JsonConvert.DeserializeObject<ImageUris>(reader["ImageUris"].ToString()) : null,
+                                Rarity = reader["Rarity"] != DBNull.Value ? reader["Rarity"].ToString() : string.Empty,
+                                ReleaseDate = reader["ReleaseDate"] != DBNull.Value ? reader["ReleaseDate"].ToString() : string.Empty,
+                                Reprint = reader["Reprint"] != DBNull.Value && Convert.ToBoolean(reader["Reprint"]),
+                                SetName = reader["SetName"] != DBNull.Value ? reader["SetName"].ToString() : string.Empty,
+                                Set = reader["Set"] != DBNull.Value ? reader["Set"].ToString() : string.Empty,
+                                SetId = reader["SetId"] != DBNull.Value ? reader["SetId"].ToString() : string.Empty,
+                                Variation = reader["Variation"] != DBNull.Value && Convert.ToBoolean(reader["Variation"]),
+                                VariationOf = reader["VariationOf"] != DBNull.Value ? reader["VariationOf"].ToString() : string.Empty
+                            };
+                            results.Add(card);
+                        }
+                    }
+                }
             }
-            if (!string.IsNullOrEmpty(oracleText))
-            {
-                cardQuery = cardQuery.Where(c => c.OracleText.Contains(oracleText));
-            }
-
-            if (!showAllVersions)
-            {
-                // Filter to only the most recent versions if showAllVersions is false
-                cardQuery = cardQuery
-                    .GroupBy(c => c.Name)
-                    .Select(g => g.OrderByDescending(c => c.ReleaseDate).FirstOrDefault());
-            }
-
-            var filteredCards = await cardQuery.ToListAsync();
-            // Select relevant card data including the image URL
-            var results = filteredCards
-        .AsEnumerable() // Move to client-side evaluation
-        .Where(c => !showAllVersions || c == filteredCards
-            .Where(x => x.Name == c.Name)
-            .OrderByDescending(x => x.ReleaseDate)
-            .FirstOrDefault()) // Get only the most recent versions if showAllVersions is false
-        .Select(c => new
-        {
-            c.Name,
-            c.TypeLine,
-            c.OracleText,
-            imageUri = c.ImageUris.Png ?? c.ImageUris.Large ?? c.ImageUris.Normal ?? "default-image-url.png",
-            c.SetName,
-            c.Rarity,
-            c.Prices
-        })
-        .ToList();
 
             return Ok(results);
         }
 
 
-        // Endpoint for autocomplete search
-        //[HttpGet("autocomplete")]
-        //public async Task<IActionResult> AutocompleteSearch(string query)
-        //{
-        //    if (string.IsNullOrWhiteSpace(query))
-        //        return BadRequest("Query cannot be empty.");
 
-        //    var autocompleteResults = await _scryfallService.GetAutocompleteResultsAsync(query);
 
-        //    var matchingCards = await _context.ScryfallCards
-        //        .Where(card => autocompleteResults.Contains(card.Name))
-        //        .GroupBy(card => card.Name)
-        //        .Select(group => group.OrderByDescending(c => c.ReleaseDate).FirstOrDefault())
-        //        .ToListAsync();
-
-        //    var result = matchingCards
-        //        .Where(card => card != null && card.ImageUris != null)
-        //        .Select(card => new
-        //        {
-        //            id = card.Id,
-        //            name = card.Name,
-        //            imageUri = card.ImageUris.Png ?? card.ImageUris.Large ?? card.ImageUris.Normal ?? "default-image-url.png"
-        //        })
-        //        .ToList();
-
-        //    return Ok(result); // Return as JSON
-        //}
 
         [HttpGet("autocomplete")]
         public async Task<IActionResult> GetCardAutocomplete([FromQuery] string query)

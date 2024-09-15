@@ -27,6 +27,8 @@ export class CardSearchComponent implements OnInit {
   noResultsReturned = false;
   errorMessage: string = '';
   isModalOpen: boolean = false;
+  sortOrder: string = 'name'; 
+  sortDirection: string = 'asc'; 
 
   constructor(private searchService: SearchService) {
     this.searchForm = new FormGroup({
@@ -78,4 +80,20 @@ export class CardSearchComponent implements OnInit {
       }
     );
   }
+
+  // Update the sort order
+  onSortChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    this.sortOrder = selectElement.value; // Set the new sort order
+    this.onSearch(); // Trigger the search again with the new sort order
+  }
+
+  // Update the sort direction
+  onSortDirectionChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    this.sortDirection = selectElement.value; // Set the new sort direction
+    this.onSearch(); // Trigger the search again with the new sort direction
+  }
+
+
 }

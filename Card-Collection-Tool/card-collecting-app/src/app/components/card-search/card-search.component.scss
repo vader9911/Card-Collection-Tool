@@ -31,3 +31,40 @@
   border-radius: 8px;
 }
 
+/* Style for the container holding the dropdowns */
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between the elements */
+  margin-bottom: 20px; /* Margin below the container */
+}
+
+/* Style for the dropdown labels */
+.sort-container label {
+  font-weight: bold; /* Make the label text bold */
+  margin-right: 5px; /* Space between the label and the dropdown */
+  color: #ffffff; /* Set label text color */
+}
+
+/* Style for the dropdown select boxes */
+.sort-container select {
+  padding: 8px 12px; /* Padding inside the dropdown */
+  border: 1px solid #444; /* Border color and thickness */
+  border-radius: 4px; /* Rounded corners */
+  background-color: #333; /* Background color of the dropdown */
+  color: #ffffff; /* Text color inside the dropdown */
+  font-size: 14px; /* Font size for the dropdown text */
+  outline: none; /* Remove outline when focused */
+  transition: background-color 0.3s ease; /* Smooth transition effect for background color */
+}
+
+/* Change background color on hover */
+.sort-container select:hover {
+  background-color: #555; /* Darker background on hover */
+}
+
+/* Change border color when the dropdown is focused */
+.sort-container select:focus {
+  border-color: #00aaff; /* Highlight border color on focus */
+  box-shadow: 0 0 5px rgba(0, 170, 255, 0.5); /* Add a subtle shadow effect */
+}

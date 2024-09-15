@@ -11,14 +11,13 @@ export class SearchService {
 
   private searchActiveSource = new BehaviorSubject<boolean>(false); // Initial state is false
   searchActive$ = this.searchActiveSource.asObservable();
-  constructor(private http: HttpClient) { }
+ constructor(private http: HttpClient) { }
 
   // Method to call the search endpoint with filters
   searchCards(formData: any): Observable<any> {
-    // Prepare HttpParams
     let params = new HttpParams();
 
-    // Add all form fields to the parameters if they are provided
+    // Iterate over formData and add each parameter to HttpParams
     Object.keys(formData).forEach(key => {
       if (formData[key] !== null && formData[key] !== '') {
         params = params.set(key, formData[key].toString());

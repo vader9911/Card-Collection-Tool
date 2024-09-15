@@ -6,9 +6,26 @@
         </div>
     </form>
 </div>
-<div class="container mt-3 col-8">
-    <!-- Trigger button for opening advanced search modal -->
-    <button class="btn btn-primary mb-3" (click)="openModal()">Advanced Search</button>
+<div class="container mt-3 col-8 flex-column">        
+    <!-- Sorting Dropdown in the Frontend (e.g., card-search.component.html) -->
+    <div class="sort-container ">
+        <button class="btn btn-primary mb-3 col-3" (click)="openModal()">Advanced Search</button>
+        <label for="sortOrder">Sort By:</label>
+        <select id="sortOrder" class="" (change)="onSortChange($event)">
+            <option value="name">Name</option>
+            <option value="cmc">CMC</option>
+            <option value="price">Price</option>
+            <option value="toughness">Toughness</option>
+            <option value="power">Power</option>
+        </select>
+
+        <label for="sortDirection">Direction:</label>
+        <select id="sortDirection" (change)="onSortDirectionChange($event)">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+    </div>
+
 
     <!-- Search Results Section -->
     <div class="row justify-content-center">
