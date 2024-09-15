@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormControl, FormsModule, FormGroup } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { ApiService } from '../../services/api.service';
@@ -21,62 +21,61 @@ import { CardListComponent } from '../card-list/card-list.component';
   providers: [ApiService]
 })
 export class CardSearchComponent implements OnInit {
-  @Output() searchEvent = new EventEmitter<void>();
-
-  searchControl = new FormControl('');
-  typeControl = new FormControl('');
-  colorControl = new FormControl('');
-  oracleTextControl = new FormControl('');
-
+  searchForm: FormGroup;
   cards: any[] = [];
-  showAllVersions: boolean = false;
   searchPerformed = false;
   noResultsReturned = false;
   errorMessage: string = '';
+  isModalOpen: boolean = false;
 
-  constructor(private searchService: SearchService) { }
-
-  ngOnInit() {
-    // Handle search results
-    this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        switchMap(() =>
-          this.performSearch().pipe(
-            catchError(error => {
-              this.errorMessage = 'Search failed. Please try again.';
-              console.error('Error fetching search results:', error);
-              return of([]);
-            })
-          )
-        )
-      )
-      .subscribe(
-        (results) => {
-          this.cards = results;
-          this.searchPerformed = true;
-          this.noResultsReturned = this.cards.length === 0;
-        },
-        (error) => {
-          console.error('Error fetching search results:', error);
-          this.cards = [];
-          this.searchPerformed = true;
-        }
-      );
+  constructor(private searchService: SearchService) {
+    this.searchForm = new FormGroup({
+      name: new FormControl(),
+      set: new FormControl(),
+      oracleText: new FormControl(),
+      type: new FormControl(),
+      colors: new FormControl([]),
+      colorParams: new FormControl('any'),
+      colorIdentity: new FormControl([]),
+      colorIdentityParams: new FormControl('any'),
+      manaValue: new FormControl(),
+      manaValueComparator: new FormControl('equals'), // Comparator for mana value
+      manaCost: new FormControl(),
+      power: new FormControl(),
+      powerComparator: new FormControl('equals'), // Comparator for power
+      toughness: new FormControl(),
+      toughnessComparator: new FormControl('equals'), // Comparator for toughness
+      loyalty: new FormControl(),
+      loyaltyComparator: new FormControl('equals'), // Comparator for loyalty
+      sortOrder: new FormControl('name'),
+      sortDirection: new FormControl('asc'),
+      showAllVersions: new FormControl(false)
+    });
   }
 
-  // Perform search with filters
-  performSearch(): Observable<any> {
-    const query = (this.searchControl.value ?? '').trim(); // Ensure query is not null
-    const type = this.typeControl.value?.trim() ?? '';
-    const oracleText = this.oracleTextControl.value?.trim() ?? '';
+  ngOnInit() { }
 
-    return this.searchService.searchCards(query, this.showAllVersions, type, oracleText);
+  openModal(): void {
+    this.isModalOpen = true;
   }
 
-  toggleShowAllVersions(): void {
-    this.showAllVersions = !this.showAllVersions;
-    this.performSearch().subscribe(); // Trigger search again to update results
+  closeModal(): void {
+    this.isModalOpen = false;
+  }
+
+  onSearch(): void {
+    const formData = this.searchForm.value;
+    this.searchService.searchCards(formData).subscribe(
+      (results) => {
+        this.cards = results;
+        this.searchPerformed = true;
+        this.noResultsReturned = this.cards.length === 0;
+      },
+      (error) => {
+        console.error('Error fetching search results:', error);
+        this.cards = [];
+        this.searchPerformed = true;
+      }
+    );
   }
 }

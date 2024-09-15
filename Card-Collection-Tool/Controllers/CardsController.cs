@@ -20,6 +20,66 @@ namespace Card_Collection_Tool.Controllers
             _scryfallService = scryfallService;
         }
 
+
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchCards(
+     [FromQuery] string query,
+     [FromQuery] bool showAllVersions,
+     [FromQuery] string type = null,
+     [FromQuery] string oracleText = null)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return BadRequest("Query parameter is required.");
+            }
+
+            // Build base query for cards
+            var cardQuery = _context.ScryfallCards
+                .Where(c => c.Name.Contains(query));
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(type))
+            {
+                cardQuery = cardQuery.Where(c => c.TypeLine.Contains(type));
+            }
+            if (!string.IsNullOrEmpty(oracleText))
+            {
+                cardQuery = cardQuery.Where(c => c.OracleText.Contains(oracleText));
+            }
+
+            if (!showAllVersions)
+            {
+                // Filter to only the most recent versions if showAllVersions is false
+                cardQuery = cardQuery
+                    .GroupBy(c => c.Name)
+                    .Select(g => g.OrderByDescending(c => c.ReleaseDate).FirstOrDefault());
+            }
+
+            var filteredCards = await cardQuery.ToListAsync();
+            // Select relevant card data including the image URL
+            var results = filteredCards
+        .AsEnumerable() // Move to client-side evaluation
+        .Where(c => !showAllVersions || c == filteredCards
+            .Where(x => x.Name == c.Name)
+            .OrderByDescending(x => x.ReleaseDate)
+            .FirstOrDefault()) // Get only the most recent versions if showAllVersions is false
+        .Select(c => new
+        {
+            c.Name,
+            c.TypeLine,
+            c.OracleText,
+            imageUri = c.ImageUris.Png ?? c.ImageUris.Large ?? c.ImageUris.Normal ?? "default-image-url.png",
+            c.SetName,
+            c.Rarity,
+            c.Prices
+        })
+        .ToList();
+
+            return Ok(results);
+        }
+
+
         // Endpoint for autocomplete search
         //[HttpGet("autocomplete")]
         //public async Task<IActionResult> AutocompleteSearch(string query)

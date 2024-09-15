@@ -11,28 +11,20 @@ export class SearchService {
 
   private searchActiveSource = new BehaviorSubject<boolean>(false); // Initial state is false
   searchActive$ = this.searchActiveSource.asObservable();
-
   constructor(private http: HttpClient) { }
 
   // Method to call the search endpoint with filters
-  searchCards(query: string, showAllVersions: boolean, type?: string, oracleText?: string): Observable<any> {
-    let params = new HttpParams()
-      .set('query', query)
-      .set('showAllVersions', showAllVersions.toString());
+  searchCards(formData: any): Observable<any> {
+    // Prepare HttpParams
+    let params = new HttpParams();
 
-    // Add filters if they are provided
-    if (type) {
-      params = params.set('type', type);
-    }
-    if (oracleText) {
-      params = params.set('oracleText', oracleText);
-    }
+    // Add all form fields to the parameters if they are provided
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== null && formData[key] !== '') {
+        params = params.set(key, formData[key].toString());
+      }
+    });
 
     return this.http.get<any>(`${this.apiUrl}/search`, { params });
-  }
-
-  // Method to update the search state
-  setSearchActive(active: boolean): void {
-    this.searchActiveSource.next(active);
   }
 }
