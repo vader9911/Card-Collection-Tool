@@ -4,6 +4,7 @@ using Card_Collection_Tool.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Card_Collection_Tool.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240915215726_AddPricesAndImageUrisTables")]
+    partial class AddPricesAndImageUrisTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,24 +80,30 @@ namespace Card_Collection_Tool.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ArtCrop")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BorderCrop")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Large")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Normal")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Png")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ScryfallCardId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Small")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -402,16 +411,16 @@ namespace Card_Collection_Tool.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal?>("Eur")
+                    b.Property<decimal>("Eur")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ScryfallCardId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal?>("Tix")
+                    b.Property<decimal>("Tix")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("USD")
+                    b.Property<decimal>("USD")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");

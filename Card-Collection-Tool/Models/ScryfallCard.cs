@@ -54,8 +54,8 @@ public class ScryfallCard
     [JsonPropertyName("games")]
     public List<string>? Games { get; set; }
 
-    //[JsonPropertyName("image_uris")]
-    //public  ImageUris? ImageUris { get; set; }
+    [JsonPropertyName("image_uris")]
+    public ImageUris? ImageUris { get; set; }
 
     [JsonPropertyName("colors")]
     public List<string>? Colors { get; set; }
@@ -84,8 +84,8 @@ public class ScryfallCard
     [JsonPropertyName("variation_of")]
     public string? VariationOf { get; set; }
 
-    //[JsonPropertyName("prices")]
-    //public Prices? Prices { get; set; }
+    [JsonPropertyName("prices")]
+    public Prices? Prices { get; set; }
 
     [JsonPropertyName("scryfall_uri")]
 
@@ -93,35 +93,4 @@ public class ScryfallCard
 
     public int LegalitiesId { get; set; }
 
-    public Prices Prices { get; set; } = new Prices();
-    public ImageUris ImageUris { get; set; } = new ImageUris();
-
-}
-
-
-public class ImageUris
-{
-    [JsonPropertyName("small")]
-    public string? Small { get; set; }
-
-    [JsonPropertyName("normal")]
-    public string? Normal { get; set; }
-
-    [JsonPropertyName("large")]
-    public string? Large { get; set; }
-
-    [JsonPropertyName("png")]
-    public string? Png { get; set; }
-}
-
-public class Prices
-{
-    [JsonPropertyName("usd")]
-    public string? USD { get; set; }
-
-    [JsonPropertyName("usd_foil")]
-    public string? USDFoil { get; set; }
-
-    [JsonPropertyName("usd_etched")]
-    public string? USDEtched { get; set; }
 }

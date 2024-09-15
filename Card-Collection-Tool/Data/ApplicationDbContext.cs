@@ -18,6 +18,9 @@ namespace Card_Collection_Tool.Data
 
         public DbSet<Legalities> Legalities { get; set; }
 
+        public DbSet<Legalities> ImageUris { get; set; }
+        public DbSet<Legalities> Prices { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -28,13 +31,28 @@ namespace Card_Collection_Tool.Data
                 .Property(c => c.Id)
                 .ValueGeneratedOnAdd(); // Assuming 'Id' is auto-generated
 
-            // Configure ImageUris as an owned entity type
-            modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.ImageUris);
-            modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.Prices);
+
+            // Configure one-to-one relationship between ScryfallCard and Prices
             modelBuilder.Entity<ScryfallCard>()
-           .HasOne(c => c.Legalities)
-           .WithOne(l => l.ScryfallCard)
-           .HasForeignKey<Legalities>(l => l.ScryfallCardId);
+                .HasOne(c => c.Prices)
+                .WithOne(p => p.ScryfallCard)
+                .HasForeignKey<Prices>(p => p.ScryfallCardId)
+                .IsRequired(false); // Allow Prices to be optional
+
+            // Configure one-to-one relationship between ScryfallCard and Legalities
+            modelBuilder.Entity<ScryfallCard>()
+                .HasOne(c => c.Legalities)
+                .WithOne(l => l.ScryfallCard)
+                .HasForeignKey<Legalities>(l => l.ScryfallCardId);
+
+            // Configure one-to-one relationship between ScryfallCard and ImageUris
+            modelBuilder.Entity<ScryfallCard>()
+                .HasOne(c => c.ImageUris)
+                .WithOne(i => i.ScryfallCard)
+                .HasForeignKey<ImageUris>(i => i.ScryfallCardId)
+                .IsRequired(false); // Allow ImageUris to be optional
+
+            base.OnModelCreating(modelBuilder);
 
 
 
