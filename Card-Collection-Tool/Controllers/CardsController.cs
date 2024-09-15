@@ -9,6 +9,7 @@ using Microsoft.Data.SqlClient;
 using System.Text;
 using Newtonsoft.Json;
 
+
 namespace Card_Collection_Tool.Controllers
 {
     [ApiController]
@@ -17,25 +18,25 @@ namespace Card_Collection_Tool.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ScryfallService _scryfallService;
-
-        public CardsController(ApplicationDbContext context, ScryfallService scryfallService)
+        
+       public CardsController(ApplicationDbContext context, ScryfallService scryfallService)
         {
             _context = context;
             _scryfallService = scryfallService;
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchCards(
- 
-  )
+        public async Task<IActionResult> SearchCards()
         {
-            var sql = new StringBuilder("SELECT * FROM ScryfallCards WHERE 1=1");
-            var parameters = new List<SqlParameter>();
+            var sql = new StringBuilder(
+                "SELECT sc.*, l.* FROM ScryfallCards sc " +
+                "LEFT JOIN Legalities l ON sc.Id = l.ScryfallCardId WHERE 1=1");
 
+            var parameters = new List<SqlParameter>();
 
             // Execute the query using ADO.NET
             var results = new List<ScryfallCard>();
-            using (var connection = new SqlConnection("Server=DESKTOP-O35BQH4\\SQLEXPRESS;Database=Card-Collecting-Tool;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True")) 
+            using (var connection = new SqlConnection("Server=DESKTOP-O35BQH4\\SQLEXPRESS;Database=Card-Collecting-Tool;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"))
             {
                 using (var command = new SqlCommand(sql.ToString(), connection))
                 {
@@ -45,7 +46,7 @@ namespace Card_Collection_Tool.Controllers
                     {
                         while (reader.Read())
                         {
-                            // Safely retrieve and convert each column
+                            // Safely retrieve and convert each column for ScryfallCard
                             var card = new ScryfallCard
                             {
                                 Id = reader["Id"] != DBNull.Value ? reader["Id"].ToString() : string.Empty,
@@ -54,7 +55,6 @@ namespace Card_Collection_Tool.Controllers
                                 ColorIdentity = reader["ColorIdentity"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["ColorIdentity"].ToString()) : new List<string>(),
                                 Colors = reader["Colors"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["Colors"].ToString()) : new List<string>(),
                                 Keywords = reader["Keywords"] != DBNull.Value ? JsonConvert.DeserializeObject<List<string>>(reader["Keywords"].ToString()) : new List<string>(),
-                                Legalities = reader["Legalities"] != DBNull.Value ? JsonConvert.DeserializeObject<Legalities>(reader["Legalities"].ToString()) : null,
                                 ManaCost = reader["ManaCost"] != DBNull.Value ? reader["ManaCost"].ToString() : string.Empty,
                                 Power = reader["Power"] != DBNull.Value ? reader["Power"].ToString() : string.Empty,
                                 Toughness = reader["Toughness"] != DBNull.Value ? reader["Toughness"].ToString() : string.Empty,
@@ -73,7 +73,34 @@ namespace Card_Collection_Tool.Controllers
                                 Set = reader["Set"] != DBNull.Value ? reader["Set"].ToString() : string.Empty,
                                 SetId = reader["SetId"] != DBNull.Value ? reader["SetId"].ToString() : string.Empty,
                                 Variation = reader["Variation"] != DBNull.Value && Convert.ToBoolean(reader["Variation"]),
-                                VariationOf = reader["VariationOf"] != DBNull.Value ? reader["VariationOf"].ToString() : string.Empty
+                                VariationOf = reader["VariationOf"] != DBNull.Value ? reader["VariationOf"].ToString() : string.Empty,
+
+                                // Parse Legalities as a separate object
+                                Legalities = new Legalities
+                                {
+                                    Standard = reader["Standard"] != DBNull.Value ? reader["Standard"].ToString() : string.Empty,
+                                    Future = reader["Future"] != DBNull.Value ? reader["Future"].ToString() : string.Empty,
+                                    Historic = reader["Historic"] != DBNull.Value ? reader["Historic"].ToString() : string.Empty,
+                                    Timeless = reader["Timeless"] != DBNull.Value ? reader["Timeless"].ToString() : string.Empty,
+                                    Gladiator = reader["Gladiator"] != DBNull.Value ? reader["Gladiator"].ToString() : string.Empty,
+                                    Pioneer = reader["Pioneer"] != DBNull.Value ? reader["Pioneer"].ToString() : string.Empty,
+                                    Explorer = reader["Explorer"] != DBNull.Value ? reader["Explorer"].ToString() : string.Empty,
+                                    Modern = reader["Modern"] != DBNull.Value ? reader["Modern"].ToString() : string.Empty,
+                                    Legacy = reader["Legacy"] != DBNull.Value ? reader["Legacy"].ToString() : string.Empty,
+                                    Pauper = reader["Pauper"] != DBNull.Value ? reader["Pauper"].ToString() : string.Empty,
+                                    Vintage = reader["Vintage"] != DBNull.Value ? reader["Vintage"].ToString() : string.Empty,
+                                    Penny = reader["Penny"] != DBNull.Value ? reader["Penny"].ToString() : string.Empty,
+                                    Commander = reader["Commander"] != DBNull.Value ? reader["Commander"].ToString() : string.Empty,
+                                    Oathbreaker = reader["Oathbreaker"] != DBNull.Value ? reader["Oathbreaker"].ToString() : string.Empty,
+                                    StandardBrawl = reader["StandardBrawl"] != DBNull.Value ? reader["StandardBrawl"].ToString() : string.Empty,
+                                    Brawl = reader["Brawl"] != DBNull.Value ? reader["Brawl"].ToString() : string.Empty,
+                                    Alchemy = reader["Alchemy"] != DBNull.Value ? reader["Alchemy"].ToString() : string.Empty,
+                                    PauperCommander = reader["PauperCommander"] != DBNull.Value ? reader["PauperCommander"].ToString() : string.Empty,
+                                    Duel = reader["Duel"] != DBNull.Value ? reader["Duel"].ToString() : string.Empty,
+                                    OldSchool = reader["OldSchool"] != DBNull.Value ? reader["OldSchool"].ToString() : string.Empty,
+                                    Premodern = reader["Premodern"] != DBNull.Value ? reader["Premodern"].ToString() : string.Empty,
+                                    Predh = reader["Predh"] != DBNull.Value ? reader["Predh"].ToString() : string.Empty
+                                }
                             };
                             results.Add(card);
                         }

@@ -34,7 +34,7 @@ namespace Card_Collection_Tool.Services
                 lastSyncTime = DateTime.Parse(lastSyncSetting.Value);
 
                 // Check if 24 hours have passed since the last sync
-                if ((DateTime.UtcNow - lastSyncTime).TotalHours < 24)
+                if ((DateTime.UtcNow - lastSyncTime).TotalHours < 0)
                 {
                     Console.WriteLine("Sync skipped. Last sync was less than 24 hours ago.");
                     return; // Exit if it's not time to sync yet

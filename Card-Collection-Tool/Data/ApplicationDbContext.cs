@@ -16,9 +16,10 @@ namespace Card_Collection_Tool.Data
 
         public DbSet<ScryfallCard> ScryfallCards { get; set; }
 
+        public DbSet<Legalities> Legalities { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<UserCardCollection>()
             .HasKey(c => c.Id); // Ensure 'Id' is set as the primary key
@@ -30,12 +31,20 @@ namespace Card_Collection_Tool.Data
             // Configure ImageUris as an owned entity type
             modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.ImageUris);
             modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.Prices);
-            modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.Legalities);
+            modelBuilder.Entity<ScryfallCard>()
+           .HasOne(c => c.Legalities)
+           .WithOne(l => l.ScryfallCard)
+           .HasForeignKey<Legalities>(l => l.ScryfallCardId);
+
+
+
             modelBuilder.Entity<UserCardCollection>()
                 .Property(c => c.CardIds)
                 .HasConversion(
                     v => JsonConvert.SerializeObject(v), // Convert list to JSON string for storage
                     v => JsonConvert.DeserializeObject<List<CardEntry>>(v)); // Convert JSON string back to list
+           
+            base.OnModelCreating(modelBuilder);
         }
     public DbSet<AppSettings> AppSettings { get; set; }
     }

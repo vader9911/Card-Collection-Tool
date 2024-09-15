@@ -4,6 +4,7 @@ using Card_Collection_Tool.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Card_Collection_Tool.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240915212135_AddLegalitiesTable")]
+    partial class AddLegalitiesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,79 +80,101 @@ namespace Card_Collection_Tool.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Alchemy")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Brawl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Commander")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Duel")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Explorer")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Future")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gladiator")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Historic")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Legacy")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Modern")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Oathbreaker")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OldSchool")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Pauper")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PauperCommander")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Penny")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Pioneer")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Predh")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Premodern")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ScryfallCardId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Standard")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StandardBrawl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Timeless")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Vintage")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ScryfallCardId")
-                        .IsUnique()
-                        .HasFilter("[ScryfallCardId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Legalities");
 
@@ -472,7 +497,9 @@ namespace Card_Collection_Tool.Migrations
                 {
                     b.HasOne("ScryfallCard", "ScryfallCard")
                         .WithOne("Legalities")
-                        .HasForeignKey("Legalities", "ScryfallCardId");
+                        .HasForeignKey("Legalities", "ScryfallCardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ScryfallCard");
                 });
@@ -555,6 +582,8 @@ namespace Card_Collection_Tool.Migrations
 
                             b1.ToTable("ScryfallCards");
 
+                            b1.HasAnnotation("Relational:JsonPropertyName", "image_uris");
+
                             b1.WithOwner()
                                 .HasForeignKey("ScryfallCardId");
                         });
@@ -580,15 +609,15 @@ namespace Card_Collection_Tool.Migrations
 
                             b1.ToTable("ScryfallCards");
 
+                            b1.HasAnnotation("Relational:JsonPropertyName", "prices");
+
                             b1.WithOwner()
                                 .HasForeignKey("ScryfallCardId");
                         });
 
-                    b.Navigation("ImageUris")
-                        .IsRequired();
+                    b.Navigation("ImageUris");
 
-                    b.Navigation("Prices")
-                        .IsRequired();
+                    b.Navigation("Prices");
                 });
 
             modelBuilder.Entity("ScryfallCard", b =>

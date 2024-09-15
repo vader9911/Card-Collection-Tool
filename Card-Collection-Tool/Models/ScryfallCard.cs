@@ -54,8 +54,8 @@ public class ScryfallCard
     [JsonPropertyName("games")]
     public List<string>? Games { get; set; }
 
-    [JsonPropertyName("image_uris")]
-    public ImageUris? ImageUris { get; set; }
+    //[JsonPropertyName("image_uris")]
+    //public  ImageUris? ImageUris { get; set; }
 
     [JsonPropertyName("colors")]
     public List<string>? Colors { get; set; }
@@ -67,7 +67,7 @@ public class ScryfallCard
     public List<string>? Keywords { get; set; }
 
     [JsonPropertyName("legalities")]
-    public Legalities? Legalities { get; set; }
+    public required Legalities Legalities { get; set; }
 
     [JsonPropertyName("power")]
     public string? Power { get; set; }
@@ -84,26 +84,18 @@ public class ScryfallCard
     [JsonPropertyName("variation_of")]
     public string? VariationOf { get; set; }
 
-    [JsonPropertyName("prices")]
-    public Prices? Prices { get; set; }
+    //[JsonPropertyName("prices")]
+    //public Prices? Prices { get; set; }
 
     [JsonPropertyName("scryfall_uri")]
+
     public string? ScryfallUri { get; set; }
-}
 
-public class Legalities
-{
-    [JsonPropertyName("legal")]
-    public string? Legal { get; set; }
+    public int LegalitiesId { get; set; }
 
-    [JsonPropertyName("not_legal")]
-    public string? NotLegal { get; set; }
+    public Prices Prices { get; set; } = new Prices();
+    public ImageUris ImageUris { get; set; } = new ImageUris();
 
-    [JsonPropertyName("restricted")]
-    public string? Restricted { get; set; }
-
-    [JsonPropertyName("banned")]
-    public string? Banned { get; set; }
 }
 
 
