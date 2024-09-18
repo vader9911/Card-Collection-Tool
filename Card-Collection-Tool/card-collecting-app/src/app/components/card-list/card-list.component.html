@@ -2,7 +2,7 @@
     <div *ngFor="let card of cards" class="position-relative card-item">
         <!-- Display each card -->
         <div class="position-relative">
-            <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="viewCardDetails(card.id)" />
+            <img class="card-image" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="viewCardDetails(card.id)" />
             <!-- Button positioned at the bottom of the card image -->
             <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id)">+</button>
         </div>
