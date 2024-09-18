@@ -1,117 +1,286 @@
-﻿using Card_Collection_Tool.Data;
-using Card_Collection_Tool.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Card_Collection_Tool.Data;
+using Card_Collection_Tool.Models;
+using System.Reflection;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Microsoft.CodeAnalysis;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
+using Newtonsoft.Json.Serialization;
+using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace Card_Collection_Tool.Services
 {
     public class ScryfallSyncService
     {
-        private readonly HttpClient _httpClient;
         private readonly ApplicationDbContext _context;
-        private const string LastSyncKey = "LastScryfallSync";
+        private readonly ILogger<ScryfallSyncService> _logger;
+        private readonly HttpClient _httpClient;
+        private DateTime? _lastSync;
 
-        public ScryfallSyncService(HttpClient httpClient, ApplicationDbContext context)
+        public ScryfallSyncService(ApplicationDbContext context, ILogger<ScryfallSyncService> logger, HttpClient httpClient)
         {
-            _httpClient = httpClient;
             _context = context;
+            _logger = logger;
+            _httpClient = httpClient;
+            _lastSync = null;
         }
 
         public async Task SyncScryfallDataAsync()
         {
-            // Get the last sync time from the database
-            var lastSyncSetting = await _context.AppSettings
-                .FirstOrDefaultAsync(s => s.Key == LastSyncKey);
+            _logger.LogInformation("Running data sync");
 
-            DateTime lastSyncTime;
-            if (lastSyncSetting != null)
+            try
             {
-                lastSyncTime = DateTime.Parse(lastSyncSetting.Value);
-
-                // Check if 24 hours have passed since the last sync
-                if ((DateTime.UtcNow - lastSyncTime).TotalHours < 0)
+                if (_lastSync.HasValue && _lastSync.Value.AddHours(24) > DateTime.UtcNow)
                 {
-                    Console.WriteLine("Sync skipped. Last sync was less than 24 hours ago.");
-                    return; // Exit if it's not time to sync yet
+                    _logger.LogInformation("Sync already completed within the last 24 hours. Skipping this run.");
+                    return;
                 }
-            }
 
-            // Corrected absolute URL for the bulk data endpoint
-            var bulkDataUrl = "https://api.scryfall.com/bulk-data";
-            
-            // Fetch the bulk data endpoint to get the download URI
-            var bulkDataResponse = await _httpClient.GetFromJsonAsync<ScryfallBulkDataResponse>(bulkDataUrl);
-            
-            if (bulkDataResponse != null)
-            {
-                // Find the "Default Cards" entry and get its download URI
-                var defaultCardsData = bulkDataResponse.data.Find(b => b.type == "default_cards");
-                
-                if (defaultCardsData != null)
+                _logger.LogInformation("Starting Scryfall data synchronization.");
+
+                // Fetch the bulk data URI for card data
+                string downloadUri = await FetchBulkDataUriAsync();
+                if (string.IsNullOrEmpty(downloadUri))
                 {
-                    var downloadUri = defaultCardsData.download_uri;
+                    _logger.LogError("Failed to fetch card data URI from Scryfall.");
+                    return;
+                }
 
-                    // Ensure the downloadUri is absolute
-                    var cardDataResponse = await _httpClient.GetAsync(downloadUri);
+                using var response = await _httpClient.GetAsync(downloadUri, HttpCompletionOption.ResponseHeadersRead);
 
-                    if (cardDataResponse.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to download card data from Scryfall API. Status Code: {StatusCode}, Reason: {ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
+                    return;
+                }
+
+                using var stream = await response.Content.ReadAsStreamAsync();
+                using var streamReader = new StreamReader(stream);
+                using var jsonReader = new JsonTextReader(streamReader);
+
+                _logger.LogInformation("Processing card data stream from Scryfall API.");
+
+                var serializer = new JsonSerializer();
+                var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                    .UseSqlServer("Server=DESKTOP-O35BQH4\\SQLEXPRESS;Database=Card-Collecting-Tool;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True") // Replace with your actual connection string
+                    .Options;
+
+                var cards = new ConcurrentBag<ScryfallCard>(); // Use a thread-safe collection to store cards
+
+                int cardCount = 0;
+                var stopwatch = Stopwatch.StartNew();
+
+                // Read and deserialize the JSON data asynchronously
+                while (await jsonReader.ReadAsync())
+                {
+                    if (jsonReader.TokenType == JsonToken.StartObject)
                     {
-                        var cardDataJson = await cardDataResponse.Content.ReadAsStringAsync();
-
-                        // Deserialize the JSON data to a list of ScryfallCard objects
-                        var cardData = JsonSerializer.Deserialize<List<ScryfallCard>>(cardDataJson);
-
-                        if (cardData != null)
+                        var card = serializer.Deserialize<ScryfallCard>(jsonReader);
+                        if (card != null)
                         {
-                            // Clear existing data and replace with new data
-                            _context.ScryfallCards.RemoveRange(_context.ScryfallCards);
-                            await _context.ScryfallCards.AddRangeAsync(cardData);
-                            await _context.SaveChangesAsync();
-
-                            // Update the last sync time
-                            if (lastSyncSetting == null)
-                            {
-                                lastSyncSetting = new AppSettings { Key = LastSyncKey };
-                                _context.AppSettings.Add(lastSyncSetting);
-                            }
-
-                            lastSyncSetting.Value = DateTime.UtcNow.ToString("o"); // ISO 8601 format
-                            await _context.SaveChangesAsync();
-
-                            Console.WriteLine("Data synced successfully.");
+                            cards.Add(card); // Add the card to the concurrent bag
                         }
                     }
-                    else
-                    {
-                        Console.WriteLine($"Failed to download bulk data from {downloadUri}. Status Code: {cardDataResponse.StatusCode}");
-                    }
                 }
-                else
+
+                // Process cards in parallel
+                await Parallel.ForEachAsync(cards, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (card, token) =>
                 {
-                    Console.WriteLine("Could not find the 'Default Cards' data in the bulk data response.");
+                    using var context = new ApplicationDbContext(options); // Each task needs its own DbContext instance
+                    await ProcessCardAsync(context, card);
+                    Interlocked.Increment(ref cardCount); // Safely increment the card count
+
+                    // Log progress every 1000 cards
+                    if (cardCount % 1000 == 0)
+                    {
+                        var elapsed = stopwatch.Elapsed;
+                        _logger.LogInformation($"----------Processed {cardCount} cards so far. Time elapsed: {elapsed.Hours} hours, {elapsed.Minutes} minutes, {elapsed.Seconds} seconds.-------------");
+                    }
+                });
+
+                _lastSync = DateTime.UtcNow;
+                _logger.LogInformation("Scryfall data synchronization completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred during Scryfall data synchronization: {ex.Message}");
+
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError($"Inner exception: {ex.InnerException.Message}");
                 }
+            }
+        }
+
+        private async Task<string> FetchBulkDataUriAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching bulk data metadata from Scryfall API...");
+
+                var response = await _httpClient.GetAsync("https://api.scryfall.com/bulk-data");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to fetch bulk data metadata from Scryfall API. Status Code: {StatusCode}, Reason: {ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Received bulk data metadata from Scryfall API.");
+                _logger.LogInformation(content);
+                var bulkDataResponse = JsonConvert.DeserializeObject<ScryfallBulkDataResponse>(content);
+
+                // Find the entry for the "default_cards" type
+                var defaultCardsEntry = bulkDataResponse?.Data?.FirstOrDefault(entry => entry.Type == "default_cards");
+                //var defaultCardsEntryUri = defaultCardsEntry.DownloadUri
+
+                if (defaultCardsEntry == null)
+                {
+                    _logger.LogError("No 'default_cards' entry found in Scryfall bulk data.");
+                    return null;
+                }
+
+                _logger.LogInformation("Download URI for default cards: {DownloadUri}", defaultCardsEntry.DownloadUri);
+                return defaultCardsEntry.DownloadUri;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching bulk data URI from Scryfall API.");
+                return null;
+            }
+        }
+
+        private async Task ProcessCardAsync(ApplicationDbContext context, ScryfallCard card)
+        {
+            //_logger.LogInformation("Processing card data...");
+
+            var existingCard = await context.ScryfallCards
+                                            .Include(c => c.Prices)
+                                            .Include(c => c.ImageUris)
+                                            .Include(c => c.Legalities)
+                                            .FirstOrDefaultAsync(c => c.Id == card.Id);
+
+            if (existingCard == null)
+            {
+                if (card.Legalities != null)
+                {
+                    card.Legalities.ScryfallCardId = card.Id;
+                }
+
+                if (card.Prices != null)
+                {
+                    card.Prices.ScryfallCardId = card.Id;
+                }
+
+                if (card.ImageUris != null)
+                {
+                    card.ImageUris.ScryfallCardId = card.Id;
+                }
+
+                await context.ScryfallCards.AddAsync(card);
             }
             else
             {
-                Console.WriteLine("Failed to fetch bulk data endpoint.");
+                // Existing card - update its data
+
+                // Update the card's properties
+                existingCard.Name = card.Name;
+                existingCard.Cmc = card.Cmc;
+                existingCard.ColorIdentity = card.ColorIdentity;
+                existingCard.Colors = card.Colors;
+                existingCard.Keywords = card.Keywords;
+                existingCard.ManaCost = card.ManaCost;
+                existingCard.Power = card.Power;
+                existingCard.Toughness = card.Toughness;
+                existingCard.TypeLine = card.TypeLine;
+                existingCard.Artist = card.Artist;
+                existingCard.CollectorNumber = card.CollectorNumber;
+                existingCard.Digital = card.Digital;
+                existingCard.FlavorText = card.FlavorText;
+                existingCard.OracleText = card.OracleText;
+                existingCard.FullArt = card.FullArt;
+                existingCard.Games = card.Games;
+                existingCard.Rarity = card.Rarity;
+                existingCard.ReleaseDate = card.ReleaseDate;
+                existingCard.Reprint = card.Reprint;
+                existingCard.SetName = card.SetName;
+                existingCard.Set = card.Set;
+                existingCard.SetId = card.SetId;
+                existingCard.Variation = card.Variation;
+                existingCard.VariationOf = card.VariationOf;
+                existingCard.Legalities = card.Legalities;
+                existingCard.Prices = card.Prices;
+                existingCard.ImageUris = card.ImageUris;
+
+
+                // Update Prices
+                if (card.Prices != null)
+                {
+                    existingCard.Prices = card.Prices;
+                    existingCard.Prices.ScryfallCardId = card.Id;
+                }
+
+                // Update Image URIs
+                if (card.ImageUris != null)
+                {
+                    existingCard.ImageUris = card.ImageUris;
+                    existingCard.ImageUris.ScryfallCardId = card.Id;
+                }
+
+                // Update Legalities
+                if (card.Legalities != null)
+                {
+                    existingCard.Legalities = card.Legalities;
+                    existingCard.Legalities.ScryfallCardId = card.Id;
+                }
+
+                // Update the existing card in the context
+                context.ScryfallCards.Update(existingCard);
             }
+
+            await context.SaveChangesAsync();
         }
     }
+}
 
-    // Model for the bulk data response
-    public class ScryfallBulkDataResponse
-    {
-        public List<ScryfallBulkData> data { get; set; }
-    }
 
-    public class ScryfallBulkData
-    {
-        public string type { get; set; }
-        public string download_uri { get; set; }
-    }
+        public class ScryfallBulkDataResponse
+{
+    public string Object { get; set; }
+    public bool HasMore { get; set; }
+    public List<ScryfallBulkDataEntry> Data { get; set; }
+}
+
+public class ScryfallBulkDataEntry
+{
+    public string Object { get; set; }
+    public string Id { get; set; }
+    public string Type { get; set; }
+    public DateTime UpdatedAt { get; set; }
+
+    [JsonProperty("download_uri")]
+    public string DownloadUri { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public long Size { get; set; }
+
+    //[JsonProperty("uri")]
+    //public string Uri { get; set; }
+    public string ContentType { get; set; }
+    public string ContentEncoding { get; set; }
+}
+
+public class DefualtCards
+{
+
 }

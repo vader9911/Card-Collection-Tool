@@ -1,96 +1,100 @@
-﻿using System.Text.Json.Serialization;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
 
-public class ScryfallCard
+namespace Card_Collection_Tool.Models
 {
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public class ScryfallCard
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
 
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
 
-    [JsonPropertyName("oracle_text")]
-    public string? OracleText { get; set; }
+        [JsonProperty("cmc")]
+        public float? Cmc { get; set; }
 
-    [JsonPropertyName("mana_cost")]
-    public string? ManaCost { get; set; }
+        [JsonProperty("color_identity")]
+        public List<string?>? ColorIdentity { get; set; }
 
-    [JsonPropertyName("cmc")]
-    public float? Cmc { get; set; } // Converted Mana Cost
+        [JsonProperty("colors")]
+        public List<string?>? Colors { get; set; }
 
-    [JsonPropertyName("type_line")]
-    public string? TypeLine { get; set; }
+        [JsonProperty("keywords")]
+        public List<string?>? Keywords { get; set; }
 
-    [JsonPropertyName("set_name")]
-    public string? SetName { get; set; }
+        [JsonProperty("mana_cost")]
+        public string? ManaCost { get; set; }
 
-    [JsonPropertyName("set")]
-    public string? Set { get; set; }
+        [JsonProperty("power")]
+        public string? Power { get; set; }
 
-    [JsonPropertyName("set_id")]
-    public string? SetId { get; set; }
+        [JsonProperty("toughness")]
+        public string? Toughness { get; set; }
 
-    [JsonPropertyName("rarity")]
-    public string? Rarity { get; set; }
+        [JsonProperty("type_line")]
+        public string? TypeLine { get; set; }
 
-    [JsonPropertyName("released_at")]
-    public string? ReleaseDate { get; set; }
+        [JsonProperty("artist")]
+        public string? Artist { get; set; }
 
-    [JsonPropertyName("flavor_text")]
-    public string? FlavorText { get; set; }
+        [JsonProperty("collector_number")]
+        public string? CollectorNumber { get; set; }
 
-    [JsonPropertyName("artist")]
-    public string? Artist { get; set; }
+        [JsonProperty("digital")]
+        public bool Digital { get; set; }
 
-    [JsonPropertyName("collector_number")]
-    public string? CollectorNumber { get; set; }
+        [JsonProperty("flavor_text")]
+        public string? FlavorText { get; set; }
 
-    [JsonPropertyName("digital")]
-    public bool? Digital { get; set; }
+        [JsonProperty("oracle_text")]
+        public string? OracleText { get; set; }
 
-    [JsonPropertyName("full_art")]
-    public bool? FullArt { get; set; }
+        [JsonProperty("full_art")]
+        public bool? FullArt { get; set; }
 
-    [JsonPropertyName("games")]
-    public List<string>? Games { get; set; }
+        [JsonProperty("games")]
+        public List<string?>? Games { get; set; }
 
-    [JsonPropertyName("image_uris")]
-    public ImageUris? ImageUris { get; set; }
+        [JsonProperty("rarity")]
+        public string? Rarity { get; set; }
 
-    [JsonPropertyName("colors")]
-    public List<string>? Colors { get; set; }
+        [JsonProperty("released_at")]
+        public string? ReleaseDate { get; set; }
 
-    [JsonPropertyName("color_identity")]
-    public List<string>? ColorIdentity { get; set; }
+        [JsonProperty("reprint")]
+        public bool? Reprint { get; set; }
 
-    [JsonPropertyName("keywords")]
-    public List<string>? Keywords { get; set; }
+        [JsonProperty("set_name")]
+        public string? SetName { get; set; }
 
-    [JsonPropertyName("legalities")]
-    public required Legalities Legalities { get; set; }
+        [JsonProperty("set")]
+        public string? Set { get; set; }
 
-    [JsonPropertyName("power")]
-    public string? Power { get; set; }
+        [JsonProperty("set_id")]
+        public string? SetId { get; set; }
 
-    [JsonPropertyName("toughness")]
-    public string? Toughness { get; set; }
+        [JsonProperty("variation")]
+        public bool Variation { get; set; }
 
-    [JsonPropertyName("reprint")]
-    public bool? Reprint { get; set; }
+        [JsonProperty("variation_of")]
+        public string? VariationOf { get; set; }
 
-    [JsonPropertyName("variation")]
-    public bool? Variation { get; set; }
+        // Navigation properties for related entities
+        [JsonProperty("legalities")]
+        public Legalities Legalities { get; set; }
 
-    [JsonPropertyName("variation_of")]
-    public string? VariationOf { get; set; }
+        [JsonProperty("prices")]
+        public Prices Prices { get; set; }
 
-    [JsonPropertyName("prices")]
-    public Prices? Prices { get; set; }
+        [JsonProperty("image_uris")]
+        public ImageUris ImageUris { get; set; }
 
-    [JsonPropertyName("scryfall_uri")]
-
-    public string? ScryfallUri { get; set; }
-
-    public int LegalitiesId { get; set; }
-
+        public ScryfallCard()
+        {
+            // Initialize objects to avoid null reference exceptions
+            Legalities = new Legalities();
+            Prices = new Prices();
+            ImageUris = new ImageUris();
+        }
+    }
 }

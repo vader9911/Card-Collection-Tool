@@ -4,6 +4,7 @@ using Card_Collection_Tool.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Card_Collection_Tool.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240917014005_UpdateOneToOneRelationships")]
+    partial class UpdateOneToOneRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,24 +55,30 @@ namespace Card_Collection_Tool.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ArtCrop")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BorderCrop")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Large")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Normal")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Png")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ScryfallCardId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Small")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -220,9 +229,11 @@ namespace Card_Collection_Tool.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ColorIdentity")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Colors")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Digital")
@@ -231,13 +242,15 @@ namespace Card_Collection_Tool.Migrations
                     b.Property<string>("FlavorText")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("FullArt")
+                    b.Property<bool>("FullArt")
                         .HasColumnType("bit");
 
                     b.Property<string>("Games")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Keywords")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ManaCost")
@@ -259,7 +272,7 @@ namespace Card_Collection_Tool.Migrations
                     b.Property<string>("ReleaseDate")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool?>("Reprint")
+                    b.Property<bool>("Reprint")
                         .HasColumnType("bit");
 
                     b.Property<string>("Set")

@@ -36,44 +36,4 @@ namespace Card_Collection_Tool.Services
         }
     }
 
-
-
-
-    public class ScryfallCardData
-    { 
-        public string? Id { get; set; }
-    
-        public string? Name { get; set; }
-
-
-        public string? OracleText { get; set; }
-
-
-        public string? SetName { get; set; }
-
-
-        public ImageUris ImageUris { get; set; }
-    }
-
-    public class ImageUris
-    {
-
-        public string? Small { get; set; }
-
-
-        public string? Normal { get; set; }
-
-        public string? Large { get; set; }
-
-        public string? Png { get; set; }
-
-
-    }
-
-
-    public class AutocompleteResponse
-    {
-        public List<string> Data { get; set; }
-    }
-
 }
