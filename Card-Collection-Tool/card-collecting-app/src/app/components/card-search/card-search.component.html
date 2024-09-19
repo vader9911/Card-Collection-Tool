@@ -1,210 +1,204 @@
 <div class="container mt-5 col-8">
+    
+    <h2 class="text-center m-2  fs-2 ">Search For Cards To Start Collecting!</h2>
+
+
+    <!-- Basic Search Form -->
     <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
-        <div class="input-group mb-3">
+        <div class="input-group mb-3 mt-5 pt-2 ">
             <input type="text" class="form-control" placeholder="Search card by name..." formControlName="name">
             <button class="btn btn-success" type="submit">Search</button>
         </div>
+
+        <!-- Sorting Options -->
+        <div class="sort-container mb-3">
+            <!-- Advanced Search Button -->
+            <button type="button" class="btn btn-primary mb-3 col-3 me-4" (click)="openModal()">Advanced Search</button>
+            
+            <label for="sortOrder">Sort By:</label>
+            <select id="sortOrder" class="form-control" formControlName="sortOrder">
+                <option value="name">Name</option>
+                <option value="cmc">CMC</option>
+                <option value="price">Price</option>
+                <option value="toughness">Toughness</option>
+                <option value="power">Power</option>
+            </select>
+
+            <label for="sortDirection">Direction:</label>
+            <select id="sortDirection" class="form-control" formControlName="sortDirection">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
     </form>
 </div>
-<div class="container mt-3 col-8 flex-column">        
-    <!-- Sorting Dropdown in the Frontend (e.g., card-search.component.html) -->
-    <div class="sort-container ">
-        <button class="btn btn-primary mb-3 col-3" (click)="openModal()">Advanced Search</button>
-        <label for="sortOrder">Sort By:</label>
-        <select id="sortOrder" class="" (change)="onSortChange($event)">
-            <option value="name">Name</option>
-            <option value="cmc">CMC</option>
-            <option value="price">Price</option>
-            <option value="toughness">Toughness</option>
-            <option value="power">Power</option>
-        </select>
 
-        <label for="sortDirection">Direction:</label>
-        <select id="sortDirection" (change)="onSortDirectionChange($event)">
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-        </select>
-    </div>
-
-
-    <!-- Search Results Section -->
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <app-card-list [cards]="cards"></app-card-list>
-        </div>
-    </div>
+<!-- Loading Indicator -->
+<div *ngIf="loading" class="loading-indicator">
+    <p class="text-center fs-2 m-5">Loading results, please wait...</p>
 </div>
 
-<!-- Modal for Advanced Search Filters -->
+<!-- No Results Message -->
+<div *ngIf="noResultsReturned && !loading" class="no-results">
+    <p class="text-center fs-2 m-5">No results found.</p>
+</div>
+
+<!-- Results Section -->
+<div *ngIf="!loading && !noResultsReturned">
+    <app-card-list [cards]="cards"></app-card-list>
+</div>
+
+<!-- Advanced Search Modal -->
 <div *ngIf="isModalOpen" class="modal-backdrop fade show"></div>
 <div class="modal" tabindex="-1" role="dialog" [class.show]="isModalOpen" [style.display]="isModalOpen ? 'block' : 'none'">
     <div class="modal-dialog" role="document">
         <div class="modal-content text-dark bg-light">
             <div class="modal-header justify-content-between">
                 <h5 class="modal-title fs-4 text-decoration-underline">Advanced Search</h5>
-                <button type="button" class="btn btn-danger m-1" (click)="closeModal()" value="X">
+                <button type="button" class="btn btn-danger m-1" (click)="closeModal()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Form for Search Criteria -->
-                <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+                <!-- Advanced Search Form -->
+                <form [formGroup]="searchForm">
                     <!-- Card Name -->
                     <div class="form-group">
-                        <label>Card Name</label>
-                        <input type="text" class="form-control mb-1" formControlName="name">
+                        <label for="name">Card Name</label>
+                        <input type="text" class="form-control mb-1" placeholder="Card Name..." formControlName="name">
                     </div>
 
-                    <!-- Set/Expansion -->
+                    <!-- Set Name -->
                     <div class="form-group">
-                        <label>Set / Expansion</label>
-                        <input type="text" class="form-control mb-1" formControlName="set">
-                    </div>
-
-                    <!-- Oracle Text -->
-                    <div class="form-group">
-                        <label>Oracle Text</label>
-                        <input type="text" class="form-control mb-1" formControlName="oracleText">
+                        <label for="set">Set Name</label>
+                        <input type="text" class="form-control mb-1" placeholder="Set Name..." formControlName="set">
                     </div>
 
                     <!-- Card Type -->
                     <div class="form-group">
-                        <label>Card Type</label>
-                        <input type="text" class="form-control mb-1" formControlName="type">
+                        <label for="type">Card Type</label>
+                        <input type="text" class="form-control mb-1" placeholder="Card Type..." formControlName="type">
                     </div>
 
-                    <!-- Colors -->
+                    <!-- Oracle Text -->
                     <div class="form-group">
-                        <label>Colors</label>
-                        <div class="d-flex align-items-center">
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colors" [value]="'W'" />
-                                <label class="form-check-label">White</label>
-                            </div>
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colors" [value]="'U'" />
-                                <label class="form-check-label">Blue</label>
-                            </div>
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colors" [value]="'B'" />
-                                <label class="form-check-label">Black</label>
-                            </div>
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colors" [value]="'R'" />
-                                <label class="form-check-label">Red</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" formControlName="colors" [value]="'G'" />
-                                <label class="form-check-label">Green</label>
-                            </div>
-                        </div>
-
-                        <!-- Color Matching Criteria -->
-                        <select class="form-control mb-1 mt-2" formControlName="colorParams">
-                            <option value="exact">Exactly these</option>
-                            <option value="any">Any of these</option>
-                        </select>
-                    </div>
-
-                    <!-- Color Identity -->
-                    <div class="form-group">
-                        <label>Color Identity</label>
-                        <div class="d-flex align-items-center">
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colorIdentity" [value]="'W'" />
-                                <label class="form-check-label">White</label>
-                            </div>
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colorIdentity" [value]="'U'" />
-                                <label class="form-check-label">Blue</label>
-                            </div>
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colorIdentity" [value]="'B'" />
-                                <label class="form-check-label">Black</label>
-                            </div>
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" formControlName="colorIdentity" [value]="'R'" />
-                                <label class="form-check-label">Red</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" formControlName="colorIdentity" [value]="'G'" />
-                                <label class="form-check-label">Green</label>
-                            </div>
-                        </div>
-
-                        <!-- Color Identity Matching Criteria -->
-                        <select class="form-control mb-1 mt-2" formControlName="colorIdentityParams">
-                            <option value="exact">Exactly these</option>
-                            <option value="any">Any of these</option>
-                        </select>
+                        <label for="oracleText">Oracle Text</label>
+                        <input type="text" class="form-control mb-1" placeholder="Oracle Text..." formControlName="oracleText">
                     </div>
 
                     <!-- Mana Value -->
                     <div class="form-group">
-                        <label>Mana Value</label>
-                        <select class="form-control mb-1" formControlName="manaValueComparator">
+                        <label for="manaValue">Mana Value</label>
+                        <input type="number" class="form-control mb-1" placeholder="Mana Value..." formControlName="manaValue">
+                        <select class="form-control" formControlName="manaValueComparator">
                             <option value="equals">Equals</option>
-                            <option value="greater">Greater Than</option>
-                            <option value="less">Less Than</option>
+                            <option value="lessThan">Less Than</option>
+                            <option value="greaterThan">Greater Than</option>
                         </select>
-                        <input type="number" class="form-control mb-1" formControlName="manaValue">
                     </div>
 
                     <!-- Power -->
                     <div class="form-group">
-                        <label>Power</label>
-                        <select class="form-control mb-1" formControlName="powerComparator">
+                        <label for="power">Power</label>
+                        <input type="number" class="form-control mb-1" placeholder="Power..." formControlName="power">
+                        <select class="form-control" formControlName="powerComparator">
                             <option value="equals">Equals</option>
-                            <option value="greater">Greater Than</option>
-                            <option value="less">Less Than</option>
+                            <option value="lessThan">Less Than</option>
+                            <option value="greaterThan">Greater Than</option>
                         </select>
-                        <input type="number" class="form-control mb-1" formControlName="power">
                     </div>
 
                     <!-- Toughness -->
                     <div class="form-group">
-                        <label>Toughness</label>
-                        <select class="form-control mb-1" formControlName="toughnessComparator">
+                        <label for="toughness">Toughness</label>
+                        <input type="number" class="form-control mb-1" placeholder="Toughness..." formControlName="toughness">
+                        <select class="form-control" formControlName="toughnessComparator">
                             <option value="equals">Equals</option>
-                            <option value="greater">Greater Than</option>
-                            <option value="less">Less Than</option>
+                            <option value="lessThan">Less Than</option>
+                            <option value="greaterThan">Greater Than</option>
                         </select>
-                        <input type="number" class="form-control mb-1" formControlName="toughness">
                     </div>
 
                     <!-- Loyalty -->
                     <div class="form-group">
-                        <label>Loyalty</label>
-                        <select class="form-control mb-1" formControlName="loyaltyComparator">
+                        <label for="loyalty">Loyalty</label>
+                        <input type="number" class="form-control mb-1" placeholder="Loyalty..." formControlName="loyalty">
+                        <select class="form-control" formControlName="loyaltyComparator">
                             <option value="equals">Equals</option>
-                            <option value="greater">Greater Than</option>
-                            <option value="less">Less Than</option>
+                            <option value="lessThan">Less Than</option>
+                            <option value="greaterThan">Greater Than</option>
                         </select>
-                        <input type="number" class="form-control mb-1" formControlName="loyalty">
                     </div>
 
-                    <!-- Sort Order and Direction -->
+                    <!-- Colors Section -->
                     <div class="form-group">
-                        <label>Sort Order</label>
-                        <select class="form-control mb-1" formControlName="sortOrder">
-                            <option value="name">Name</option>
-                            <option value="manaValue">Mana Value</option>
+                        <label>Colors</label>
+                        <div class="d-flex flex-wrap gap-3 mb-2">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="W" formControlName="colors" id="colorWhite">
+                                <label class="form-check-label" for="colorWhite">White</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="U" formControlName="colors" id="colorBlue">
+                                <label class="form-check-label" for="colorBlue">Blue</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="B" formControlName="colors" id="colorBlack">
+                                <label class="form-check-label" for="colorBlack">Black</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="R" formControlName="colors" id="colorRed">
+                                <label class="form-check-label" for="colorRed">Red</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="G" formControlName="colors" id="colorGreen">
+                                <label class="form-check-label" for="colorGreen">Green</label>
+                            </div>
+                        </div>
+                        <label for="colorParams">Color Matching</label>
+                        <select class="form-control" formControlName="colorParams">
+                            <option value="any">Any</option>
+                            <option value="exactly">Exactly</option>
+                            <option value="atMost">At Most These</option>
                         </select>
                     </div>
-
+                    <!-- Color Identity Section -->
                     <div class="form-group">
-                        <label>Sort Direction</label>
-                        <select class="form-control mb-1" formControlName="sortDirection">
-                            <option value="asc">Ascending</option>
-                            <option value="desc">Descending</option>
+                        <label>Color Identity</label>
+                        <div class="d-flex flex-wrap gap-3 mb-2">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="W" formControlName="colorIdentity" id="colorIdentityWhite">
+                                <label class="form-check-label" for="colorIdentityWhite">White</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="U" formControlName="colorIdentity" id="colorIdentityBlue">
+                                <label class="form-check-label" for="colorIdentityBlue">Blue</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="B" formControlName="colorIdentity" id="colorIdentityBlack">
+                                <label class="form-check-label" for="colorIdentityBlack">Black</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="R" formControlName="colorIdentity" id="colorIdentityRed">
+                                <label class="form-check-label" for="colorIdentityRed">Red</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" value="G" formControlName="colorIdentity" id="colorIdentityGreen">
+                                <label class="form-check-label" for="colorIdentityGreen">Green</label>
+                            </div>
+                        </div>
+                        <label for="colorIdentityParams">Color Identity Matching</label>
+                        <select class="form-control" formControlName="colorIdentityParams">
+                            <option value="any">Any</option>
+                            <option value="exactly">Exactly</option>
+                            <option value="atMost">At Most These</option>
                         </select>
                     </div>
-
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-                <button type="button" class="btn btn-success" (click)="onSearch()" (click)="closeModal()">Search</button>
+                <button type="button" class="btn btn-success" (click)="onSearch()">Search</button>
             </div>
         </div>
     </div>

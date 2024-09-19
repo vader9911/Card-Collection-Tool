@@ -26,43 +26,43 @@ namespace Card_Collection_Tool.Controllers
         }
         [HttpGet("search")]
         public async Task<IActionResult> SearchCards(
-  [FromQuery] string name = null,
-  [FromQuery] string set = null,
-  [FromQuery] string oracleText = null,
-  [FromQuery] string type = null,
-  [FromQuery] string colors = null,
-  [FromQuery] string colorCriteria = "exact",
-  [FromQuery] string colorIdentity = null,
-  [FromQuery] string colorIdentityCriteria = "exact",
-  [FromQuery] float? manaValue = null,
-  [FromQuery] string manaValueComparator = "equals",
-  [FromQuery] string manaCost = null,
-  [FromQuery] string power = null,
-  [FromQuery] string powerComparator = "equals",
-  [FromQuery] string toughness = null,
-  [FromQuery] string toughnessComparator = "equals",
-  [FromQuery] string loyalty = null,
-  [FromQuery] string loyaltyComparator = "equals",
-  [FromQuery] string sortOrder = "name",
-  [FromQuery] string sortDirection = "asc",
-  [FromQuery] bool showAllVersions = false)
+            [FromQuery] string name = null,
+            [FromQuery] string set = null,
+            [FromQuery] string oracleText = null,
+            [FromQuery] string type = null,
+            [FromQuery] string colors = null,
+            [FromQuery] string colorCriteria = "exact",
+            [FromQuery] string colorIdentity = null,
+            [FromQuery] string colorIdentityCriteria = "exact",
+            [FromQuery] float? manaValue = null,
+            [FromQuery] string manaValueComparator = "equals",
+            [FromQuery] string manaCost = null,
+            [FromQuery] string power = null,
+            [FromQuery] string powerComparator = "equals",
+            [FromQuery] string toughness = null,
+            [FromQuery] string toughnessComparator = "equals",
+            [FromQuery] string loyalty = null,
+            [FromQuery] string loyaltyComparator = "equals",
+            [FromQuery] string sortOrder = "name",
+            [FromQuery] string sortDirection = "asc",
+            [FromQuery] bool showAllVersions = false)
         {
             // Base SQL query with necessary joins
             var sql = new StringBuilder(@"
-    SELECT 
-        c.*,
-        p.Usd, p.UsdFoil, p.UsdEtched, p.Eur, p.EurFoil, p.Tix,
-        i.Small, i.Normal, i.Large, i.Png, i.ArtCrop, i.BorderCrop,
-        l.Standard, l.Future, l.Historic, l.Timeless, l.Gladiator, 
-        l.Pioneer, l.Explorer, l.Modern, l.Legacy, l.Pauper, 
-        l.Vintage, l.Penny, l.Commander, l.Oathbreaker, l.StandardBrawl, 
-        l.Brawl, l.Alchemy, l.PauperCommander, l.Duel, l.OldSchool, 
-        l.Premodern, l.Predh
-    FROM ScryfallCards c
-    LEFT JOIN Prices p ON c.Id = p.ScryfallCardId
-    LEFT JOIN ImageUris i ON c.Id = i.ScryfallCardId
-    LEFT JOIN Legalities l ON c.Id = l.ScryfallCardId
-    WHERE 1=1");
+        SELECT 
+            c.*,
+            p.Usd, p.UsdFoil, p.UsdEtched, p.Eur, p.EurFoil, p.Tix,
+            i.Small, i.Normal, i.Large, i.Png, i.ArtCrop, i.BorderCrop,
+            l.Standard, l.Future, l.Historic, l.Timeless, l.Gladiator, 
+            l.Pioneer, l.Explorer, l.Modern, l.Legacy, l.Pauper, 
+            l.Vintage, l.Penny, l.Commander, l.Oathbreaker, l.StandardBrawl, 
+            l.Brawl, l.Alchemy, l.PauperCommander, l.Duel, l.OldSchool, 
+            l.Premodern, l.Predh
+        FROM ScryfallCards c
+        LEFT JOIN Prices p ON c.Id = p.ScryfallCardId
+        LEFT JOIN ImageUris i ON c.Id = i.ScryfallCardId
+        LEFT JOIN Legalities l ON c.Id = l.ScryfallCardId
+        WHERE 1=1");
 
             var parameters = new List<SqlParameter>();
 
@@ -127,8 +127,6 @@ namespace Card_Collection_Tool.Controllers
                 }
             }
 
-
-
             // Handle numerical filters with comparators
             if (manaValue.HasValue)
             {
@@ -156,15 +154,21 @@ namespace Card_Collection_Tool.Controllers
             }
 
             // Handle dynamic sorting
-            var validSortColumns = new[] { "name", "cmc", "price", "toughness", "power" }; // Valid columns to sort by
-            if (validSortColumns.Contains(sortOrder.ToLower()))
+            var validSortColumns = new[] { "name", "cmc", "price", "toughness", "power" };
+            if (sortOrder.ToLower() == "price")
             {
-                sql.Append($" ORDER BY c.{sortOrder} {sortDirection}");
+                // Sort by price column from the Prices table
+                sql.Append($" ORDER BY p.Usd {sortDirection.ToUpper()}");
+            }
+            else if (validSortColumns.Contains(sortOrder.ToLower()))
+            {
+                // Sort by columns from the ScryfallCards table
+                sql.Append($" ORDER BY c.{sortOrder} {sortDirection.ToUpper()}");
             }
 
             // Execute the query 
             var results = new List<ScryfallCard>();
-            using (var connection = new SqlConnection("Server=DESKTOP-O35BQH4\\SQLEXPRESS;Database=Card-Collecting-Tool;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"))
+            using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
             {
                 using (var command = new SqlCommand(sql.ToString(), connection))
                 {
@@ -174,147 +178,234 @@ namespace Card_Collection_Tool.Controllers
                     {
                         while (reader.Read())
                         {
-                            while (reader.Read())
+                            // extract the Id from the reader
+                            var cardId = reader["Id"].ToString();
+
+                            var card = new ScryfallCard
                             {
-                                // extract the Id from the reader
-                                var cardId = reader["Id"].ToString();
-
-                                
-                                var card = new ScryfallCard
+                                Id = cardId,
+                                Name = reader["Name"].ToString(),
+                                Cmc = reader["Cmc"] != DBNull.Value ? Convert.ToSingle(reader["Cmc"]) : (float?)null,
+                                ManaCost = reader["ManaCost"].ToString(),
+                                TypeLine = reader["TypeLine"].ToString(),
+                                OracleText = reader["OracleText"].ToString(),
+                                Power = reader["Power"].ToString(),
+                                Toughness = reader["Toughness"].ToString(),
+                                Rarity = reader["Rarity"].ToString(),
+                                Digital = Convert.ToBoolean(reader["Digital"]),
+                                Prices = new Prices
                                 {
-                                    Id = cardId,
-                                    Name = reader["Name"].ToString(),
-                                    Cmc = reader["Cmc"] != DBNull.Value ? Convert.ToSingle(reader["Cmc"]) : (float?)null,
-                                    ManaCost = reader["ManaCost"].ToString(),
-                                    TypeLine = reader["TypeLine"].ToString(),
-                                    OracleText = reader["OracleText"].ToString(),
-                                    Power = reader["Power"].ToString(),
-                                    Toughness = reader["Toughness"].ToString(),
-                                    Prices = new Prices
-                                    {
-                                        ScryfallCardId = cardId,
-                                        Usd = reader["Usd"]?.ToString(),
-                                        UsdFoil = reader["UsdFoil"]?.ToString(),
-                                        UsdEtched = reader["UsdEtched"]?.ToString(),
-                                        Eur = reader["Eur"]?.ToString(),
-                                        EurFoil = reader["EurFoil"]?.ToString(),
-                                        Tix = reader["Tix"]?.ToString()
-                                    },
-                                    ImageUris = new ImageUris
-                                    {
-                                        ScryfallCardId = cardId,
-                                        Small = reader["Small"]?.ToString(),
-                                        Normal = reader["Normal"]?.ToString(),
-                                        Large = reader["Large"]?.ToString(),
-                                        Png = reader["Png"]?.ToString(),
-                                        ArtCrop = reader["ArtCrop"]?.ToString(),
-                                        BorderCrop = reader["BorderCrop"]?.ToString()
-                                    },
-                                    Legalities = new Legalities
-                                    {
-                                        ScryfallCardId = cardId,
-                                        Standard = reader["Standard"]?.ToString(),
-                                        Future = reader["Future"]?.ToString(),
-                                        Historic = reader["Historic"]?.ToString(),
-                                        Timeless = reader["Timeless"]?.ToString(),
-                                        Gladiator = reader["Gladiator"]?.ToString(),
-                                        Pioneer = reader["Pioneer"]?.ToString(),
-                                        Explorer = reader["Explorer"]?.ToString(),
-                                        Modern = reader["Modern"]?.ToString(),
-                                        Legacy = reader["Legacy"]?.ToString(),
-                                        Pauper = reader["Pauper"]?.ToString(),
-                                        Vintage = reader["Vintage"]?.ToString(),
-                                        Penny = reader["Penny"]?.ToString(),
-                                        Commander = reader["Commander"]?.ToString(),
-                                        Oathbreaker = reader["Oathbreaker"]?.ToString(),
-                                        StandardBrawl = reader["StandardBrawl"]?.ToString(),
-                                        Brawl = reader["Brawl"]?.ToString(),
-                                        Alchemy = reader["Alchemy"]?.ToString(),
-                                        PauperCommander = reader["PauperCommander"]?.ToString(),
-                                        Duel = reader["Duel"]?.ToString(),
-                                        OldSchool = reader["OldSchool"]?.ToString(),
-                                        Premodern = reader["Premodern"]?.ToString(),
-                                        Predh = reader["Predh"]?.ToString()
-                                    }
-                                };
+                                    ScryfallCardId = cardId,
+                                    Usd = reader["Usd"]?.ToString(),
+                                    UsdFoil = reader["UsdFoil"]?.ToString(),
+                                    UsdEtched = reader["UsdEtched"]?.ToString(),
+                                    Eur = reader["Eur"]?.ToString(),
+                                    EurFoil = reader["EurFoil"]?.ToString(),
+                                    Tix = reader["Tix"]?.ToString()
+                                },
+                                ImageUris = new ImageUris
+                                {
+                                    ScryfallCardId = cardId,
+                                    Small = reader["Small"]?.ToString(),
+                                    Normal = reader["Normal"]?.ToString(),
+                                    Large = reader["Large"]?.ToString(),
+                                    Png = reader["Png"]?.ToString(),
+                                    ArtCrop = reader["ArtCrop"]?.ToString(),
+                                    BorderCrop = reader["BorderCrop"]?.ToString()
+                                },
+                                Legalities = new Legalities
+                                {
+                                    ScryfallCardId = cardId,
+                                    Standard = reader["Standard"]?.ToString(),
+                                    Future = reader["Future"]?.ToString(),
+                                    Historic = reader["Historic"]?.ToString(),
+                                    Timeless = reader["Timeless"]?.ToString(),
+                                    Gladiator = reader["Gladiator"]?.ToString(),
+                                    Pioneer = reader["Pioneer"]?.ToString(),
+                                    Explorer = reader["Explorer"]?.ToString(),
+                                    Modern = reader["Modern"]?.ToString(),
+                                    Legacy = reader["Legacy"]?.ToString(),
+                                    Pauper = reader["Pauper"]?.ToString(),
+                                    Vintage = reader["Vintage"]?.ToString(),
+                                    Penny = reader["Penny"]?.ToString(),
+                                    Commander = reader["Commander"]?.ToString(),
+                                    Oathbreaker = reader["Oathbreaker"]?.ToString(),
+                                    StandardBrawl = reader["StandardBrawl"]?.ToString(),
+                                    Brawl = reader["Brawl"]?.ToString(),
+                                    Alchemy = reader["Alchemy"]?.ToString(),
+                                    PauperCommander = reader["PauperCommander"]?.ToString(),
+                                    Duel = reader["Duel"]?.ToString(),
+                                    OldSchool = reader["OldSchool"]?.ToString(),
+                                    Premodern = reader["Premodern"]?.ToString(),
+                                    Predh = reader["Predh"]?.ToString()
+                                }
+                            };
 
-                                results.Add(card);
-                            }
+                            results.Add(card);
                         }
                     }
+                }
+
+                // Filter to show only the most recent versions if applicable
+                if (!showAllVersions)
+                {
+                    results = FilterMostRecentVersions(results);
                 }
 
                 return Ok(results);
             }
         }
 
+        // Function to filter the most recent version of each card based on release date
+        private List<ScryfallCard?> FilterMostRecentVersions(List<ScryfallCard> cards)
+        {
+            return cards
+                .GroupBy(c => c.Name)
+                .Select(g => g.OrderByDescending(c => c.ReleaseDate).FirstOrDefault())
+                .ToList();
+        }
 
 
 
-            //[HttpGet("autocomplete")]
-            //public async Task<IActionResult> GetCardAutocomplete([FromQuery] string query)
-            //{
-            //    if (string.IsNullOrEmpty(query))
-            //    {
-            //        return BadRequest("Search cannot be empty.");
-            //    }
+        [HttpGet("autocomplete/{field}")]
+        public async Task<IActionResult> GetAutocompleteOptions(string field, [FromQuery] string searchTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                return BadRequest("Query cannot be empty.");
+            }
 
-            //    var matchingCards = await _context.ScryfallCards
-            //        .Where(card => card.Name.Contains(query))
-            //        .OrderBy(card => card.Name)
-            //        .Select(card => new
-            //        {
-            //            id = card.Id,
-            //            name = card.Name,
-            //            imageUri = card.ImageUris.Png ?? card.ImageUris.Large ?? card.ImageUris.Normal ?? "default-image-url.png"
-            //        })
-            //        .Take(20)
-            //        .Distinct()
-            //        .ToListAsync();
+            List<string> options;
+            try
+            {
+                options = await GetAutocompleteOptionsFromDatabaseAsync(field, searchTerm);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+            return Ok(options);
+        }
+
+        private async Task<List<string>> GetAutocompleteOptionsFromDatabaseAsync(string field, string searchTerm)
+        {
+            string sqlQuery;
+            switch (field.ToLower())
+            {
+                case "type":
+                    sqlQuery = "SELECT DISTINCT TypeLine FROM ScryfallCards WHERE TypeLine LIKE @Query ORDER BY TypeLine";
+                    break;
+
+                case "set":
+                    sqlQuery = "SELECT DISTINCT SetName FROM ScryfallCards WHERE SetName LIKE @Query ORDER BY SetName";
+                    break;
+
+                case "oracletext":
+                    sqlQuery = "SELECT DISTINCT OracleText FROM ScryfallCards WHERE OracleText LIKE @Query ORDER BY OracleText";
+                    break;
+
+                // Add more cases for other fields as needed...
+
+                default:
+                    throw new ArgumentException($"Field type '{field}' is not supported for autocomplete.");
+            }
+
+            List<string> results = new List<string>();
+
+            // Use ADO.NET to execute the query
+            using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Query", $"%{searchTerm}%");
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            results.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+
+            return results.Take(10).ToList(); // Limit the number of results for performance reasons
+        }
 
 
 
-            //    return Ok(matchingCards);
-            //}
 
 
-            //        // GET: api/cards/{cardId}
-            //        [HttpGet("{cardId}/details")]
-            //        public async Task<IActionResult> GetCardDetails(string cardId)
-            //        {
-            //            Console.WriteLine($"Received request for card ID: {cardId}");
-            //            if (string.IsNullOrEmpty(cardId))
-            //            {
-            //                return BadRequest(new { message = "Card ID cannot be null or empty." });
-            //            }
+        //[HttpGet("autocomplete")]
+        //public async Task<IActionResult> GetCardAutocomplete([FromQuery] string query)
+        //{
+        //    if (string.IsNullOrEmpty(query))
+        //    {
+        //        return BadRequest("Search cannot be empty.");
+        //    }
 
-            //            var card = await _context.ScryfallCards
-            //                .Include(c => c.ImageUris) // Include related data if necessary
-            //                .Where(c => c.Id == cardId)
-            //                .Select(card => new
-            //                    {
-            //                        card.Id,
-            //                        card.Name,
-            //                        ImageUri = card.ImageUris.Normal,
-            //                        card.ManaCost,
-            //                        card.TypeLine,
-            //                        card.OracleText,
-            //                        card.SetName,
-            //                        card.Artist,
-            //                        card.Rarity,
-            //                        Prices = card.Prices.Usd
-            //                    })
-            //                .FirstOrDefaultAsync();
-
-            //            if (card == null)
-            //            {
-            //                return NotFound(new { message = "Card not found." });
-            //            }
+        //    var matchingCards = await _context.ScryfallCards
+        //        .Where(card => card.Name.Contains(query))
+        //        .OrderBy(card => card.Name)
+        //        .Select(card => new
+        //        {
+        //            id = card.Id,
+        //            name = card.Name,
+        //            imageUri = card.ImageUris.Png ?? card.ImageUris.Large ?? card.ImageUris.Normal ?? "default-image-url.png"
+        //        })
+        //        .Take(20)
+        //        .Distinct()
+        //        .ToListAsync();
 
 
-            //            return Ok(card);
-            //        }
-            //    }
-        
+
+        //    return Ok(matchingCards);
+        //}
+
+
+        //        // GET: api/cards/{cardId}
+        //        [HttpGet("{cardId}/details")]
+        //        public async Task<IActionResult> GetCardDetails(string cardId)
+        //        {
+        //            Console.WriteLine($"Received request for card ID: {cardId}");
+        //            if (string.IsNullOrEmpty(cardId))
+        //            {
+        //                return BadRequest(new { message = "Card ID cannot be null or empty." });
+        //            }
+
+        //            var card = await _context.ScryfallCards
+        //                .Include(c => c.ImageUris) // Include related data if necessary
+        //                .Where(c => c.Id == cardId)
+        //                .Select(card => new
+        //                    {
+        //                        card.Id,
+        //                        card.Name,
+        //                        ImageUri = card.ImageUris.Normal,
+        //                        card.ManaCost,
+        //                        card.TypeLine,
+        //                        card.OracleText,
+        //                        card.SetName,
+        //                        card.Artist,
+        //                        card.Rarity,
+        //                        Prices = card.Prices.Usd
+        //                    })
+        //                .FirstOrDefaultAsync();
+
+        //            if (card == null)
+        //            {
+        //                return NotFound(new { message = "Card not found." });
+        //            }
+
+
+        //            return Ok(card);
+        //        }
+        //    }
+
     }
 }

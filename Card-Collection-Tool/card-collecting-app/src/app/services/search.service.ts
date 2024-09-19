@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-
+import { catchError } from 'rxjs/operators';
+import { CardSearchComponent } from '../components/card-search/card-search.component';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,37 @@ export class SearchService {
       }
     });
 
-    return this.http.get<any>(`${this.apiUrl}/search`, { params });
+    console.log('Search request parameters:', params.toString()); // Log parameters for debugging
+
+    return this.http.get<any>(`${this.apiUrl}/search`, { params })
+      .pipe(
+        catchError(error => {
+          console.error('Search request failed:', error);
+          return of([]); // Handle errors gracefully
+        })
+      );
   }
+
+  autocomplete(field: string, searchTerm: string): Observable<string[]> {
+    console.log("Autocomplete method called");
+
+    if (!this.apiUrl) {
+      console.error('API URL is not defined');
+      return of([]);
+    }
+
+   const url = `${this.apiUrl}/autocomplete/${field}?searchTerm=${encodeURIComponent(searchTerm)}`;
+    console.log("Generated URL:", url);
+
+    return this.http.get<string[]>(url)
+      .pipe(
+        catchError(error => {
+          console.error('Autocomplete request failed', error);
+          return of([]);
+        })
+      );
+  }
+
 }
+
+
