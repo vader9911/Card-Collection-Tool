@@ -94,21 +94,32 @@ namespace Card_Collection_Tool
                 app.UseHsts();
             }
 
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles(); // Serve static files from wwwroot
-
-            app.UseRouting();
-
-
+            // Ensure CORS is applied before routing, authentication, or authorization.
             app.UseCors("AllowSpecificOrigins");
 
+            // Redirect HTTP requests to HTTPS.
+            app.UseHttpsRedirection();
+
+            // Serve static files from wwwroot.
+            app.UseStaticFiles();
+
+            // Configure routing; it should come before authentication.
+            app.UseRouting();
+
+            // Authentication and authorization should be after routing and before endpoint mapping.
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapControllers();
-            app.MapFallbackToFile("index.html"); // Fallback route to serve Angular app
+            // Map controllers and endpoints.
+            app.UseEndpoints(endpoints =>
+            {
+                _ = endpoints.MapControllers();
+            });
 
+            // Fallback route for Angular app.
+            app.MapFallbackToFile("index.html");
+
+            // Run the application.
             app.Run();
         }
     }
