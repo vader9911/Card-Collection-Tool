@@ -250,8 +250,9 @@ namespace Card_Collection_Tool.Controllers
                 // Filter to show only the most recent versions if applicable
                 if (!showAllVersions)
                 {
-                    results = FilterMostRecentVersions(results);
+                    results = FilterMostRecentNonDigitalVersion(results);
                 }
+
 
                 return Ok(results);
             }
@@ -266,6 +267,31 @@ namespace Card_Collection_Tool.Controllers
                 .ToList();
         }
 
+        private List<ScryfallCard> FilterMostRecentNonDigitalVersion(List<ScryfallCard> cards)
+        {
+            var filteredCards = new List<ScryfallCard>();
+
+            // Group cards by name to handle versions
+            var groupedCards = cards.GroupBy(c => c.Name);
+
+            foreach (var group in groupedCards)
+            {
+                // Try to find the first non-digital card in the group
+                var nonDigitalCard = group.FirstOrDefault(c => !c.Digital);
+
+                if (nonDigitalCard != null)
+                {
+                    filteredCards.Add(nonDigitalCard);
+                }
+                else
+                {
+                    // If no non-digital cards are found, fall back to the first card in the group
+                    filteredCards.Add(group.First());
+                }
+            }
+
+            return filteredCards;
+        }
 
 
         [HttpGet("autocomplete/{field}")]

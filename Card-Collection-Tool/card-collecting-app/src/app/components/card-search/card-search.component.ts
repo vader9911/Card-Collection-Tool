@@ -176,9 +176,6 @@ export class CardSearchComponent implements OnInit, OnDestroy {
           this.noResultsReturned = true;
         } else {
           this.cards = results;
-          this.cards = results.filter((cards: { digital: any; }) => {
-              return !cards.digital;
-          });
           this.searchPerformed = true;
           this.sortCards(); // Sort after receiving results
         }
