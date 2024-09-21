@@ -19,11 +19,11 @@ import { AddToCollectionModalComponent } from '../addcard-modal/addcard-modal.co
   styleUrls: ['./card-details.component.scss']
 })
 export class CardDetailsComponent implements OnInit {
-  cardId: any;
+  selectedCardId: any;
   cardDetails: any = null;
   isLoggedIn: boolean = false; // Track user authentication status
   authSubscription?: Subscription;
-  selectedCardId: any | undefined;
+  pageCardId: any | undefined;
 
   constructor(
     private route: ActivatedRoute,
@@ -38,25 +38,39 @@ export class CardDetailsComponent implements OnInit {
       this.isLoggedIn = status;
     });
     // Get card ID from the route parameters
-    this.cardId = this.route.snapshot.paramMap.get('cardId') ?? '';
-    console.log(this.cardId);
+    this.selectedCardId = this.route.snapshot.paramMap.get('cardId') ?? '';
+    console.log(this.selectedCardId, "this is the component log");
     // Load card details if card ID is available
-    if (this.cardId) {
-      this.apiService.getCardDetails(this.cardId).subscribe(
+    if (this.selectedCardId) {
+      this.apiService.getCardDetails(this.selectedCardId).subscribe(
         (details) => {
           this.cardDetails = details;
+          console.log('Card Details:', this.cardDetails);
         },
         (error) => {
+          // Log detailed error information
           console.error('Error fetching card details:', error);
+
+          // Log specific details if available
+          if (error.status) {
+
+            console.error(`HTTP Status: ${error.status}`);
+          }
+          if (error.message) {
+            console.error(`Error Message: ${error.message}`);
+          }
+          if (error.error) {
+            console.error('Error Details:', error.error);
+          }
         }
       );
     }
   }
 
   // Function to open the add-to-collection modal
-  openAddToCollectionModal(cardId: number) {
+  openAddToCollectionModal(selectedCardId: number) {
     console.log("modal for add card opened");
-    this.selectedCardId = cardId; // Store the selected card ID
+    this.pageCardId = selectedCardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');
     if (modal) {
       modal.style.display = 'block';

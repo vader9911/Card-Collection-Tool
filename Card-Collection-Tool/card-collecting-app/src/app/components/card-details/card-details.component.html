@@ -2,7 +2,7 @@
     <div class="row bg-dark text-light rounded p-3 shadow-sm">
         <!-- Card image on the left -->
         <div class="col-md-4 mb-3">
-            <img [src]="cardDetails?.imageUri" class="img-fluid rounded border border-secondary" alt="{{ cardDetails?.name }}" data-id="{{cardId.id}}" />
+            <img [src]="cardDetails?.imageUris.png" class="img-fluid rounded border border-secondary" alt="{{ cardDetails?.name }}" data-id="{{selectedCardId.id}}" />
         </div>
 
         <!-- Card details on the right -->
@@ -41,9 +41,9 @@
                     <!-- Add more card properties as needed -->
                 </tbody>
             </table>
-            <button *ngIf="isLoggedIn" class="btn btn-outline-light mt-3" (click)="openAddToCollectionModal(selectedCardId)">Add to Collection</button>
+            <button *ngIf="isLoggedIn" class="btn btn-outline-light mt-3" (click)="openAddToCollectionModal(pageCardId)">Add to Collection</button>
         </div>
     </div>
 </div>
 
-<app-addcard-modal [cardId]="cardId"></app-addcard-modal>
+<app-addcard-modal [cardId]="selectedCardId"></app-addcard-modal>

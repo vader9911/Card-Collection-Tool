@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using System.Text;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Card_Collection_Tool.Controllers
 {
@@ -337,6 +338,143 @@ namespace Card_Collection_Tool.Controllers
 
             return results.Take(10).ToList(); // Limit the number of results for performance reasons
         }
+
+
+        [HttpGet("{selectedCardId}/details")]
+        public async Task<IActionResult> GetCardById(string selectedCardId)
+        {
+            Console.WriteLine("API called with Card ID: " + selectedCardId);
+
+            try
+            {
+                using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                {
+                    await connection.OpenAsync();
+                    Console.WriteLine("Database connection opened successfully.");
+
+                    var sqlQuery = @"
+                SELECT 
+                    c.*,
+                    p.Usd, p.UsdFoil, p.UsdEtched, p.Eur, p.EurFoil, p.Tix,
+                    i.Small, i.Normal, i.Large, i.Png, i.ArtCrop, i.BorderCrop,
+                    l.Standard, l.Future, l.Historic, l.Timeless, l.Gladiator, 
+                    l.Pioneer, l.Explorer, l.Modern, l.Legacy, l.Pauper, 
+                    l.Vintage, l.Penny, l.Commander, l.Oathbreaker, l.StandardBrawl, 
+                    l.Brawl, l.Alchemy, l.PauperCommander, l.Duel, l.OldSchool, 
+                    l.Premodern, l.Predh
+                FROM ScryfallCards c
+                LEFT JOIN Prices p ON c.Id = p.ScryfallCardId
+                LEFT JOIN ImageUris i ON c.Id = i.ScryfallCardId
+                LEFT JOIN Legalities l ON c.Id = l.ScryfallCardId
+                WHERE c.Id = @CardId";
+
+                    Console.WriteLine("Executing SQL Query: " + sqlQuery);
+
+                    ScryfallCard card = null;
+
+                    using (var command = new SqlCommand(sqlQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@CardId", selectedCardId);
+                        Console.WriteLine("Card ID Parameter Set: " + selectedCardId);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (!reader.HasRows)
+                            {
+                                Console.WriteLine("No rows returned from the query.");
+                                return NotFound("No card details found for the provided ID.");
+                            }
+
+                            Console.WriteLine("Rows returned from the query, processing results...");
+
+                            if (await reader.ReadAsync())
+                            {
+                                var cardId = reader["Id"].ToString();
+
+                                card = new ScryfallCard
+                                {
+                                    Id = cardId,
+                                    Name = reader["Name"].ToString(),
+                                    Cmc = reader["Cmc"] != DBNull.Value ? Convert.ToSingle(reader["Cmc"]) : (float?)null,
+                                    ManaCost = reader["ManaCost"].ToString(),
+                                    TypeLine = reader["TypeLine"].ToString(),
+                                    OracleText = reader["OracleText"].ToString(),
+                                    Power = reader["Power"].ToString(),
+                                    Toughness = reader["Toughness"].ToString(),
+                                    Rarity = reader["Rarity"].ToString(),
+                                    Digital = Convert.ToBoolean(reader["Digital"]),
+                                    Prices = new Prices
+                                    {
+                                        ScryfallCardId = cardId,
+                                        Usd = reader["Usd"]?.ToString(),
+                                        UsdFoil = reader["UsdFoil"]?.ToString(),
+                                        UsdEtched = reader["UsdEtched"]?.ToString(),
+                                        Eur = reader["Eur"]?.ToString(),
+                                        EurFoil = reader["EurFoil"]?.ToString(),
+                                        Tix = reader["Tix"]?.ToString()
+                                    },
+                                    ImageUris = new ImageUris
+                                    {
+                                        ScryfallCardId = cardId,
+                                        Small = reader["Small"]?.ToString(),
+                                        Normal = reader["Normal"]?.ToString(),
+                                        Large = reader["Large"]?.ToString(),
+                                        Png = reader["Png"]?.ToString(),
+                                        ArtCrop = reader["ArtCrop"]?.ToString(),
+                                        BorderCrop = reader["BorderCrop"]?.ToString()
+                                    },
+                                    Legalities = new Legalities
+                                    {
+                                        ScryfallCardId = cardId,
+                                        Standard = reader["Standard"]?.ToString(),
+                                        Future = reader["Future"]?.ToString(),
+                                        Historic = reader["Historic"]?.ToString(),
+                                        Timeless = reader["Timeless"]?.ToString(),
+                                        Gladiator = reader["Gladiator"]?.ToString(),
+                                        Pioneer = reader["Pioneer"]?.ToString(),
+                                        Explorer = reader["Explorer"]?.ToString(),
+                                        Modern = reader["Modern"]?.ToString(),
+                                        Legacy = reader["Legacy"]?.ToString(),
+                                        Pauper = reader["Pauper"]?.ToString(),
+                                        Vintage = reader["Vintage"]?.ToString(),
+                                        Penny = reader["Penny"]?.ToString(),
+                                        Commander = reader["Commander"]?.ToString(),
+                                        Oathbreaker = reader["Oathbreaker"]?.ToString(),
+                                        StandardBrawl = reader["StandardBrawl"]?.ToString(),
+                                        Brawl = reader["Brawl"]?.ToString(),
+                                        Alchemy = reader["Alchemy"]?.ToString(),
+                                        PauperCommander = reader["PauperCommander"]?.ToString(),
+                                        Duel = reader["Duel"]?.ToString(),
+                                        OldSchool = reader["OldSchool"]?.ToString(),
+                                        Premodern = reader["Premodern"]?.ToString(),
+                                        Predh = reader["Predh"]?.ToString()
+                                    }
+                                };
+
+                                Console.WriteLine($"Processed Card: {card.Name} with ID: {card.Id}");
+                            }
+                        }
+                    }
+
+                    if (card == null)
+                    {
+                        Console.WriteLine("No card was found.");
+                        return NotFound();
+                    }
+
+                    Console.WriteLine($"Returning card: {card.Name} with ID: {card.Id}");
+                    return Ok(card);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the full exception details
+                Console.WriteLine($"Error fetching card details: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
 
 
 

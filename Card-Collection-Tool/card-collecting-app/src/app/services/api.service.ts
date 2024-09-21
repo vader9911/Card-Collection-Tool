@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,10 +10,15 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
- 
-  // Method to fetch card details by ID
   getCardDetails(cardId: string): Observable<any> {
-    console.log(cardId);
-    return this.http.get<any>(`${this.apiUrl}/${cardId}/details`);
+    console.log('API Service called with card ID:', cardId);
+    return this.http.get<any>(`${this.apiUrl}/${cardId}/details`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('API call error:', error);
+    return throwError('Something went wrong; please try again later.');
   }
 }
