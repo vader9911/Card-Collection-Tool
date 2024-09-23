@@ -2,15 +2,16 @@
     <div *ngFor="let card of cards" class="position-relative card-item">
         <!-- Display each card -->
         <div class="position-relative">
-            <img class="card-image" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="viewCardDetails(card.id)" />
+            <img class="card-image" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="openCardDetailModal(card.id, card.name)" />
             <!-- Button positioned at the bottom of the card image -->
             <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id)">+</button>
         </div>
     </div>
 </div>
 
-<app-addcard-modal [cardId]="selectedCardId"></app-addcard-modal>
+<app-card-detail-modal></app-card-detail-modal>
+    <app-addcard-modal [cardId]="selectedCardId"></app-addcard-modal>
 
-<ng-template #noResults>
-    <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>
-</ng-template>
+    <ng-template #noResults>
+        <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>
+    </ng-template>

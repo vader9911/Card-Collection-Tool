@@ -10,12 +10,21 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  getCardDetails(cardId: string): Observable<any> {
+  getCardDetails(cardId: string | undefined): Observable<any> {
     console.log('API Service called with card ID:', cardId);
     return this.http.get<any>(`${this.apiUrl}/${cardId}/details`).pipe(
       catchError(this.handleError)
     );
   }
+
+  getCardsByName(cardName: string | undefined): Observable<any> {
+    console.log('API Service called with card ID:', cardName);
+    return this.http.get<any>(`${this.apiUrl}/${cardName}/variations`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+
 
   private handleError(error: HttpErrorResponse) {
     console.error('API call error:', error);

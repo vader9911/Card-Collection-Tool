@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="card-collecting-app\src\app\components\card-details\**" />
     <Compile Remove="client-app\**" />
+    <Content Remove="card-collecting-app\src\app\components\card-details\**" />
     <Content Remove="client-app\**" />
+    <EmbeddedResource Remove="card-collecting-app\src\app\components\card-details\**" />
     <EmbeddedResource Remove="client-app\**" />
+    <None Remove="card-collecting-app\src\app\components\card-details\**" />
     <None Remove="client-app\**" />
   </ItemGroup>
 

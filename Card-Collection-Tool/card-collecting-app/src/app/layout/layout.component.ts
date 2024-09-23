@@ -12,6 +12,8 @@ import { CardListComponent } from '../components/card-list/card-list.component';
 import { SearchService } from '../services/search.service';
 import { AuthService } from '../services/auth.service';
 
+import {CardDetailModalComponent  } from '../components/card-detail-modal/card-detail-modal.component';
+
 @Component({
   selector: 'app-layout',
   standalone: true,
@@ -25,7 +27,8 @@ import { AuthService } from '../services/auth.service';
     CollectionsComponent,
     PrivacyComponent,
     CardSearchComponent,
-    CardListComponent
+    CardListComponent,
+    CardDetailModalComponent
 
   ],
   templateUrl: './layout.component.html',

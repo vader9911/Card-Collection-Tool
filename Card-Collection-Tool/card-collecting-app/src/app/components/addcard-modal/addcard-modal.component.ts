@@ -16,7 +16,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
   styleUrl: './addcard-modal.component.css'
 })
 export class AddToCollectionModalComponent implements OnInit {
-  @Input() cardId?: number; // Card ID passed to the modal
+  @Input() cardId?: string | undefined; // Card ID passed to the modal
   collections: any[] = []; // List of collections
   selectedCollectionId: number | null = null; // Initialize selected collection ID
   quantity: number = 1;

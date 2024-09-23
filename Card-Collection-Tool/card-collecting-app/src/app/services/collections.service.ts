@@ -24,7 +24,7 @@ export class CollectionsService {
   }
 
   // Fetch card details by ID (new method)
-  getCardById(cardId: string): Observable<any> {
+  getCardById(cardId: string | undefined): Observable<any> {
     return this.http.get<any>(`/api/cards/${cardId}`);
   }
 
@@ -57,7 +57,7 @@ export class CollectionsService {
   }
 
 
-  addCardToCollection(collectionId: number, CardId: number, Quantity : number): Observable<any> {
+  addCardToCollection(collectionId: number, CardId: string, Quantity : number): Observable<any> {
     const payload = { CardId, Quantity };
     const token = localStorage.getItem('auth_token');
 

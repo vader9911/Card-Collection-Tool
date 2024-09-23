@@ -501,6 +501,83 @@ namespace Card_Collection_Tool.Controllers
             }
         }
 
+        [HttpGet("{cardName}/variations")]
+        public async Task<IActionResult> GetCardVariations(string cardName)
+        {
+            Console.WriteLine($"API called to fetch variations for card: {cardName}");
+
+            try
+            {
+                using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                {
+                    await connection.OpenAsync();
+                    Console.WriteLine("Database connection opened successfully.");
+
+                    // SQL query to fetch cards with matching names
+                    var sqlQuery = @"
+                SELECT 
+                    Id, Name, SetName, ReleaseDate
+                FROM 
+                    ScryfallCards
+                WHERE 
+                    Name = @CardName";
+
+                    Console.WriteLine("Executing SQL Query: " + sqlQuery);
+
+                    var variations = new List<object>();
+
+                    using (var command = new SqlCommand(sqlQuery, connection))
+                    {
+                        command.Parameters.AddWithValue("@CardName", cardName);
+                        Console.WriteLine("Card Name Parameter Set: " + cardName);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (!reader.HasRows)
+                            {
+                                Console.WriteLine("No variations found for the card.");
+                                return NotFound("No variations found for the provided card name.");
+                            }
+
+                            Console.WriteLine("Rows returned from the query, processing results...");
+
+                            while (await reader.ReadAsync())
+                            {
+                                var card = new
+                                {
+                                    Id = reader["Id"].ToString(),
+                                    Name = reader["Name"].ToString(),
+                                    ReleaseDate = reader["ReleaseDate"].ToString(),
+                                    SetName = reader["SetName"].ToString()
+                                };
+
+                                variations.Add(card);
+                                Console.WriteLine($"Found Variation: {card.Name} with ID: {card.Id}, set name: {card.SetName}, release date: {card.ReleaseDate}");
+                            }
+                        }
+                    }
+
+                    if (variations.Count == 0)
+                    {
+                        Console.WriteLine("No card variations were added to the results list.");
+                        return NotFound();
+                    }
+
+                    Console.WriteLine($"Returning {variations.Count} card variation(s).");
+                    return Ok(variations);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the full exception details
+                Console.WriteLine($"Error fetching card variations: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+
 
 
 
