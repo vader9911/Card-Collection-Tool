@@ -429,6 +429,22 @@ namespace Card_Collection_Tool.Controllers
                                     Toughness = reader["Toughness"].ToString(),
                                     Rarity = reader["Rarity"].ToString(),
                                     Digital = Convert.ToBoolean(reader["Digital"]),
+                                    Artist = reader["Artist"].ToString(),
+                                    CollectorNumber = reader["CollectorNumber"].ToString(),
+                                    FlavorText = reader["FlavorText"].ToString(),
+                                    FullArt = reader["FullArt"] != DBNull.Value ? Convert.ToBoolean(reader["FullArt"]) : (bool?)null,
+                                    Games = reader["Games"] != DBNull.Value ? reader["Games"].ToString().Split(',').ToList() : new List<string?>(),
+                                    ReleaseDate = reader["ReleaseDate"].ToString(),
+                                    Reprint = reader["Reprint"] != DBNull.Value ? Convert.ToBoolean(reader["Reprint"]) : (bool?)null,
+                                    SetName = reader["SetName"].ToString(),
+                                    Set = reader["Set"].ToString(),
+                                    SetId = reader["SetId"].ToString(),
+                                    Variation = reader["Variation"] != DBNull.Value ? Convert.ToBoolean(reader["Variation"]) : false,
+                                    VariationOf = reader["VariationOf"].ToString(),
+                                    Colors = reader["Colors"] != DBNull.Value ? reader["Colors"].ToString().Split(',').ToList() : new List<string?>(),
+                                    ColorIdentity = reader["ColorIdentity"] != DBNull.Value ? reader["ColorIdentity"].ToString().Split(',').ToList() : new List<string?>(),
+                                    Keywords = reader["Keywords"] != DBNull.Value ? reader["Keywords"].ToString().Split(',').ToList() : new List<string?>(),
+
                                     Prices = new Prices
                                     {
                                         ScryfallCardId = cardId,

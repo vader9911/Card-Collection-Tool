@@ -1,17 +1,20 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-
+import { GroupByPipe } from '../../shared/group-by.pipe';
+import { TitlecaseKeyPipe } from '../../shared/titlecase-key.pipe';
+import { AddToCollectionModalComponent } from '../../components/addcard-modal/addcard-modal.component'
 @Component({
   selector: 'app-card-detail-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GroupByPipe,
+    TitlecaseKeyPipe, AddToCollectionModalComponent],
   templateUrl: './card-detail-modal.component.html',
   styleUrls: ['./card-detail-modal.component.css'],
 })
 export class CardDetailModalComponent implements OnInit {
-  @Input() cardId: string | null = null;
-  @Input() cardName: string | null = null;
+  @Input() cardId: string | undefined = undefined;
+  @Input() cardName: string | undefined = undefined;
   @Input() isOpen: boolean = false;
 
   cardDetails: any;
@@ -76,5 +79,21 @@ export class CardDetailModalComponent implements OnInit {
         this.alternateVersions = [];
       }
     );
+  }
+
+  onVersionClick(versionId: string, versionName: string): void {
+    console.log('Version clicked:', versionId, versionName);
+    this.cardId = versionId;
+    this.cardName = versionName;
+    this.fetchCardDetails(versionId); // Fetch details for the clicked version
+  }
+
+  openAddToCollectionModal(cardId: string | undefined) {
+    console.log("modal for add card opened", cardId);
+    this.cardId = cardId; // Store the selected card ID
+    const modal = document.getElementById('addToCollectionModal');
+    if (modal) {
+      modal.style.display = 'block';
+    }
   }
 }

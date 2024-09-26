@@ -1,69 +1,115 @@
-<div class="modal fade"
-     [ngClass]="{ show: isOpen }"
-     tabindex="-1"
-     role="dialog"
-     aria-labelledby="cardDetailModalLabel"
-     aria-hidden="!isOpen"
-     [style.display]="isOpen ? 'block' : 'none'" id="cardDetailModal">
+<div class="modal fade" [ngClass]="{ show: isOpen }" tabindex="-1" role="dialog" aria-labelledby="cardDetailModalLabel"
+     aria-hidden="!isOpen" [style.display]="isOpen ? 'block' : 'none'" id="cardDetailModal">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content text-dark bg-light-subtle">
+        <div class="modal-content text-dark bg-light">
             <div class="modal-header">
                 <h5 class="modal-title" id="cardDetailModalLabel">{{ cardDetails?.name }}</h5>
                 <button type="button" class="btn-close" (click)="closeModal()"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <!-- Card Image and Versions -->
-                    <div class="col-md-4">
-                        <!-- Card Image -->
-                        <div class="card-image mb-3">
-                            <img src="{{ cardDetails?.imageUris.normal }}"
-                                 class="img-fluid"
-                                 alt="{{ cardDetails?.name }}" />
-                        </div>
+                <!-- Card Image -->
+                <div class="text-center mb-3">
+                    <img src="{{ cardDetails?.imageUris.normal }}" class="img-fluid rounded" alt="{{ cardDetails?.name }}" />
+                </div>
 
-                        <!-- Alternate Versions -->
-                        <div class="card-versions mt-3">
-                            <h6>Alternate Versions:</h6>
-                            <ul class="list-group">
-                                <li class="list-group-item"
-                                    *ngFor="let version of alternateVersions"
-                                    >
-                                    {{ version.setName }} - {{ version.releaseDate | date: 'yyyy-MM-dd' }}
-                                </li>
-                            </ul>
-                        </div>
+                <!-- Name and Type -->
+                <h4 class="text-center mb-1">{{ cardDetails?.name }}</h4>
+                <p class="text-center text-muted">{{ cardDetails?.typeLine }}</p>
+
+                <!-- Detail Box -->
+                <div class="card p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><strong>Rarity:</strong> {{ cardDetails?.rarity }}</span>
+                        <span><strong>Set:</strong> {{ cardDetails?.setName }}</span>
                     </div>
+                    <p><strong>Keywords:</strong> {{ cardDetails?.keywords?.join(', ') }}</p>
+                    <p><strong>Oracle Text:</strong> {{ cardDetails?.oracleText }}</p>
+                    <p *ngIf="cardDetails?.flavorText"><strong>Flavor Text:</strong> {{ cardDetails?.flavorText }}</p>
+                </div>
 
-                    <!-- Card Details -->
-                    <div class="col-md-8">
-                        <div class="card-details">
-                            <h6>Details:</h6>
-                            <p><strong>Name:</strong> {{ cardDetails?.name }}</p>
-                            <p><strong>Mana Cost:</strong> {{ cardDetails?.manaCost }}</p>
-                            <p><strong>Type:</strong> {{ cardDetails?.typeLine }}</p>
-                            <p><strong>Oracle Text:</strong> {{ cardDetails?.oracleText }}</p>
-                            <p *ngIf="cardDetails?.power && cardDetails?.toughness">
-                                <strong>Power/Toughness:</strong> {{ cardDetails?.power }}/{{ cardDetails?.toughness }}
-                            </p>
-                            <p><strong>Rarity:</strong> {{ cardDetails?.rarity }}</p>
-                            <p><strong>Set:</strong> {{ cardDetails?.setName }}</p>
-                            <p><strong>Artist:</strong> {{ cardDetails?.artist }}</p>
+                <!-- Tabs for Variations and Legalities -->
+                <ul class="nav nav-tabs mb-3" id="cardDetailTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="variations-tab" data-bs-toggle="tab"
+                                data-bs-target="#variations" type="button" role="tab" aria-controls="variations"
+                                aria-selected="true">
+                            Variations
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="legalities-tab" data-bs-toggle="tab" data-bs-target="#legalities"
+                                type="button" role="tab" aria-controls="legalities" aria-selected="false">
+                            Legalities
+                        </button>
+                    </li>
+                </ul>
 
-                            <!-- Prices -->
-                            <div *ngIf="cardDetails?.prices">
-                                <h6>Prices:</h6>
-                                <p *ngIf="cardDetails?.prices?.usd"><strong>USD:</strong> {{ cardDetails?.prices?.usd | currency }}</p>
-                                <p *ngIf="cardDetails?.prices?.usdFoil"><strong>USD Foil:</strong> {{ cardDetails?.prices?.usdFoil | currency }}</p>
-                                <p *ngIf="cardDetails?.prices?.eur"><strong>EUR:</strong> {{ cardDetails?.prices?.eur | currency }}</p>
+                <!-- Tab Content -->
+                <div class="tab-content" id="cardDetailTabsContent">
+                    <!-- Variations Tab -->
+                    <div class="tab-pane fade show active" id="variations" role="tabpanel" aria-labelledby="variations-tab">
+                        <div class="mb-3">
+                            <h6>Alternate Versions:</h6>
+                            <div *ngFor="let set of alternateVersions | groupBy: 'setName'" class="mb-2">
+                                <h6 class="text-muted">{{ set.key }}</h6>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                        *ngFor="let version of set.values" (click)="onVersionClick(version.id, version.name)">
+                                        <span>{{ version.name }}</span>
+                                        <span>
+                                            <strong>USD:</strong> {{ version.prices?.usd || 'N/A' }}
+                                            <strong>Foil:</strong> {{ version.prices?.usdFoil || 'N/A' }}
+                                        </span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Legalities Tab -->
+                    <div class="tab-pane fade" id="legalities" role="tabpanel" aria-labelledby="legalities-tab">
+                        <h6>Legalities:</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center"
+                                *ngFor="let legality of cardDetails?.legalities | keyvalue">
+                                <span>{{ legality.key | titlecaseKey }}</span>
+                                <span class="badge rounded-pill"
+                                      [ngClass]="{ 'bg-success': legality.value === 'legal', 'bg-danger': legality.value !== 'legal' }">
+                                    {{ legality.value === 'legal' ? 'Legal' : 'Not Legal' }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Additional Details -->
+                <div class="card p-3 mt-4">
+                    <p><strong>Mana Cost:</strong> {{ cardDetails?.manaCost }}</p>
+                    <p *ngIf="cardDetails?.power && cardDetails?.toughness">
+                        <strong>Power/Toughness:</strong> {{ cardDetails?.power }}/{{ cardDetails?.toughness }}
+                    </p>
+                    <p><strong>Artist:</strong> {{ cardDetails?.artist }}</p>
+                    <p><strong>Collector Number:</strong> {{ cardDetails?.collectorNumber }}</p>
+                    <p><strong>Full Art:</strong> {{ cardDetails?.fullArt ? 'Yes' : 'No' }}</p>
+                    <p><strong>Games:</strong> {{ cardDetails?.games?.join(', ') }}</p>
+                    <p><strong>Release Date:</strong> {{ cardDetails?.releaseDate | date: 'yyyy-MM-dd' }}</p>
+                    <p><strong>Reprint:</strong> {{ cardDetails?.reprint ? 'Yes' : 'No' }}</p>
+                    <p><strong>Set Code:</strong> {{ cardDetails?.set }}</p>
+                    <p><strong>Variation:</strong> {{ cardDetails?.variation ? 'Yes' : 'No' }}</p>
+                    <p *ngIf="cardDetails?.variationOf">
+                        <strong>Variation Of:</strong> {{ cardDetails?.variationOf }}
+                    </p>
+                    <p><strong>Colors:</strong> {{ cardDetails?.colors?.join(', ') }}</p>
+                    <p><strong>Color Identity:</strong> {{ cardDetails?.colorIdentity?.join(', ') }}</p>
                 </div>
             </div>
             <div class="modal-footer">
+                {{ cardDetails?.id }}
+                <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id)">Add To Collection</button>
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
             </div>
         </div>
     </div>
 </div>
+
+<app-addcard-modal [cardId]="cardId"></app-addcard-modal>
