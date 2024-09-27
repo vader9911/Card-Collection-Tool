@@ -27,164 +27,67 @@ namespace Card_Collection_Tool.Controllers
         }
         [HttpGet("search")]
         public async Task<IActionResult> SearchCards(
-            [FromQuery] string name = null,
-            [FromQuery] string set = null,
-            [FromQuery] string oracleText = null,
-            [FromQuery] string type = null,
-            [FromQuery] string colors = null,
-            [FromQuery] string colorCriteria = "exact",
-            [FromQuery] string colorIdentity = null,
-            [FromQuery] string colorIdentityCriteria = "exact",
-            [FromQuery] float? manaValue = null,
-            [FromQuery] string manaValueComparator = "equals",
-            [FromQuery] string manaCost = null,
-            [FromQuery] string power = null,
-            [FromQuery] string powerComparator = "equals",
-            [FromQuery] string toughness = null,
-            [FromQuery] string toughnessComparator = "equals",
-            [FromQuery] string loyalty = null,
-            [FromQuery] string loyaltyComparator = "equals",
-            [FromQuery] string sortOrder = "name",
-            [FromQuery] string sortDirection = "asc",
-            [FromQuery] bool showAllVersions = false)
+     [FromQuery] string name = null,
+     [FromQuery] string set = null,
+     [FromQuery] string oracleText = null,
+     [FromQuery] string type = null,
+     [FromQuery] string colors = null,
+     [FromQuery] string colorCriteria = "exact",
+     [FromQuery] string colorIdentity = null,
+     [FromQuery] string colorIdentityCriteria = "exact",
+     [FromQuery] float? manaValue = null,
+     [FromQuery] string manaValueComparator = "equals",
+     [FromQuery] string manaCost = null,
+     [FromQuery] string power = null,
+     [FromQuery] string powerComparator = "equals",
+     [FromQuery] string toughness = null,
+     [FromQuery] string toughnessComparator = "equals",
+     [FromQuery] string loyalty = null,
+     [FromQuery] string loyaltyComparator = "equals",
+     [FromQuery] string sortOrder = "name",
+     [FromQuery] string sortDirection = "asc",
+     [FromQuery] bool showAllVersions = false)
         {
-            // Base SQL query with necessary joins
-            var sql = new StringBuilder(@"
-        SELECT 
-            c.*,
-            p.Usd, p.UsdFoil, p.UsdEtched, p.Eur, p.EurFoil, p.Tix,
-            i.Small, i.Normal, i.Large, i.Png, i.ArtCrop, i.BorderCrop,
-            l.Standard, l.Future, l.Historic, l.Timeless, l.Gladiator, 
-            l.Pioneer, l.Explorer, l.Modern, l.Legacy, l.Pauper, 
-            l.Vintage, l.Penny, l.Commander, l.Oathbreaker, l.StandardBrawl, 
-            l.Brawl, l.Alchemy, l.PauperCommander, l.Duel, l.OldSchool, 
-            l.Premodern, l.Predh
-        FROM ScryfallCards c
-        LEFT JOIN Prices p ON c.Id = p.ScryfallCardId
-        LEFT JOIN ImageUris i ON c.Id = i.ScryfallCardId
-        LEFT JOIN Legalities l ON c.Id = l.ScryfallCardId
-        WHERE 1=1");
+            // Define the parameters to pass to the stored procedure
+            var parameters = new List<SqlParameter>
+    {
+        new SqlParameter("@name", name ?? (object)DBNull.Value),
+        new SqlParameter("@set", set ?? (object)DBNull.Value),
+        new SqlParameter("@oracleText", oracleText ?? (object)DBNull.Value),
+        new SqlParameter("@type", type ?? (object)DBNull.Value),
+        new SqlParameter("@colors", colors ?? (object)DBNull.Value),
+        new SqlParameter("@colorCriteria", colorCriteria ?? (object)DBNull.Value),
+        new SqlParameter("@colorIdentity", colorIdentity ?? (object)DBNull.Value),
+        new SqlParameter("@colorIdentityCriteria", colorIdentityCriteria ?? (object)DBNull.Value),
+        new SqlParameter("@manaValue", manaValue ?? (object)DBNull.Value),
+        new SqlParameter("@manaValueComparator", manaValueComparator ?? (object)DBNull.Value),
+        new SqlParameter("@power", power ?? (object)DBNull.Value),
+        new SqlParameter("@powerComparator", powerComparator ?? (object)DBNull.Value),
+        new SqlParameter("@toughness", toughness ?? (object)DBNull.Value),
+        new SqlParameter("@toughnessComparator", toughnessComparator ?? (object)DBNull.Value),
+        new SqlParameter("@loyalty", loyalty ?? (object)DBNull.Value),
+        new SqlParameter("@loyaltyComparator", loyaltyComparator ?? (object)DBNull.Value),
+        new SqlParameter("@sortOrder", sortOrder ?? (object)DBNull.Value),
+        new SqlParameter("@sortDirection", sortDirection ?? (object)DBNull.Value)
+    };
 
-            var parameters = new List<SqlParameter>();
-
-            // Apply filters
-            if (!string.IsNullOrEmpty(name))
-            {
-                sql.Append(" AND c.Name LIKE '%' + @name + '%'");
-                parameters.Add(new SqlParameter("@name", name));
-            }
-            if (!string.IsNullOrEmpty(set))
-            {
-                sql.Append(" AND c.SetName LIKE '%' + @set + '%'");
-                parameters.Add(new SqlParameter("@set", set));
-            }
-            if (!string.IsNullOrEmpty(oracleText))
-            {
-                sql.Append(" AND c.OracleText LIKE '%' + @oracleText + '%'");
-                parameters.Add(new SqlParameter("@oracleText", oracleText));
-            }
-            if (!string.IsNullOrEmpty(type))
-            {
-                sql.Append(" AND c.TypeLine LIKE '%' + @type + '%'");
-                parameters.Add(new SqlParameter("@type", type));
-            }
-
-            // Handle color and color identity filters
-            if (!string.IsNullOrEmpty(colors))
-            {
-                var colorArray = colors.Split(',');
-
-                if (colorCriteria == "exact")
-                {
-                    sql.Append(" AND c.Colors = @colors");
-                    parameters.Add(new SqlParameter("@colors", colors));
-                }
-                else if (colorCriteria == "any")
-                {
-                    for (int i = 0; i < colorArray.Length; i++)
-                    {
-                        sql.Append($" AND c.Colors LIKE '%' + @color{i} + '%'");
-                        parameters.Add(new SqlParameter($"@color{i}", colorArray[i].Trim()));
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(colorIdentity))
-            {
-                var colorIdentityArray = colorIdentity.Split(',');
-
-                if (colorIdentityCriteria == "exact")
-                {
-                    sql.Append(" AND c.ColorIdentity = @colorIdentity");
-                    parameters.Add(new SqlParameter("@colorIdentity", colorIdentity));
-                }
-                else if (colorIdentityCriteria == "any")
-                {
-                    for (int i = 0; i < colorIdentityArray.Length; i++)
-                    {
-                        sql.Append($" AND c.ColorIdentity LIKE '%' + @ci{i} + '%'");
-                        parameters.Add(new SqlParameter($"@ci{i}", colorIdentityArray[i].Trim()));
-                    }
-                }
-            }
-
-            // Handle numerical filters with comparators
-            if (manaValue.HasValue)
-            {
-                var comparator = manaValueComparator == "greater" ? ">" : manaValueComparator == "less" ? "<" : "=";
-                sql.Append($" AND c.Cmc {comparator} @manaValue");
-                parameters.Add(new SqlParameter("@manaValue", manaValue));
-            }
-            if (!string.IsNullOrEmpty(power))
-            {
-                var comparator = powerComparator == "greater" ? ">" : powerComparator == "less" ? "<" : "=";
-                sql.Append($" AND c.Power {comparator} @power");
-                parameters.Add(new SqlParameter("@power", power));
-            }
-            if (!string.IsNullOrEmpty(toughness))
-            {
-                var comparator = toughnessComparator == "greater" ? ">" : toughnessComparator == "less" ? "<" : "=";
-                sql.Append($" AND c.Toughness {comparator} @toughness");
-                parameters.Add(new SqlParameter("@toughness", toughness));
-            }
-            if (!string.IsNullOrEmpty(loyalty))
-            {
-                var comparator = loyaltyComparator == "greater" ? ">" : loyaltyComparator == "less" ? "<" : "=";
-                sql.Append($" AND c.Loyalty {comparator} @loyalty");
-                parameters.Add(new SqlParameter("@loyalty", loyalty));
-            }
-
-            // Handle dynamic sorting
-            var validSortColumns = new[] { "name", "cmc", "price", "toughness", "power" };
-            if (sortOrder.ToLower() == "price")
-            {
-                // Sort by price column from the Prices table
-                sql.Append($" ORDER BY p.Usd {sortDirection.ToUpper()}");
-            }
-            else if (validSortColumns.Contains(sortOrder.ToLower()))
-            {
-                // Sort by columns from the ScryfallCards table
-                sql.Append($" ORDER BY c.{sortOrder} {sortDirection.ToUpper()}");
-            }
-
-            // Execute the query 
+            // Execute the stored procedure
             var results = new List<ScryfallCard>();
             using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
             {
-                using (var command = new SqlCommand(sql.ToString(), connection))
+                using (var command = new SqlCommand("SearchCards", connection))
                 {
+                    command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddRange(parameters.ToArray());
                     connection.Open();
+
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (reader.Read())
                         {
-                            // extract the Id from the reader
-                            var cardId = reader["Id"].ToString();
-
                             var card = new ScryfallCard
                             {
-                                Id = cardId,
+                                Id = reader["Id"].ToString(),
                                 Name = reader["Name"].ToString(),
                                 Cmc = reader["Cmc"] != DBNull.Value ? Convert.ToSingle(reader["Cmc"]) : (float?)null,
                                 ManaCost = reader["ManaCost"].ToString(),
@@ -196,7 +99,7 @@ namespace Card_Collection_Tool.Controllers
                                 Digital = Convert.ToBoolean(reader["Digital"]),
                                 Prices = new Prices
                                 {
-                                    ScryfallCardId = cardId,
+                                    ScryfallCardId = reader["Id"].ToString(),
                                     Usd = reader["Usd"]?.ToString(),
                                     UsdFoil = reader["UsdFoil"]?.ToString(),
                                     UsdEtched = reader["UsdEtched"]?.ToString(),
@@ -206,7 +109,7 @@ namespace Card_Collection_Tool.Controllers
                                 },
                                 ImageUris = new ImageUris
                                 {
-                                    ScryfallCardId = cardId,
+                                    ScryfallCardId = reader["Id"].ToString(),
                                     Small = reader["Small"]?.ToString(),
                                     Normal = reader["Normal"]?.ToString(),
                                     Large = reader["Large"]?.ToString(),
@@ -216,7 +119,7 @@ namespace Card_Collection_Tool.Controllers
                                 },
                                 Legalities = new Legalities
                                 {
-                                    ScryfallCardId = cardId,
+                                    ScryfallCardId = reader["Id"].ToString(),
                                     Standard = reader["Standard"]?.ToString(),
                                     Future = reader["Future"]?.ToString(),
                                     Historic = reader["Historic"]?.ToString(),
@@ -246,17 +149,17 @@ namespace Card_Collection_Tool.Controllers
                         }
                     }
                 }
-
-                // Filter to show only the most recent versions if applicable
-                if (!showAllVersions)
-                {
-                    results = FilterMostRecentNonDigitalVersion(results);
-                }
-
-
-                return Ok(results);
             }
+
+            // Optionally filter the most recent versions if applicable
+            if (!showAllVersions)
+            {
+                results = FilterMostRecentNonDigitalVersion(results);
+            }
+
+            return Ok(results);
         }
+
 
         // Function to filter the most recent version of each card based on release date
         private List<ScryfallCard?> FilterMostRecentVersions(List<ScryfallCard> cards)
