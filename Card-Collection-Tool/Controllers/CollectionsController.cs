@@ -15,10 +15,12 @@ using System.Security.Claims;
 public class CollectionsController : ControllerBase
 {
     private readonly string _connectionString;
+    private readonly ILogger<CollectionsController> _logger;
 
-    public CollectionsController(IConfiguration configuration)
+    public CollectionsController(IConfiguration configuration, ILogger<CollectionsController> logger)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _logger = logger;
     }
 
 
@@ -26,52 +28,75 @@ public class CollectionsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserCardCollection>>> GetUserCardCollections()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get the logged-in user's ID
+        // Retrieve the logged-in user's ID
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        // Log the start of the request
+        _logger.LogInformation("Fetching collections for user ID: {UserId}", userId);
+
+        // Check if the user is authenticated
         if (string.IsNullOrEmpty(userId))
         {
+            _logger.LogWarning("Unauthorized access attempt - user is not authenticated.");
             return Unauthorized("User is not authenticated.");
         }
 
         var collections = new List<UserCardCollection>();
 
-        using (var connection = new SqlConnection(_connectionString))
+        try
         {
-            await connection.OpenAsync();
-
-            var query = @"
-                    SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate 
-                    FROM UserCardCollection 
-                    WHERE UserID = @UserID";
-
-            using (var command = new SqlCommand(query, connection))
+            // Establish a database connection
+            using (var connection = new SqlConnection(_connectionString))
             {
-                command.Parameters.AddWithValue("@UserID", userId);
+                await connection.OpenAsync();
+                _logger.LogInformation("Database connection opened successfully.");
 
-                using (var reader = await command.ExecuteReaderAsync())
+                var query = @"
+                        SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate 
+                        FROM UserCardCollection 
+                        WHERE UserID = @UserID";
+
+                using (var command = new SqlCommand(query, connection))
                 {
-                    while (await reader.ReadAsync())
+                    // Add the user ID parameter to the SQL command
+                    command.Parameters.AddWithValue("@UserID", userId);
+
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        collections.Add(new UserCardCollection
+                        // Read the results of the query and map them to the UserCardCollection objects
+                        while (await reader.ReadAsync())
                         {
-                            CollectionID = reader.GetInt32(reader.GetOrdinal("CollectionID")),
-                            UserId = reader.GetString(reader.GetOrdinal("UserID")),
-                            CollectionName = reader.GetString(reader.GetOrdinal("CollectionName")),
-                            ImageUri = reader["ImageUri"] as string,
-                            Notes = reader["Notes"] as string,
-                            CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
-                        });
+                            collections.Add(new UserCardCollection
+                            {
+                                CollectionID = reader.GetInt32(reader.GetOrdinal("CollectionID")),
+                                UserId = reader.GetString(reader.GetOrdinal("UserID")),
+                                CollectionName = reader.GetString(reader.GetOrdinal("CollectionName")),
+                                ImageUri = reader["ImageUri"] != DBNull.Value ? reader["ImageUri"] as string : null,
+                                Notes = reader["Notes"] != DBNull.Value ? reader["Notes"] as string : null,
+                                CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+                            });
+                        }
                     }
                 }
             }
+
+            _logger.LogInformation("Successfully retrieved {Count} collections for user ID: {UserId}", collections.Count, userId);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception with an error level
+            _logger.LogError(ex, "An error occurred while fetching collections for user ID: {UserId}", userId);
+            return StatusCode(500, "An error occurred while fetching collections.");
         }
 
+        // Return the list of collections as a response
         return Ok(collections);
     }
 
 
-    // GET: api/Collections/5
-    [HttpGet("{collectionId}")]
+
+// GET: api/Collections/5
+[HttpGet("{collectionId}")]
     public async Task<ActionResult<UserCardCollection>> GetUserCardCollection(int collectionId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

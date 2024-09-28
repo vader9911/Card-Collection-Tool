@@ -62,9 +62,10 @@ export class AddToCollectionModalComponent implements OnInit {
   // Create a new collection and add the card to it
   createAndAddToCollection(collectionName: string) {
     if (collectionName.trim()) {
-      console.log('Making request to add card:', this.cardId)
+      // Create the collection with only the name; imageUri and notes will be handled in the service
       this.collectionsService.createCollection(collectionName).subscribe(
         (newCollection) => {
+          // Add the card to the new collection
           this.collectionsService.addCardToCollection(newCollection.id, this.cardId!, this.quantity).subscribe(
             () => {
               alert('New collection created and card added successfully!');

@@ -14,7 +14,7 @@ namespace Card_Collection_Tool.Models
         [Required]
         public string CollectionName { get; set; } // Name of the Collection
 
-        public DateTime CreatedDate  { get; set; } // Name of the Collection
+        public DateTime CreatedDate  { get; set; } 
         
         public string ImageUri { get; set; }
 
