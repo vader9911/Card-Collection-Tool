@@ -22,7 +22,7 @@ export class CollectionsComponent implements OnInit {
   newCollectionName: string = ''; // New collection name
   defaultImageUrl: string = 'https://archive.org/download/placeholder-image/placeholder-image.jpg'; // Default image for no card collections
   cardImages: { [key: string]: string } = {}; // Store card images by collection ID
-
+  cardDetailsList: any[] = [];
   constructor(
     private collectionsService: CollectionsService,
     private apiService: ApiService,
@@ -71,6 +71,28 @@ export class CollectionsComponent implements OnInit {
       (error) => {
         console.error(`Error fetching card details for ID: ${cardId}`, error);
         this.cardImages[collectionId] = this.defaultImageUrl; // Use default image if there is an error
+      }
+    );
+  }
+
+  fetchCollectionCards(collectionId: number) {
+    this.collectionsService.getCardIdsByCollectionId(collectionId).subscribe(
+      (cardIds: string[]) => {
+        console.log('Card IDs retrieved:', cardIds);
+
+        // Use the retrieved card IDs to fetch card details
+        this.collectionsService.getCardDetailsByIds(cardIds).subscribe(
+          (cardDetails) => {
+            console.log('Card details:', cardDetails);
+            this.cardDetailsList = cardDetails; // Store the card details in a list to display
+          },
+          (error) => {
+            console.error('Error fetching card details:', error);
+          }
+        );
+      },
+      (error) => {
+        console.error('Error fetching card IDs:', error);
       }
     );
   }

@@ -33,6 +33,7 @@ export class CardListComponent implements OnInit {
   selectedCardName: string | undefined;
   showModal: boolean = false;
   @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
+  @ViewChild(AddToCollectionModalComponent) addToCollectionModal!: AddToCollectionModalComponent;
   constructor( private authService: AuthService, private router: Router ) {}
 
 
@@ -72,12 +73,11 @@ export class CardListComponent implements OnInit {
     }
   }
 
-  openAddToCollectionModal(cardId: string | undefined) {
-    console.log("modal for add card opened", cardId);
-    this.selectedCardId = cardId; // Store the selected card ID
-    const modal = document.getElementById('addToCollectionModal');
-    if (modal) {
-      modal.style.display = 'block';
-    }
-  }
+ openAddToCollectionModal(cardId: string | undefined) {
+  console.log("Modal for add card opened with ID:", cardId); // Log card ID
+  this.selectedCardId = cardId; // Store the selected card ID
+   if (this.addToCollectionModal) {
+     this.addToCollectionModal.openModal(this.selectedCardId);
+   }
+}
 }

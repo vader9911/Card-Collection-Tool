@@ -80,4 +80,21 @@ export class CollectionsService {
     const payload = { cardId, quantity };
     return this.http.post<any>(`${this.baseUrl}/${collectionId}/addCard`, payload, { headers: this.getAuthHeaders() });
   }
+
+  // Method to get all card IDs within a collection by collection ID
+  getCardIdsByCollectionId(collectionId: number): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}/${collectionId}/card-ids`, { headers: this.getAuthHeaders() });
+  }
+
+  // Method to fetch card details using card IDs (batch or single call)
+  getCardDetailsByIds(cardIds: string[]): Observable<any[]> {
+    // Assuming you have an endpoint that accepts multiple IDs and returns card details
+    return this.http.post<any[]>(`/api/cards/details`, { cardIds }, { headers: this.getAuthHeaders() });
+  }
+
+
+
+
+
+
 }

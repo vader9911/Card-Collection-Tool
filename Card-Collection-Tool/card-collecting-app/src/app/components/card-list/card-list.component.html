@@ -14,7 +14,7 @@
 </div>
 
 <app-card-detail-modal></app-card-detail-modal>
-    <app-addcard-modal [cardId]="selectedCardId"></app-addcard-modal>
+<app-addcard-modal [selectedCardId]="selectedCardId"></app-addcard-modal>
 
     <ng-template #noResults>
         <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>

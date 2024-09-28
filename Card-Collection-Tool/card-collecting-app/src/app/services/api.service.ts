@@ -24,6 +24,13 @@ export class ApiService {
     );
   }
 
+  getCardDetailsByIds(cardIds: [] | undefined): Observable<any> {
+    console.log('API Service called with card ID:', cardIds);
+    return this.http.get<any>(`${this.apiUrl}/details`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
 
 
   private handleError(error: HttpErrorResponse) {
