@@ -191,52 +191,52 @@ public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody
         return Ok(new { message = "Card added to the collection successfully." });
     }
 
-    //[HttpGet("{collectionId}/details")]
-    //public async Task<IActionResult> GetCollectionDetails(int collectionId)
-    //{
-    //    // Find the collection by its ID
-    //    var collection = await _context.UserCardCollections
-    //        .FirstOrDefaultAsync(c => c.Id == collectionId);
+    [HttpGet("{collectionId}/details")]
+    public async Task<IActionResult> GetCollectionDetails(int collectionId)
+    {
+        // Find the collection by its ID
+        var collection = await _context.UserCardCollections
+            .FirstOrDefaultAsync(c => c.Id == collectionId);
 
-    //    if (collection == null)
-    //    {
-    //        return NotFound(new { message = "Collection not found." });
-    //    }
+        if (collection == null)
+        {
+            return NotFound(new { message = "Collection not found." });
+        }
 
-    //    // Extract the card IDs from the list of CardEntry objects
-    //    var cardIds = collection.CardIds.Select(entry => entry.CardId).ToList();
+        // Extract the card IDs from the list of CardEntry objects
+        var cardIds = collection.CardIds.Select(entry => entry.CardId).ToList();
 
-    //    if (cardIds == null || !cardIds.Any())
-    //    {
-    //        return Ok(new { collectionName = collection.CollectionName, cards = new List<ScryfallCard>() });
-    //    }
+        if (cardIds == null || !cardIds.Any())
+        {
+            return Ok(new { collectionName = collection.CollectionName, cards = new List<ScryfallCard>() });
+        }
 
-    //    // Fetch the full card details from the ScryfallCard table using the card IDs
-    //    var cardDetails = await _context.ScryfallCards
-    //        .Where(card => cardIds.Contains(card.Id))
-    //        .Select(card => new
-    //        {
-    //            card.Id,
-    //            card.Name,
-    //            ImageUri = card.ImageUris.Normal,
-    //            card.ManaCost,
-    //            card.TypeLine,
-    //            card.OracleText,
-    //            card.SetName,
-    //            card.Artist,
-    //            card.Rarity,
-    //            Prices = card.Prices.USD
-    //        })
-    //        .ToListAsync();
+        // Fetch the full card details from the ScryfallCard table using the card IDs
+        var cardDetails = await _context.ScryfallCards
+            .Where(card => cardIds.Contains(card.Id))
+            .Select(card => new
+            {
+                card.Id,
+                card.Name,
+                ImageUri = card.ImageUris.Normal,
+                card.ManaCost,
+                card.TypeLine,
+                card.OracleText,
+                card.SetName,
+                card.Artist,
+                card.Rarity,
+                Prices = card.Prices.Usd
+            })
+            .ToListAsync();
 
-    //    // Create a response object with the collection and the card details
-    //    var response = new
-    //    {
-    //        collectionName = collection.CollectionName,
-    //        cards = cardDetails
-    //    };
+        // Create a response object with the collection and the card details
+        var response = new
+        {
+            collectionName = collection.CollectionName,
+            cards = cardDetails
+        };
 
-    //    return Ok(response);
-    //}
+        return Ok(response);
+    }
 
 }

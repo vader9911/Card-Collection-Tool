@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, delay, throwError } from 'rxjs';
 import { AuthService } from './auth.service'; // Import the AuthService
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
