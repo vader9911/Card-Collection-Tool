@@ -441,4 +441,44 @@ public class CollectionsController : ControllerBase
             return Ok(new { collectionName, cards });
         }
     }
+
+    [HttpGet("{collectionId}/card-ids")]
+    public async Task<ActionResult<IEnumerable<string>>> GetCardIdsByCollectionId(int collectionId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // Ensure the user is authenticated
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User is not authenticated.");
+        }
+
+        var cardIds = new List<string>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            var query = @"
+            SELECT CardID
+            FROM CollectionCards
+            WHERE CollectionID = @CollectionID";
+
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@CollectionID", collectionId);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        cardIds.Add(reader.GetString(reader.GetOrdinal("CardID")));
+                    }
+                }
+            }
+        }
+
+        return Ok(cardIds);
     }
+
+}
