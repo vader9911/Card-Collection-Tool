@@ -397,52 +397,117 @@ public class CollectionsController : ControllerBase
 
             // Fetch collection details
             var collectionCmd = new SqlCommand(
-                "SELECT CollectionName FROM UserCardCollection WHERE CollectionID = @CollectionID AND UserID = @UserID",
+                "SELECT CollectionName, ImageUri, Notes, CreatedDate FROM UserCardCollection WHERE CollectionID = @CollectionID AND UserID = @UserID",
                 connection
             );
             collectionCmd.Parameters.AddWithValue("@CollectionID", collectionId);
             collectionCmd.Parameters.AddWithValue("@UserID", userId);
 
-            var collectionName = await collectionCmd.ExecuteScalarAsync() as string;
-            if (collectionName == null)
+            var collectionDetails = new
             {
-                return NotFound(new { message = "Collection not found." });
-            }
+                CollectionName = string.Empty,
+                ImageUri = string.Empty,
+                Notes = string.Empty,
+                CreatedDate = DateTime.MinValue
+            };
 
-            // Fetch card details
-            var cardCmd = new SqlCommand(
-                @"SELECT c.CardID, sc.Name, sc.ManaCost, sc.TypeLine, sc.OracleText, sc.SetName, sc.Artist, sc.Rarity, sc.ImageUris_Normal, cc.Quantity 
-              FROM CollectionCards cc
-              JOIN ScryfallCards sc ON cc.CardID = sc.Id
-              WHERE cc.CollectionID = @CollectionID",
-                connection
-            );
-            cardCmd.Parameters.AddWithValue("@CollectionID", collectionId);
-
-            var cards = new List<object>();
-            using (var reader = await cardCmd.ExecuteReaderAsync())
+            using (var reader = await collectionCmd.ExecuteReaderAsync())
             {
-                while (await reader.ReadAsync())
+                if (await reader.ReadAsync())
                 {
-                    cards.Add(new
+                    collectionDetails = new
                     {
-                        CardID = reader["CardID"].ToString(),
-                        Name = reader["Name"].ToString(),
-                        ManaCost = reader["ManaCost"].ToString(),
-                        TypeLine = reader["TypeLine"].ToString(),
-                        OracleText = reader["OracleText"].ToString(),
-                        SetName = reader["SetName"].ToString(),
-                        Artist = reader["Artist"].ToString(),
-                        Rarity = reader["Rarity"].ToString(),
-                        ImageUri = reader["ImageUris_Normal"].ToString(),
-                        Quantity = reader["Quantity"]
-                    });
+                        CollectionName = reader["CollectionName"].ToString(),
+                        ImageUri = reader["ImageUri"]?.ToString() ?? string.Empty,
+                        Notes = reader["Notes"]?.ToString() ?? string.Empty,
+                        CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+                    };
+                }
+                else
+                {
+                    return NotFound(new { message = "Collection not found." });
                 }
             }
 
-            return Ok(new { collectionName, cards });
+            // Fetch Card IDs and Quantities from CollectionCards table
+            var cardIdsCmd = new SqlCommand(
+                "SELECT CardID, Quantity FROM CollectionCards WHERE CollectionID = @CollectionID",
+                connection
+            );
+            cardIdsCmd.Parameters.AddWithValue("@CollectionID", collectionId);
+
+            var cardDataList = new List<object>();
+
+            using (var reader = await cardIdsCmd.ExecuteReaderAsync())
+            {
+                var cardIds = new List<string>();
+                var cardQuantities = new Dictionary<string, int>();
+
+                // Collect Card IDs and Quantities
+                while (await reader.ReadAsync())
+                {
+                    var cardId = reader["CardID"].ToString();
+                    var quantity = Convert.ToInt32(reader["Quantity"]);
+
+                    cardIds.Add(cardId);
+                    cardQuantities[cardId] = quantity;
+                }
+
+                // Fetch detailed card data using the Card IDs from v_CardData view
+                foreach (var cardId in cardIds)
+                {
+                    var cardDataCmd = new SqlCommand(
+                        @"SELECT 
+                        Id, Name, ManaCost, TypeLine, OracleText, SetName, Artist, Rarity, Normal,
+                        Power, Toughness, FlavorText, ReleaseDate, Variation, Colors, ColorIdentity
+                      FROM v_CardData 
+                      WHERE Id = @CardID",
+                        connection
+                    );
+                    cardDataCmd.Parameters.AddWithValue("@CardID", cardId);
+
+                    using (var cardReader = await cardDataCmd.ExecuteReaderAsync())
+                    {
+                        if (await cardReader.ReadAsync())
+                        {
+                            cardDataList.Add(new
+                            {
+                                CardID = cardReader["Id"].ToString(),
+                                Name = cardReader["Name"].ToString(),
+                                ManaCost = cardReader["ManaCost"].ToString(),
+                                TypeLine = cardReader["TypeLine"].ToString(),
+                                OracleText = cardReader["OracleText"].ToString(),
+                                SetName = cardReader["SetName"].ToString(),
+                                Artist = cardReader["Artist"].ToString(),
+                                Rarity = cardReader["Rarity"].ToString(),
+                                ImageUri = cardReader["Normal"].ToString(),
+                                Power = cardReader["Power"]?.ToString(),
+                                Toughness = cardReader["Toughness"]?.ToString(),
+                                FlavorText = cardReader["FlavorText"]?.ToString(),
+                                ReleaseDate = cardReader["ReleaseDate"]?.ToString(),
+                                Variation = cardReader["Variation"] != DBNull.Value ? Convert.ToBoolean(cardReader["Variation"]) : false,
+                                Colors = cardReader["Colors"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
+                                ColorIdentity = cardReader["ColorIdentity"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
+                                Quantity = cardQuantities[cardId] // Get the quantity from the previously populated dictionary
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Return the combined collection and card details
+            return Ok(new
+            {
+                collectionDetails.CollectionName,
+                collectionDetails.ImageUri,
+                collectionDetails.Notes,
+                collectionDetails.CreatedDate,
+                Cards = cardDataList
+            });
         }
     }
+
+
 
     [HttpGet("{collectionId}/card-ids")]
     public async Task<ActionResult<IEnumerable<string>>> GetCardIdsByCollectionId(int collectionId)
