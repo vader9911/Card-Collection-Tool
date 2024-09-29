@@ -332,53 +332,55 @@ public class CollectionsController : ControllerBase
 
 
 
-    [HttpPost("{collectionId}/addCard")]
-    public async Task<IActionResult> AddCardToCollection(int collectionId, [FromBody] AddCardRequest request)
+    [HttpPost("upsert-card")]
+    public async Task<IActionResult> AddCardToCollection([FromBody] AddCardToCollectionRequest request)
     {
-        // Validate input
-        if (request == null || string.IsNullOrEmpty(request.CardId) || request.Quantity <= 0)
+        Console.WriteLine($"Received Request: CollectionID = {request.CollectionID}, CardID = {request.CardID}, Quantity = {request.Quantity}");
+
+        if (request == null || string.IsNullOrEmpty(request.CardID) || request.CollectionID <= 0 || request.Quantity <= 0)
         {
-            return BadRequest("Invalid card or quantity.");
+            return BadRequest(new { message = "Invalid request payload. Please ensure all required fields are filled correctly." });
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
+        try
         {
-            return Unauthorized("User is not authenticated.");
-        }
-
-        using (var connection = new SqlConnection(_connectionString))
-        {
-            await connection.OpenAsync();
-
-            // Check if the collection exists and belongs to the user
-            var checkCollectionCmd = new SqlCommand(
-                "SELECT COUNT(*) FROM UserCardCollection WHERE CollectionID = @CollectionID AND UserID = @UserID",
-                connection
-            );
-            checkCollectionCmd.Parameters.AddWithValue("@CollectionID", collectionId);
-            checkCollectionCmd.Parameters.AddWithValue("@UserID", userId);
-
-            var exists = (int)await checkCollectionCmd.ExecuteScalarAsync() > 0;
-            if (!exists)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                return NotFound(new { message = "Collection not found." });
+                await connection.OpenAsync();
+
+                var validateQuery = "SELECT COUNT(1) FROM UserCardCollection WHERE collectionID = @collectionID";
+                using (var validateCommand = new SqlCommand(validateQuery, connection))
+                {
+                    validateCommand.Parameters.AddWithValue("@collectionID", request.CollectionID);
+                    var exists = (int)await validateCommand.ExecuteScalarAsync();
+
+                    if (exists == 0)
+                    {
+                        return BadRequest(new { message = "The specified collection does not exist. Please select a valid collection." });
+                    }
+                }
+
+                using (var command = new SqlCommand("UpsertCollectionCard", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@collectionID", request.CollectionID);
+                    command.Parameters.AddWithValue("@cardID", request.CardID);
+                    command.Parameters.AddWithValue("@quantity", request.Quantity);
+
+                    await command.ExecuteNonQueryAsync();
+                }
             }
 
-            // Use the stored procedure to add or update the card in the collection
-            var command = new SqlCommand("dbo.UpsertCollectionCard", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@CollectionID", collectionId);
-            command.Parameters.AddWithValue("@CardID", request.CardId);
-            command.Parameters.AddWithValue("@Quantity", request.Quantity);
-
-            await command.ExecuteNonQueryAsync();
+            // Return a JSON response instead of plain text
+            return Ok(new { message = "Card added or updated successfully." });
         }
-
-        return Ok(new { message = "Card added to the collection successfully." });
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding card to collection: {ex.Message}");
+            return StatusCode(500, new { message = "An error occurred while adding the card to the collection.", error = ex.Message });
+        }
     }
+
 
     [HttpGet("{collectionId}/details")]
     public async Task<IActionResult> GetCollectionDetails(int collectionId)

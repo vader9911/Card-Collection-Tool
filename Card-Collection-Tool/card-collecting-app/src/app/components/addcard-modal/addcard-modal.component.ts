@@ -38,16 +38,21 @@ export class AddToCollectionModalComponent implements OnInit {
 
   // Add card to selected collection
   addToCollection() {
-    console.log('addToCollection called'); // Log to confirm the method is called
-    console.log('Selected Collection ID:', this.selectedCollectionId); // Log the selected collection ID
-    console.log('Quantity:', this.quantity); // Log the quantity
-    console.log('Card ID:', this.selectedCardId); // Log the quantity
+    console.log('addToCollection called');
+    console.log('Selected Collection ID:', this.selectedCollectionId);
+    console.log('Quantity:', this.quantity);
+    console.log('Card ID:', this.selectedCardId);
+
     if (this.selectedCollectionId && this.selectedCardId && this.quantity > 0) {
       console.log('Making request to add card:', this.selectedCardId, 'with quantity:', this.quantity);
 
+      // Convert collectionID to a number to ensure correct type
+      const collectionID = Number(this.selectedCollectionId);
+
       this.collectionsService.addCardToCollection(this.selectedCollectionId, this.selectedCardId, this.quantity).subscribe(
-        () => {
-          //alert('Card added to collection successfully!');
+        (response) => {
+          console.log('Response from server:', response);
+          console.log('Card added to collection successfully!');
           this.closeModal(); // Close the modal after adding the card
         },
         (error) => {
@@ -59,6 +64,7 @@ export class AddToCollectionModalComponent implements OnInit {
       alert('Please select a collection, enter a valid quantity, and ensure a card is selected.');
     }
   }
+
 
   // Create a new collection and add the card to it
   createAndAddToCollection(collectionName: string) {

@@ -77,9 +77,24 @@ export class CollectionsService {
   }
 
   addCardToCollection(collectionId: number, cardId: string, quantity: number): Observable<any> {
-    const payload = { cardId, quantity };
-    return this.http.post<any>(`${this.baseUrl}/${collectionId}/addCard`, payload, { headers: this.getAuthHeaders() });
+    const payload = { collectionID: collectionId, cardID: cardId, quantity: quantity };
+    const url = `${this.baseUrl}/upsert-card`;
+
+    console.log(`Making request to: ${url}`);
+    console.log('Payload:', payload);
+
+    return this.http.post<any>(url, payload, { headers: this.getAuthHeaders() }).pipe(
+      catchError((error) => {
+        console.error('Error in addCardToCollection service:', error);
+        console.log('Error status:', error.status);
+        console.log('Error message:', error.message);
+        console.log('Error details:', error.error);
+        return throwError(error);
+      })
+    );
   }
+
+
 
   // Method to get all card IDs within a collection by collection ID
   getCardIdsByCollectionId(collectionId: number): Observable<string[]> {
@@ -91,8 +106,6 @@ export class CollectionsService {
     // Assuming you have an endpoint that accepts multiple IDs and returns card details
     return this.http.post<any[]>(`/api/cards/details`, { cardIds }, { headers: this.getAuthHeaders() });
   }
-
-
 
 
 
