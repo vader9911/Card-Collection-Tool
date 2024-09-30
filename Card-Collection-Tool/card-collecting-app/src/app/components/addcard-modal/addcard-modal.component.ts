@@ -20,7 +20,7 @@ export class AddToCollectionModalComponent implements OnInit {
   collections: any[] = []; // List of collections
   selectedCollectionId: number | null = null; // Initialize selected collection ID
   quantity: number = 1;
-  isOpen: boolean = false;
+  addCollectIsOpen: boolean = false;
 
   constructor(private collectionsService: CollectionsService) { }
 
@@ -95,11 +95,11 @@ export class AddToCollectionModalComponent implements OnInit {
 
 
   openModal(cardId: string | undefined): void {
-    this.isOpen = true;
+    this.addCollectIsOpen = true;
     console.log(cardId)
     if (cardId) {
       console.log('card id add modal opended with:', this.selectedCardId);
-      console.log('Modal opened:', this.isOpen);
+      console.log('Modal opened:', this.addCollectIsOpen);
     } else {
       console.error('Invalid cardId or cardName provided to openModal');
     }
@@ -107,7 +107,7 @@ export class AddToCollectionModalComponent implements OnInit {
 
   // Close the modal
   closeModal() {
-    this.isOpen = false;
+    this.addCollectIsOpen = false;
     const modal = document.getElementById('addToCollectionModal');
     if (modal) {
       modal.style.display = 'none';
