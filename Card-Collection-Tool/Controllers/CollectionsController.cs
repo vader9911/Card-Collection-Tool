@@ -431,7 +431,8 @@ public class CollectionsController : ControllerBase
                 CollectionName = string.Empty,
                 ImageUri = string.Empty,
                 Notes = string.Empty,
-                CreatedDate = DateTime.MinValue
+                CreatedDate = DateTime.MinValue,
+
             };
 
             using (var reader = await collectionCmd.ExecuteReaderAsync())
@@ -444,6 +445,7 @@ public class CollectionsController : ControllerBase
                         ImageUri = reader["ImageUri"]?.ToString() ?? string.Empty,
                         Notes = reader["Notes"]?.ToString() ?? string.Empty,
                         CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+
                     };
                 }
                 else
@@ -482,7 +484,7 @@ public class CollectionsController : ControllerBase
                     var cardDataCmd = new SqlCommand(
                         @"SELECT 
                         Id, Name, ManaCost, TypeLine, OracleText, SetName, Artist, Rarity, Normal,
-                        Power, Toughness, FlavorText, ReleaseDate, Variation, Colors, ColorIdentity
+                        Power, Toughness, FlavorText, ReleaseDate, Variation, Colors, ColorIdentity, Usd
                       FROM v_CardData 
                       WHERE Id = @CardID",
                         connection
@@ -511,6 +513,7 @@ public class CollectionsController : ControllerBase
                                 Variation = cardReader["Variation"] != DBNull.Value ? Convert.ToBoolean(cardReader["Variation"]) : false,
                                 Colors = cardReader["Colors"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
                                 ColorIdentity = cardReader["ColorIdentity"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
+                                Usd = cardReader["Usd"]?.ToString(),
                                 Quantity = cardQuantities[cardId] // Get the quantity from the previously populated dictionary
                             });
                         }

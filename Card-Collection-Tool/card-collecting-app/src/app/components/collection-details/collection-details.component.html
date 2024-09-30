@@ -15,7 +15,11 @@
         <!-- Grid View -->
         <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4 card-collection">
             <div *ngFor="let card of collectionDetails.cards" class="carm-2 " style="width: 18rem;">
-                <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="viewCardDetails(card.id)" />
+                <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="openCardDetailModal(card.cardID, card.name)" />
+                <div class="container shadow-lg rounded-1  my-3 col-6">
+                    <div class="text-center">In Collection: {{ card.quantity }}</div>
+                    <div class="text-center">Current Value: ${{ card.usd }}</div>
+                </div>
             </div>
         </div>
 
@@ -71,3 +75,5 @@
         </div>
     </div>
 </div>
+
+<app-card-detail-modal></app-card-detail-modal>

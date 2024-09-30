@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { CollectionsService } from '../../services/collections.service';
+import { CardDetailModalComponent } from '../../components/card-detail-modal/card-detail-modal.component';
 
 import * as bootstrap from 'bootstrap';
 import { Subscription } from 'rxjs';
@@ -11,7 +12,8 @@ import { Subscription } from 'rxjs';
   selector: 'app-collection-details',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    CardDetailModalComponent
   ],
   templateUrl: './collection-details.component.html',
   styleUrls: ['./collection-details.component.scss']
@@ -24,7 +26,10 @@ export class CollectionDetailsComponent implements OnInit {
   collectionId: number = 0;
   displayFormat: string = 'grid'; // Default display format is 'grid'
   deleteModal: any;
-
+  selectedCardId: string | undefined;
+  selectedCardName: string | undefined;
+  showModal: boolean = false;
+  @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
@@ -108,8 +113,17 @@ export class CollectionDetailsComponent implements OnInit {
   }
 
   // Method to navigate to card details page
-  viewCardDetails(cardId: string): void {
-    this.router.navigate(['/cards', cardId, 'details']);
+  openCardDetailModal(cardId: string | undefined, cardName: string | undefined): void {
+    console.log('Card clicked with ID:', cardId, cardName);
+
+    // Set the card details
+    this.selectedCardId = cardId;
+    this.selectedCardName = cardName;
+
+    // Call the open method on the modal component
+    if (this.cardDetailModal) {
+      this.cardDetailModal.openModal(this.selectedCardId, this.selectedCardName);
+    }
   }
 
   // Method to toggle the display format
