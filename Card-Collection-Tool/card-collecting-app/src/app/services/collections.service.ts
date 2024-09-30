@@ -76,6 +76,7 @@ export class CollectionsService {
     return this.http.delete<void>(`${this.baseUrl}/${collectionId}`, { headers: this.getAuthHeaders() });
   }
 
+  // Updated method to add a card to a collection and ensure collection summary is updated
   addCardToCollection(collectionId: number, cardId: string, quantity: number): Observable<any> {
     const payload = { collectionID: collectionId, cardID: cardId, quantity: quantity };
     const url = `${this.baseUrl}/upsert-card`;
@@ -85,10 +86,8 @@ export class CollectionsService {
 
     return this.http.post<any>(url, payload, { headers: this.getAuthHeaders() }).pipe(
       catchError((error) => {
-        console.error('Error in addCardToCollection service:', error);
-        console.log('Error status:', error.status);
-        console.log('Error message:', error.message);
-        console.log('Error details:', error.error);
+        console.error('Error in addCardToCollection service:', error.message);
+        console.log('Error details:', error); // Log the full error details
         return throwError(error);
       })
     );
@@ -96,18 +95,9 @@ export class CollectionsService {
 
 
 
-  // Method to get all card IDs within a collection by collection ID
+  // New method to fetch card details and update the collection summary
   getCardIdsByCollectionId(collectionId: number): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/${collectionId}/card-ids`, { headers: this.getAuthHeaders() });
   }
-
-  // Method to fetch card details using card IDs (batch or single call)
-  getCardDetailsByIds(cardIds: string[]): Observable<any[]> {
-    // Assuming you have an endpoint that accepts multiple IDs and returns card details
-    return this.http.post<any[]>(`/api/cards/details`, { cardIds }, { headers: this.getAuthHeaders() });
-  }
-
-
-
 
 }

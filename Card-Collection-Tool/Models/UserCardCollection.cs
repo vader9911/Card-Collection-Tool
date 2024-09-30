@@ -19,6 +19,9 @@ namespace Card_Collection_Tool.Models
         public string ImageUri { get; set; }
 
         public string Notes {  get; set; }
+
+        public int TotalCards { get; set; }
+        public decimal TotalValue { get; set; }
     }
 
     public class CardEntry

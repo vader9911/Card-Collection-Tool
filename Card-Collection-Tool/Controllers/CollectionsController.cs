@@ -26,77 +26,69 @@ public class CollectionsController : ControllerBase
 
     // GET: api/Collections
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserCardCollection>>> GetUserCardCollections()
+    public async Task<IActionResult> GetUserCardCollections()
     {
-        // Retrieve the logged-in user's ID
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Log the start of the request
-        _logger.LogInformation("Fetching collections for user ID: {UserId}", userId);
-
-        // Check if the user is authenticated
         if (string.IsNullOrEmpty(userId))
         {
-            _logger.LogWarning("Unauthorized access attempt - user is not authenticated.");
             return Unauthorized("User is not authenticated.");
         }
 
-        var collections = new List<UserCardCollection>();
-
-        try
+        using (var connection = new SqlConnection(_connectionString))
         {
-            // Establish a database connection
-            using (var connection = new SqlConnection(_connectionString))
+            await connection.OpenAsync();
+
+            var query = @"
+            SELECT CollectionID, CollectionName, ImageUri, TotalCards, TotalValue
+            FROM UserCardCollection 
+            WHERE UserID = @UserID";
+
+            var collections = new List<UserCardCollection>();
+            using (var command = new SqlCommand(query, connection))
             {
-                await connection.OpenAsync();
-                _logger.LogInformation("Database connection opened successfully.");
+                command.Parameters.AddWithValue("@UserID", userId);
 
-                var query = @"
-                        SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate 
-                        FROM UserCardCollection 
-                        WHERE UserID = @UserID";
-
-                using (var command = new SqlCommand(query, connection))
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    // Add the user ID parameter to the SQL command
-                    command.Parameters.AddWithValue("@UserID", userId);
-
-                    using (var reader = await command.ExecuteReaderAsync())
+                    while (await reader.ReadAsync())
                     {
-                        // Read the results of the query and map them to the UserCardCollection objects
-                        while (await reader.ReadAsync())
+                        collections.Add(new UserCardCollection
                         {
-                            collections.Add(new UserCardCollection
-                            {
-                                CollectionID = reader.GetInt32(reader.GetOrdinal("CollectionID")),
-                                UserId = reader.GetString(reader.GetOrdinal("UserID")),
-                                CollectionName = reader.GetString(reader.GetOrdinal("CollectionName")),
-                                ImageUri = reader["ImageUri"] != DBNull.Value ? reader["ImageUri"] as string : null,
-                                Notes = reader["Notes"] != DBNull.Value ? reader["Notes"] as string : null,
-                                CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
-                            });
-                        }
+                            CollectionID = reader.IsDBNull(reader.GetOrdinal("CollectionID"))
+                                ? 0
+                                : reader.GetInt32(reader.GetOrdinal("CollectionID")),
+
+                            CollectionName = reader.IsDBNull(reader.GetOrdinal("CollectionName"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("CollectionName")),
+
+                            ImageUri = reader.IsDBNull(reader.GetOrdinal("ImageUri"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("ImageUri")),
+
+                            TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
+                                ? 0
+                                : reader.GetInt32(reader.GetOrdinal("TotalCards")),
+
+                            TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
+                                ? 0
+                                : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
+                        });
                     }
                 }
             }
 
-            _logger.LogInformation("Successfully retrieved {Count} collections for user ID: {UserId}", collections.Count, userId);
+            return Ok(collections);
         }
-        catch (Exception ex)
-        {
-            // Log the exception with an error level
-            _logger.LogError(ex, "An error occurred while fetching collections for user ID: {UserId}", userId);
-            return StatusCode(500, "An error occurred while fetching collections.");
-        }
-
-        // Return the list of collections as a response
-        return Ok(collections);
     }
 
 
 
-// GET: api/Collections/5
-[HttpGet("{collectionId}")]
+
+
+    // GET: api/Collections/5
+    [HttpGet("{collectionId}")]
     public async Task<ActionResult<UserCardCollection>> GetUserCardCollection(int collectionId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -330,56 +322,87 @@ public class CollectionsController : ControllerBase
         }
     }
 
-
-
     [HttpPost("upsert-card")]
     public async Task<IActionResult> AddCardToCollection([FromBody] AddCardToCollectionRequest request)
     {
-        Console.WriteLine($"Received Request: CollectionID = {request.CollectionID}, CardID = {request.CardID}, Quantity = {request.Quantity}");
-
-        if (request == null || string.IsNullOrEmpty(request.CardID) || request.CollectionID <= 0 || request.Quantity <= 0)
-        {
-            return BadRequest(new { message = "Invalid request payload. Please ensure all required fields are filled correctly." });
-        }
-
         try
         {
+            Console.WriteLine($"Received Request: CollectionID = {request.CollectionID}, CardID = {request.CardID}, Quantity = {request.Quantity}");
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
+                Console.WriteLine("Database connection opened successfully.");
 
-                var validateQuery = "SELECT COUNT(1) FROM UserCardCollection WHERE collectionID = @collectionID";
-                using (var validateCommand = new SqlCommand(validateQuery, connection))
+                // Add the card to the collection
+                var insertCardQuery = @"
+            INSERT INTO CollectionCards (CollectionID, CardID, Quantity)
+            VALUES (@CollectionID, @CardID, @Quantity)";
+
+                using (var command = new SqlCommand(insertCardQuery, connection))
                 {
-                    validateCommand.Parameters.AddWithValue("@collectionID", request.CollectionID);
-                    var exists = (int)await validateCommand.ExecuteScalarAsync();
-
-                    if (exists == 0)
-                    {
-                        return BadRequest(new { message = "The specified collection does not exist. Please select a valid collection." });
-                    }
+                    command.Parameters.AddWithValue("@CollectionID", request.CollectionID);
+                    command.Parameters.AddWithValue("@CardID", request.CardID);
+                    command.Parameters.AddWithValue("@Quantity", request.Quantity);
+                    var rowsAffected = await command.ExecuteNonQueryAsync();
+                    Console.WriteLine($"{rowsAffected} row(s) inserted into CollectionCards.");
                 }
 
-                using (var command = new SqlCommand("UpsertCollectionCard", connection))
+                // Call the stored procedure to update the collection summary
+                using (var command = new SqlCommand("UpsertCollectionSummary", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@collectionID", request.CollectionID);
-                    command.Parameters.AddWithValue("@cardID", request.CardID);
-                    command.Parameters.AddWithValue("@quantity", request.Quantity);
-
-                    await command.ExecuteNonQueryAsync();
+                    command.Parameters.AddWithValue("@CollectionID", request.CollectionID);
+                    var rowsAffected = await command.ExecuteNonQueryAsync();
+                    Console.WriteLine($"Stored procedure executed. {rowsAffected} row(s) affected.");
                 }
             }
 
-            // Return a JSON response instead of plain text
+            // Return success message
+            Console.WriteLine("Card added or updated successfully.");
             return Ok(new { message = "Card added or updated successfully." });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error adding card to collection: {ex.Message}");
-            return StatusCode(500, new { message = "An error occurred while adding the card to the collection.", error = ex.Message });
+            // Log the error and return internal server error
+            Console.WriteLine($"Error in AddCardToCollection: {ex.Message}");
+            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+            return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
         }
     }
+
+
+
+    [HttpPost("delete-card")]
+    public async Task RemoveCardFromCollection(int collectionId, string cardId)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            // Remove the card from the collection
+            var deleteCardQuery = @"
+            DELETE FROM CollectionCards 
+            WHERE CollectionID = @CollectionID AND CardID = @CardID";
+
+            using (var command = new SqlCommand(deleteCardQuery, connection))
+            {
+                command.Parameters.AddWithValue("@CollectionID", collectionId);
+                command.Parameters.AddWithValue("@CardID", cardId);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            // Call the stored procedure to update the collection summary
+            using (var command = new SqlCommand("UpsertCollectionSummary", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@CollectionID", collectionId);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+    }
+
+
 
 
     [HttpGet("{collectionId}/details")]

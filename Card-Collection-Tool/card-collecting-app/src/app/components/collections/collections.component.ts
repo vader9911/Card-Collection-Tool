@@ -42,7 +42,7 @@ export class CollectionsComponent implements OnInit {
 
         // Fetch first card details for each collection after loading collections
         this.collections.forEach((collection) => {
-          console.log('collectionCards:', this.collections);
+            this.fetchCollectionCards(collection.collectionID);
           if (collection.cardIds && collection.cardIds.length > 0) {
             const firstCardId = collection.cardIds[0].cardId; // Get the first card's ID
             this.fetchCardDetails(firstCardId, collection.collectionID); // Fetch card details using the correct `collectionID`
@@ -79,11 +79,11 @@ export class CollectionsComponent implements OnInit {
 
   fetchCollectionCards(collectionID: number) {  // Ensure `collectionID` is used here
   this.collectionsService.getCardIdsByCollectionId(collectionID).subscribe(
-    (cardIds: string[]) => {
-      console.log('Card IDs retrieved:', cardIds);
+    (cardIds: string[] | undefined) => {
+      console.log('Card IDs retrieved:',cardIds, "For Collection:", collectionID);
 
       // Use the retrieved card IDs to fetch card details
-      this.collectionsService.getCardDetailsByIds(cardIds).subscribe(
+      this.apiService.getCardDetailsByIds(cardIds).subscribe(
         (cardDetails) => {
           console.log('Card details:', cardDetails);
           this.cardDetailsList = cardDetails; // Store the card details in a list to display

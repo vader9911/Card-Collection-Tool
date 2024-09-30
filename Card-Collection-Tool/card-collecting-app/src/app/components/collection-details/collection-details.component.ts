@@ -3,8 +3,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { CollectionsService } from '../../services/collections.service';
-import { Subscription } from 'rxjs';
+
 import * as bootstrap from 'bootstrap';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-collection-details',

@@ -426,7 +426,7 @@ namespace Card_Collection_Tool.Controllers
         }
 
         [HttpPost("details")]
-        public async Task<IActionResult> GetCardsByIds([FromBody] List<string> cardIds)
+        public async Task<IActionResult> GetCardsByIds([FromBody] List<string>? cardIds)
         {
             Console.WriteLine("API called with Card IDs: " + string.Join(", ", cardIds));
 
@@ -444,12 +444,9 @@ namespace Card_Collection_Tool.Controllers
 
                     // SQL query to select card data using the view v_CardData
                     var sqlQuery = @"
-                SELECT *
-                FROM v_CardData
-                WHERE Id IN (@CardIds)";
-
-                    // Create a parameterized query for safe SQL execution
-                    sqlQuery = sqlQuery.Replace("@CardIds", string.Join(", ", cardIds.Select((_, index) => $"@CardId{index}")));
+                SELECT * 
+                FROM v_CardData 
+                WHERE Id IN (" + string.Join(", ", cardIds.Select((_, index) => $"@CardId{index}")) + ")";
 
                     using (var command = new SqlCommand(sqlQuery, connection))
                     {
@@ -481,6 +478,7 @@ namespace Card_Collection_Tool.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
 
 
