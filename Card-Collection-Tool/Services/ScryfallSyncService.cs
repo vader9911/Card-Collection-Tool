@@ -216,10 +216,10 @@ namespace Card_Collection_Tool.Services
 
                 upsertPriceCmd.Parameters.AddWithValue("@ScryfallCardId", card.Id);
                 upsertPriceCmd.Parameters.AddWithValue("@Usd", (object)card.Prices?.Usd ?? DBNull.Value);
-                upsertPriceCmd.Parameters.AddWithValue("@UsdFoil", (object)card.Prices?.UsdFoil ?? DBNull.Value);
-                upsertPriceCmd.Parameters.AddWithValue("@UsdEtched", (object)card.Prices?.UsdEtched ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@UsdFoil", (object)card.Prices?.Usd_Foil ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@UsdEtched", (object)card.Prices?.Usd_Etched ?? DBNull.Value);
                 upsertPriceCmd.Parameters.AddWithValue("@Eur", (object)card.Prices?.Eur ?? DBNull.Value);
-                upsertPriceCmd.Parameters.AddWithValue("@EurFoil", (object)card.Prices?.EurFoil ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@EurFoil", (object)card.Prices?.Eur_Foil ?? DBNull.Value);
                 upsertPriceCmd.Parameters.AddWithValue("@Tix", (object)card.Prices?.Tix ?? DBNull.Value);
                 await upsertPriceCmd.ExecuteNonQueryAsync();
 

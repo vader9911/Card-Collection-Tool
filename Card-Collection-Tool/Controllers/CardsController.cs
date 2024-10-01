@@ -282,10 +282,10 @@ namespace Card_Collection_Tool.Controllers
                                     {
                                         ScryfallCardId = cardId,
                                         Usd = reader["Usd"]?.ToString(),
-                                        UsdFoil = reader["UsdFoil"]?.ToString(),
-                                        UsdEtched = reader["UsdEtched"]?.ToString(),
+                                        Usd_Foil = reader["UsdFoil"]?.ToString(),
+                                        Usd_Etched = reader["UsdEtched"]?.ToString(),
                                         Eur = reader["Eur"]?.ToString(),
-                                        EurFoil = reader["EurFoil"]?.ToString(),
+                                        Eur_Foil = reader["EurFoil"]?.ToString(),
                                         Tix = reader["Tix"]?.ToString()
                                     },
                                     ImageUris = new ImageUris
@@ -365,9 +365,9 @@ namespace Card_Collection_Tool.Controllers
                     // SQL query to fetch cards with matching names
                     var sqlQuery = @"
                 SELECT 
-                    Id, Name, SetName, ReleaseDate
+                    Id, Name, SetName, ReleaseDate, Digital, Usd, UsdFoil, UsdEtched
                 FROM 
-                    ScryfallCards
+                    dbo.v_CardData
                 WHERE 
                     Name = @CardName";
 
@@ -591,10 +591,10 @@ namespace Card_Collection_Tool.Controllers
                 {
                     ScryfallCardId = cardId,
                     Usd = reader["Usd"]?.ToString(),
-                    UsdFoil = reader["UsdFoil"]?.ToString(),
-                    UsdEtched = reader["UsdEtched"]?.ToString(),
+                    Usd_Foil = reader["UsdFoil"]?.ToString(),
+                    Usd_Etched = reader["UsdEtched"]?.ToString(),
                     Eur = reader["Eur"]?.ToString(),
-                    EurFoil = reader["EurFoil"]?.ToString(),
+                    Eur_Foil = reader["EurFoil"]?.ToString(),
                     Tix = reader["Tix"]?.ToString()
                 },
                 ImageUris = new ImageUris
