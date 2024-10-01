@@ -283,6 +283,7 @@ public class CollectionsController : ControllerBase
     [HttpPut("{collectionId}/update")]
     public async Task<IActionResult> UpdateCollection(int collectionId, [FromBody] UpdateCollectionRequest request)
     {
+        Console.WriteLine("--------------Called Update Collection ------------------");
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
@@ -334,42 +335,66 @@ public class CollectionsController : ControllerBase
                 await connection.OpenAsync();
                 Console.WriteLine("Database connection opened successfully.");
 
-                // Add the card to the collection
-                var insertCardQuery = @"
-            INSERT INTO CollectionCards (CollectionID, CardID, Quantity)
-            VALUES (@CollectionID, @CardID, @Quantity)";
-
-                using (var command = new SqlCommand(insertCardQuery, connection))
+                // Check if the card already exists in the collection
+                var checkCardQuery = "SELECT Quantity FROM CollectionCards WHERE CollectionID = @CollectionID AND CardID = @CardID";
+                using (var checkCmd = new SqlCommand(checkCardQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@CollectionID", request.CollectionID);
-                    command.Parameters.AddWithValue("@CardID", request.CardID);
-                    command.Parameters.AddWithValue("@Quantity", request.Quantity);
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
-                    Console.WriteLine($"{rowsAffected} row(s) inserted into CollectionCards.");
+                    checkCmd.Parameters.AddWithValue("@CollectionID", request.CollectionID);
+                    checkCmd.Parameters.AddWithValue("@CardID", request.CardID);
+
+                    var existingQuantity = await checkCmd.ExecuteScalarAsync();
+
+                    if (existingQuantity != null)
+                    {
+                        // If the card exists, update the quantity
+                        var updateCardQuery = "UPDATE CollectionCards SET Quantity = Quantity + @Quantity WHERE CollectionID = @CollectionID AND CardID = @CardID";
+                        using (var updateCmd = new SqlCommand(updateCardQuery, connection))
+                        {
+                            updateCmd.Parameters.AddWithValue("@CollectionID", request.CollectionID);
+                            updateCmd.Parameters.AddWithValue("@CardID", request.CardID);
+                            updateCmd.Parameters.AddWithValue("@Quantity", request.Quantity);
+                            await updateCmd.ExecuteNonQueryAsync();
+                            Console.WriteLine("Card quantity updated successfully.");
+                        }
+                    }
+                    else
+                    {
+                        // If the card does not exist, insert it
+                        var insertCardQuery = @"
+                        INSERT INTO CollectionCards (CollectionID, CardID, Quantity)
+                        VALUES (@CollectionID, @CardID, @Quantity)";
+                        using (var insertCmd = new SqlCommand(insertCardQuery, connection))
+                        {
+                            insertCmd.Parameters.AddWithValue("@CollectionID", request.CollectionID);
+                            insertCmd.Parameters.AddWithValue("@CardID", request.CardID);
+                            insertCmd.Parameters.AddWithValue("@Quantity", request.Quantity);
+                            await insertCmd.ExecuteNonQueryAsync();
+                            Console.WriteLine("Card inserted into CollectionCards.");
+                        }
+                    }
                 }
 
-                // Call the stored procedure to update the collection summary
+                // Call the stored procedure to update the collection summary (totals only)
                 using (var command = new SqlCommand("UpsertCollectionSummary", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@CollectionID", request.CollectionID);
-                    var rowsAffected = await command.ExecuteNonQueryAsync();
-                    Console.WriteLine($"Stored procedure executed. {rowsAffected} row(s) affected.");
+                    await command.ExecuteNonQueryAsync();
+                    Console.WriteLine("Stored procedure executed to update collection totals.");
                 }
             }
 
             // Return success message
-            Console.WriteLine("Card added or updated successfully.");
             return Ok(new { message = "Card added or updated successfully." });
         }
         catch (Exception ex)
         {
             // Log the error and return internal server error
             Console.WriteLine($"Error in AddCardToCollection: {ex.Message}");
-            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
             return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
         }
     }
+
 
 
 
@@ -420,7 +445,7 @@ public class CollectionsController : ControllerBase
 
             // Fetch collection details
             var collectionCmd = new SqlCommand(
-                "SELECT CollectionName, ImageUri, Notes, CreatedDate FROM UserCardCollection WHERE CollectionID = @CollectionID AND UserID = @UserID",
+                "SELECT CollectionName, ImageUri, Notes, CreatedDate, TotalCards, TotalValue FROM UserCardCollection WHERE CollectionID = @CollectionID AND UserID = @UserID",
                 connection
             );
             collectionCmd.Parameters.AddWithValue("@CollectionID", collectionId);
@@ -432,6 +457,8 @@ public class CollectionsController : ControllerBase
                 ImageUri = string.Empty,
                 Notes = string.Empty,
                 CreatedDate = DateTime.MinValue,
+                TotalCards = string.Empty,
+                TotalValue = string.Empty
 
             };
 
@@ -444,7 +471,10 @@ public class CollectionsController : ControllerBase
                         CollectionName = reader["CollectionName"].ToString(),
                         ImageUri = reader["ImageUri"]?.ToString() ?? string.Empty,
                         Notes = reader["Notes"]?.ToString() ?? string.Empty,
-                        CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+                        CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate")),
+                        TotalCards = reader["TotalCards"].ToString(),
+                        TotalValue = reader["TotalValue"].ToString()
+
 
                     };
                 }
@@ -481,15 +511,12 @@ public class CollectionsController : ControllerBase
                 // Fetch detailed card data using the Card IDs from v_CardData view
                 foreach (var cardId in cardIds)
                 {
-                    var cardDataCmd = new SqlCommand(
-                        @"SELECT 
-                        Id, Name, ManaCost, TypeLine, OracleText, SetName, Artist, Rarity, Normal,
-                        Power, Toughness, FlavorText, ReleaseDate, Variation, Colors, ColorIdentity, Usd
-                      FROM v_CardData 
-                      WHERE Id = @CardID",
-                        connection
-                    );
-                    cardDataCmd.Parameters.AddWithValue("@CardID", cardId);
+                    // Call the stored procedure instead of directly querying the view
+                    var cardDataCmd = new SqlCommand("dbo.GetCards", connection)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+                    cardDataCmd.Parameters.AddWithValue("@CardId", cardId);
 
                     using (var cardReader = await cardDataCmd.ExecuteReaderAsync())
                     {
@@ -519,6 +546,7 @@ public class CollectionsController : ControllerBase
                         }
                     }
                 }
+
             }
 
             // Return the combined collection and card details

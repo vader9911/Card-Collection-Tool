@@ -5,6 +5,8 @@ import { AuthService } from '../../services/auth.service';
 import { CollectionsService } from '../../services/collections.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { Card } from '../../models/card';
+import { Collection } from '../../models/collection';
 
 @Component({
   selector: 'app-collections',
@@ -18,7 +20,7 @@ import { ApiService } from '../../services/api.service';
   styleUrl: './collections.component.scss'
 })
 export class CollectionsComponent implements OnInit {
-  collections: any[] = []; // Array to hold collection data
+  collections: Collection[] = []; // Array to hold collection data
   newCollectionName: string = ''; // New collection name
   defaultImageUrl: string = 'https://archive.org/download/placeholder-image/placeholder-image.jpg'; // Default image for no card collections
   cardImages: { [key: string]: string } = {}; // Store card images by collection ID
@@ -42,9 +44,9 @@ export class CollectionsComponent implements OnInit {
 
         // Fetch first card details for each collection after loading collections
         this.collections.forEach((collection) => {
-            this.fetchCollectionCards(collection.collectionID);
-          if (collection.cardIds && collection.cardIds.length > 0) {
-            const firstCardId = collection.cardIds[0].cardId; // Get the first card's ID
+          this.fetchCollectionCards(collection.collectionID);
+          if (collection.cards && collection.cards.length > 0) {
+            const firstCardId = collection.cards[0].cardID; // Get the first card's ID
             this.fetchCardDetails(firstCardId, collection.collectionID); // Fetch card details using the correct `collectionID`
           }
         });
@@ -97,7 +99,31 @@ export class CollectionsComponent implements OnInit {
       console.error('Error fetching card IDs:', error);
     }
   );
-}
+  }
+
+  // Example: Calling the update method from the component
+  // Example: Calling the update method from the component
+  //updateCollectionDetails(): void {
+  //  if (this.collection.colle && this.collectionDetails) {
+  //    this.collectionsService.updateCollection(
+  //      this.collectionId,
+  //      this.collectionDetails.collectionName,  // Make sure this matches the correct property name
+  //      this.collectionDetails.imageUri,
+  //      this.collectionDetails.notes
+  //    ).subscribe(
+  //      (response) => {
+  //        console.log('Collection updated successfully:', response);
+  //        // Optionally reload collection data
+  //        this.loadCollectionDetails();
+  //      },
+  //      (error) => {
+  //        console.error('Error updating collection:', error);
+  //      }
+  //    );
+  //  }
+  //}
+
+
 
 
 
