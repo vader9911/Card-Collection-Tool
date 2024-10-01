@@ -43,6 +43,251 @@ namespace Card_Collection_Tool.Migrations
                     b.ToTable("AppSettings");
                 });
 
+            modelBuilder.Entity("Card_Collection_Tool.Models.ImageUris", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ArtCrop")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BorderCrop")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Large")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Normal")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Png")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScryfallCardId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Small")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScryfallCardId")
+                        .IsUnique()
+                        .HasFilter("[ScryfallCardId] IS NOT NULL");
+
+                    b.ToTable("ImageUris");
+                });
+
+            modelBuilder.Entity("Card_Collection_Tool.Models.Legalities", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Alchemy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Brawl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Commander")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Duel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Explorer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Future")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gladiator")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Historic")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Legacy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Modern")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Oathbreaker")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldSchool")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pauper")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PauperCommander")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Penny")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pioneer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Predh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Premodern")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScryfallCardId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Standard")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StandardBrawl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Timeless")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Vintage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScryfallCardId")
+                        .IsUnique();
+
+                    b.ToTable("Legalities");
+                });
+
+            modelBuilder.Entity("Card_Collection_Tool.Models.Prices", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Eur")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EurFoil")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScryfallCardId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Tix")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Usd")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsdEtched")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsdFoil")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScryfallCardId")
+                        .IsUnique()
+                        .HasFilter("[ScryfallCardId] IS NOT NULL");
+
+                    b.ToTable("Prices");
+                });
+
+            modelBuilder.Entity("Card_Collection_Tool.Models.ScryfallCard", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Artist")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float?>("Cmc")
+                        .HasColumnType("real");
+
+                    b.Property<string>("CollectorNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ColorIdentity")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Colors")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Digital")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FlavorText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("FullArt")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Games")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Keywords")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ManaCost")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OracleText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Power")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Rarity")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReleaseDate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("Reprint")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Set")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SetId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SetName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Toughness")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TypeLine")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Variation")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("VariationOf")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ScryfallCards");
+                });
+
             modelBuilder.Entity("Card_Collection_Tool.Models.UserCardCollection", b =>
                 {
                     b.Property<int>("Id")
@@ -266,59 +511,33 @@ namespace Card_Collection_Tool.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ScryfallCard", b =>
+            modelBuilder.Entity("Card_Collection_Tool.Models.ImageUris", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)")
-                        .HasAnnotation("Relational:JsonPropertyName", "id");
+                    b.HasOne("Card_Collection_Tool.Models.ScryfallCard", "ScryfallCard")
+                        .WithOne("ImageUris")
+                        .HasForeignKey("Card_Collection_Tool.Models.ImageUris", "ScryfallCardId");
 
-                    b.Property<string>("Artist")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "artist");
+                    b.Navigation("ScryfallCard");
+                });
 
-                    b.Property<string>("FlavorText")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "flavor_text");
+            modelBuilder.Entity("Card_Collection_Tool.Models.Legalities", b =>
+                {
+                    b.HasOne("Card_Collection_Tool.Models.ScryfallCard", "ScryfallCard")
+                        .WithOne("Legalities")
+                        .HasForeignKey("Card_Collection_Tool.Models.Legalities", "ScryfallCardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("Keywords")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "keywords");
+                    b.Navigation("ScryfallCard");
+                });
 
-                    b.Property<string>("ManaCost")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "mana_cost");
+            modelBuilder.Entity("Card_Collection_Tool.Models.Prices", b =>
+                {
+                    b.HasOne("Card_Collection_Tool.Models.ScryfallCard", "ScryfallCard")
+                        .WithOne("Prices")
+                        .HasForeignKey("Card_Collection_Tool.Models.Prices", "ScryfallCardId");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "name");
-
-                    b.Property<string>("OracleText")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "oracle_text");
-
-                    b.Property<string>("Rarity")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "rarity");
-
-                    b.Property<string>("ReleaseDate")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "released_at");
-
-                    b.Property<string>("ScryfallUri")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "scryfall_uri");
-
-                    b.Property<string>("SetName")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "set_name");
-
-                    b.Property<string>("TypeLine")
-                        .HasColumnType("nvarchar(max)")
-                        .HasAnnotation("Relational:JsonPropertyName", "type_line");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ScryfallCards");
+                    b.Navigation("ScryfallCard");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -372,69 +591,16 @@ namespace Card_Collection_Tool.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ScryfallCard", b =>
+            modelBuilder.Entity("Card_Collection_Tool.Models.ScryfallCard", b =>
                 {
-                    b.OwnsOne("ImageUris", "ImageUris", b1 =>
-                        {
-                            b1.Property<string>("ScryfallCardId")
-                                .HasColumnType("nvarchar(450)");
+                    b.Navigation("ImageUris")
+                        .IsRequired();
 
-                            b1.Property<string>("Large")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "large");
+                    b.Navigation("Legalities")
+                        .IsRequired();
 
-                            b1.Property<string>("Normal")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "normal");
-
-                            b1.Property<string>("Png")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "png");
-
-                            b1.Property<string>("Small")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "small");
-
-                            b1.HasKey("ScryfallCardId");
-
-                            b1.ToTable("ScryfallCards");
-
-                            b1.HasAnnotation("Relational:JsonPropertyName", "image_uris");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ScryfallCardId");
-                        });
-
-                    b.OwnsOne("Prices", "Prices", b1 =>
-                        {
-                            b1.Property<string>("ScryfallCardId")
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<string>("USD")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "usd");
-
-                            b1.Property<string>("USDEtched")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "usd_etched");
-
-                            b1.Property<string>("USDFoil")
-                                .HasColumnType("nvarchar(max)")
-                                .HasAnnotation("Relational:JsonPropertyName", "usd_foil");
-
-                            b1.HasKey("ScryfallCardId");
-
-                            b1.ToTable("ScryfallCards");
-
-                            b1.HasAnnotation("Relational:JsonPropertyName", "prices");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ScryfallCardId");
-                        });
-
-                    b.Navigation("ImageUris");
-
-                    b.Navigation("Prices");
+                    b.Navigation("Prices")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

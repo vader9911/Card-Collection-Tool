@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,14 +10,35 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  // Method to call the autocomplete endpoint
-  searchCards(query: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/autocomplete?query=${query}`);
+  getCardDetails(cardId: string | undefined): Observable<any> {
+    console.log('API Service called with card ID:', cardId);
+    return this.http.get<any>(`${this.apiUrl}/${cardId}/details`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // Method to fetch card details by ID
-  getCardDetails(cardId: string): Observable<any> {
-    console.log(cardId);
-    return this.http.get<any>(`${this.apiUrl}/${cardId}/details`);
+  getCardsByName(cardName: string | undefined): Observable<any> {
+    console.log('API Service called with card ID:', cardName);
+    return this.http.get<any>(`${this.apiUrl}/${cardName}/variations`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  //getCardDetailsByIds(cardIds: [] | undefined): Observable<any> {
+  //  console.log('API Service called with card ID:', cardIds);
+  //  return this.http.get<any>(`${this.apiUrl}/details`).pipe(
+  //    catchError(this.handleError)
+  //  );
+  //}
+
+  // Method to fetch card details using card IDs (via POST)
+  getCardDetailsByIds(cardIds: string[] | undefined): Observable<any[]> {
+    // Send the card IDs as a body in the POST request
+    return this.http.post<any[]>(`${this.apiUrl}/details`, cardIds);
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('API call error:', error);
+    return throwError('Something went wrong; please try again later.');
   }
 }

@@ -1,11 +1,12 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {  Router } from '@angular/router';
 import { CardSearchComponent } from '../card-search/card-search.component';
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs'
 import { AddToCollectionModalComponent } from '../addcard-modal/addcard-modal.component'
-import { CardDetailsComponent } from '../card-details/card-details.component'
+import { CardDetailModalComponent } from '../card-detail-modal/card-detail-modal.component';
+
 
 
 @Component({
@@ -15,7 +16,7 @@ import { CardDetailsComponent } from '../card-details/card-details.component'
     CommonModule,
     CardListComponent,
     AddToCollectionModalComponent,
-    CardDetailsComponent
+    CardDetailModalComponent,
     
   ],
   templateUrl: './card-list.component.html',
@@ -28,8 +29,13 @@ export class CardListComponent implements OnInit {
 
   isLoggedIn: boolean = false; // Track user authentication status
   authSubscription?: Subscription;
-  selectedCardId: number | undefined;
-  constructor(private authService: AuthService, private router: Router ) {}
+  selectedCardId: string | undefined;
+  selectedCardName: string | undefined;
+  showModal: boolean = false;
+  @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
+  @ViewChild(AddToCollectionModalComponent) addToCollectionModal!: AddToCollectionModalComponent;
+  constructor( private authService: AuthService, private router: Router ) {}
+
 
   ngOnInit(): void {
     // Subscribe to the authentication status
@@ -45,17 +51,33 @@ export class CardListComponent implements OnInit {
     }
   }
 
-  // Method to navigate to card details page
-  viewCardDetails(cardId: string): void {
-    this.router.navigate(['/cards', cardId, 'details']);
-  }
 
-  openAddToCollectionModal(cardId: any) {
-    console.log("modal for add card opened");
-    this.selectedCardId = cardId; // Store the selected card ID
-    const modal = document.getElementById('addToCollectionModal');
-    if (modal) {
-      modal.style.display = 'block';
+  openCardDetailModal(cardId: string | undefined, cardName: string | undefined): void {
+    console.log('Card clicked with ID:', cardId, cardName);
+
+    // Set the card details
+    this.selectedCardId = cardId;
+    this.selectedCardName = cardName;
+
+    // Call the open method on the modal component
+    if (this.cardDetailModal) {
+      this.cardDetailModal.openModal(this.selectedCardId, this.selectedCardName);
     }
   }
+
+  closeCardDetailModal(): void {
+    this.showModal = false;
+    const modal = document.getElementById('cardDetailModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
+ openAddToCollectionModal(cardId: string | undefined) {
+  console.log("Modal for add card opened with ID:", cardId); // Log card ID
+  this.selectedCardId = cardId; // Store the selected card ID
+   if (this.addToCollectionModal) {
+     this.addToCollectionModal.openModal(this.selectedCardId);
+   }
+}
 }

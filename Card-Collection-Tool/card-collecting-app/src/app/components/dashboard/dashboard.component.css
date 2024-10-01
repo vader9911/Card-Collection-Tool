@@ -1,0 +1,50 @@
+/* Base Styles for Dashboard */
+.search-view,
+.collections-sidebar {
+  transition: width 0.3s ease; /* Smooth transition for resizing */
+  height: 100vh; /* Full height for both columns */
+  overflow-y: auto; /* Allow scrolling if content exceeds height */
+  position: relative; /* Ensure positioned elements like headers stay within bounds */
+}
+
+/* Search View Styles */
+.search-view {
+  width: 60%; /* Default to full width */
+  min-width: 300px; /* Minimum width to prevent it from becoming too narrow */
+}
+
+/* Sidebar Drawer Styles */
+.collections-sidebar {
+  width: 250px; /* Default width when expanded */
+  min-width: 50px; /* Minimum width for collapsed sidebar */
+  position: relative; /* Position relative to contain the button */
+}
+
+  .collections-sidebar.collapsed {
+    width: 50px; /* Collapsed width for the sidebar drawer */
+  }
+
+/* Toggle Button Styles */
+.toggle-btn {
+  position: absolute; /* Position within the sidebar */
+  top: 50%;
+  right: -20px; /* Position the button outside the sidebar */
+  transform: translateY(-50%);
+  z-index: 10; /* Ensure it appears above other content */
+  border: none;
+  background-color: #fff; /* Visible background color */
+  color: #000; /* Visible text/icon color */
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar Expanded and Collapsed States */
+.collections-sidebar.expanded {
+  width: 250px; /* Expanded width */
+}
+
+.collections-sidebar.collapsed .toggle-btn {
+  right: -20px; /* Adjust position to match the collapsed state */
+}
