@@ -57,8 +57,8 @@
                                         *ngFor="let version of set.values" (click)="onVersionClick(version.id, version.name)">
                                         <span>{{ version.name }}</span>
                                         <span>
-                                            <strong>USD:</strong> {{ version.prices?.usd || 'N/A' }}
-                                            <strong>Foil:</strong> {{ version.prices?.usdFoil || 'N/A' }}
+                                            <strong>USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
+                                            
                                         </span>
                                     </li>
                                 </ul>
@@ -94,17 +94,12 @@
                     <p><strong>Games:</strong> {{ cardDetails?.games?.join(', ') }}</p>
                     <p><strong>Release Date:</strong> {{ cardDetails?.releaseDate | date: 'yyyy-MM-dd' }}</p>
                     <p><strong>Reprint:</strong> {{ cardDetails?.reprint ? 'Yes' : 'No' }}</p>
-                    <p><strong>Set Code:</strong> {{ cardDetails?.set }}</p>
-                    <p><strong>Variation:</strong> {{ cardDetails?.variation ? 'Yes' : 'No' }}</p>
-                    <p *ngIf="cardDetails?.variationOf">
-                        <strong>Variation Of:</strong> {{ cardDetails?.variationOf }}
-                    </p>
+                    <p><strong>Set Code:</strong><span class="text-uppercase"> {{ cardDetails?.set }}</span></p>
                     <p><strong>Colors:</strong> {{ cardDetails?.colors?.join(', ') }}</p>
                     <p><strong>Color Identity:</strong> {{ cardDetails?.colorIdentity?.join(', ') }}</p>
                 </div>
             </div>
             <div class="modal-footer">
-                {{ cardDetails?.id }}
                 <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id)">Add To Collection</button>
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
             </div>

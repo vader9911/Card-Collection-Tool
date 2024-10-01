@@ -369,7 +369,8 @@ namespace Card_Collection_Tool.Controllers
                 FROM 
                     dbo.v_CardData
                 WHERE 
-                    Name = @CardName";
+                    Name = @CardName
+                    AND Digital = 0" ;
 
                     Console.WriteLine("Executing SQL Query: " + sqlQuery);
 
@@ -397,7 +398,11 @@ namespace Card_Collection_Tool.Controllers
                                     Id = reader["Id"].ToString(),
                                     Name = reader["Name"].ToString(),
                                     ReleaseDate = reader["ReleaseDate"].ToString(),
-                                    SetName = reader["SetName"].ToString()
+                                    SetName = reader["SetName"].ToString(),
+                                    Digital = reader["Digital"].ToString(),
+                                    Usd = reader["Usd"].ToString(),
+                                    UsdFoil = reader["UsdFoil"].ToString(),
+                                    UsdEtched = reader["UsdEtched"].ToString()
                                 };
 
                                 variations.Add(card);
