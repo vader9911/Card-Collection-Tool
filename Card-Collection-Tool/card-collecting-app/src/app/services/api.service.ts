@@ -24,7 +24,18 @@ export class ApiService {
     );
   }
 
+  //getCardDetailsByIds(cardIds: [] | undefined): Observable<any> {
+  //  console.log('API Service called with card ID:', cardIds);
+  //  return this.http.get<any>(`${this.apiUrl}/details`).pipe(
+  //    catchError(this.handleError)
+  //  );
+  //}
 
+  // Method to fetch card details using card IDs (via POST)
+  getCardDetailsByIds(cardIds: string[] | undefined): Observable<any[]> {
+    // Send the card IDs as a body in the POST request
+    return this.http.post<any[]>(`${this.apiUrl}/details`, cardIds);
+  }
 
   private handleError(error: HttpErrorResponse) {
     console.error('API call error:', error);

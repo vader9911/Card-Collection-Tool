@@ -16,10 +16,11 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
   styleUrl: './addcard-modal.component.css'
 })
 export class AddToCollectionModalComponent implements OnInit {
-  @Input() cardId?: string | undefined; // Card ID passed to the modal
+  @Input() selectedCardId: string | undefined; // Card ID passed to the modal
   collections: any[] = []; // List of collections
   selectedCollectionId: number | null = null; // Initialize selected collection ID
   quantity: number = 1;
+  addCollectIsOpen: boolean = false;
 
   constructor(private collectionsService: CollectionsService) { }
 
@@ -37,16 +38,21 @@ export class AddToCollectionModalComponent implements OnInit {
 
   // Add card to selected collection
   addToCollection() {
-    console.log('addToCollection called'); // Log to confirm the method is called
-    console.log('Selected Collection ID:', this.selectedCollectionId); // Log the selected collection ID
-    console.log('Quantity:', this.quantity); // Log the quantity
-    console.log('Card ID:', this.cardId); // Log the card ID
-    if (this.selectedCollectionId && this.cardId && this.quantity > 0) {
-      console.log('Making request to add card:', this.cardId, 'with quantity:', this.quantity);
+    console.log('addToCollection called');
+    console.log('Selected Collection ID:', this.selectedCollectionId);
+    console.log('Quantity:', this.quantity);
+    console.log('Card ID:', this.selectedCardId);
 
-      this.collectionsService.addCardToCollection(this.selectedCollectionId, this.cardId, this.quantity).subscribe(
-        () => {
-          //alert('Card added to collection successfully!');
+    if (this.selectedCollectionId && this.selectedCardId && this.quantity > 0) {
+      console.log('Making request to add card:', this.selectedCardId, 'with quantity:', this.quantity);
+
+      // Convert collectionID to a number to ensure correct type
+      const collectionID = Number(this.selectedCollectionId);
+
+      this.collectionsService.addCardToCollection(this.selectedCollectionId, this.selectedCardId, this.quantity).subscribe(
+        (response) => {
+          console.log('Response from server:', response);
+          console.log('Card added to collection successfully!');
           this.closeModal(); // Close the modal after adding the card
         },
         (error) => {
@@ -59,13 +65,14 @@ export class AddToCollectionModalComponent implements OnInit {
     }
   }
 
+
   // Create a new collection and add the card to it
   createAndAddToCollection(collectionName: string) {
     if (collectionName.trim()) {
-      console.log('Making request to add card:', this.cardId)
+      console.log('Making request to add card:', this.selectedCardId)
       this.collectionsService.createCollection(collectionName).subscribe(
         (newCollection) => {
-          this.collectionsService.addCardToCollection(newCollection.id, this.cardId!, this.quantity).subscribe(
+          this.collectionsService.addCardToCollection(newCollection.id, this.selectedCardId!, this.quantity).subscribe(
             () => {
               alert('New collection created and card added successfully!');
               this.closeModal();
@@ -86,8 +93,21 @@ export class AddToCollectionModalComponent implements OnInit {
     }
   }
 
+
+  openModal(cardId: string | undefined): void {
+    this.addCollectIsOpen = true;
+    console.log(cardId)
+    if (cardId) {
+      console.log('card id add modal opended with:', this.selectedCardId);
+      console.log('Modal opened:', this.addCollectIsOpen);
+    } else {
+      console.error('Invalid cardId or cardName provided to openModal');
+    }
+  }
+
   // Close the modal
   closeModal() {
+    this.addCollectIsOpen = false;
     const modal = document.getElementById('addToCollectionModal');
     if (modal) {
       modal.style.display = 'none';

@@ -16,6 +16,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 using Newtonsoft.Json.Serialization;
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace Card_Collection_Tool.Services
 {
@@ -25,10 +27,11 @@ namespace Card_Collection_Tool.Services
         private readonly ILogger<ScryfallSyncService> _logger;
         private readonly HttpClient _httpClient;
         private DateTime? _lastSync;
+        private readonly string _connectionString;
 
-        public ScryfallSyncService(ApplicationDbContext context, ILogger<ScryfallSyncService> logger, HttpClient httpClient)
+        public ScryfallSyncService(ILogger<ScryfallSyncService> logger, HttpClient httpClient, IConfiguration configuration)
         {
-            _context = context;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
             _logger = logger;
             _httpClient = httpClient;
             _lastSync = null;
@@ -97,7 +100,7 @@ namespace Card_Collection_Tool.Services
                 await Parallel.ForEachAsync(cards, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (card, token) =>
                 {
                     using var context = new ApplicationDbContext(options); // Each task needs its own DbContext instance
-                    await ProcessCardAsync(context, card);
+                    await ProcessCardAsync(card);
                     Interlocked.Increment(ref cardCount); // Safely increment the card count
 
                     // Log progress every 1000 cards
@@ -160,127 +163,143 @@ namespace Card_Collection_Tool.Services
             }
         }
 
-        private async Task ProcessCardAsync(ApplicationDbContext context, ScryfallCard card)
+        private async Task ProcessCardAsync(ScryfallCard card)
         {
-            //_logger.LogInformation("Processing card data...");
-
-            var existingCard = await context.ScryfallCards
-                                            .Include(c => c.Prices)
-                                            .Include(c => c.ImageUris)
-                                            .Include(c => c.Legalities)
-                                            .FirstOrDefaultAsync(c => c.Id == card.Id);
-
-            if (existingCard == null)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                if (card.Legalities != null)
-                {
-                    card.Legalities.ScryfallCardId = card.Id;
-                }
+                await connection.OpenAsync();
 
-                if (card.Prices != null)
-                {
-                    card.Prices.ScryfallCardId = card.Id;
-                }
+                // Convert lists to comma-separated strings
+                string games = card.Games != null ? string.Join(",", card.Games) : null;
+                string colorIdentity = card.ColorIdentity != null ? string.Join(",", card.ColorIdentity) : null;
+                string colors = card.Colors != null ? string.Join(",", card.Colors) : null;
+                string keywords = card.Keywords != null ? string.Join(",", card.Keywords) : null;
 
-                if (card.ImageUris != null)
+                // Upsert the main card data using the UpsertScryfallCard stored procedure
+                var upsertCardCmd = new SqlCommand("dbo.UpsertScryfallCard", connection)
                 {
-                    card.ImageUris.ScryfallCardId = card.Id;
-                }
+                    CommandType = CommandType.StoredProcedure
+                };
 
-                await context.ScryfallCards.AddAsync(card);
+                upsertCardCmd.Parameters.AddWithValue("@Id", card.Id);
+                upsertCardCmd.Parameters.AddWithValue("@Name", (object)card.Name ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Cmc", (object)card.Cmc ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@ColorIdentity", (object)colorIdentity ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Colors", (object)colors ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Keywords", (object)keywords ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@ManaCost", (object)card.ManaCost ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Power", (object)card.Power ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Toughness", (object)card.Toughness ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@TypeLine", (object)card.TypeLine ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Artist", (object)card.Artist ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@CollectorNumber", (object)card.CollectorNumber ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Digital", (object)card.Digital ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@FlavorText", (object)card.FlavorText ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@OracleText", (object)card.OracleText ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@FullArt", (object)card.FullArt ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Games", (object)games ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Rarity", (object)card.Rarity ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@ReleaseDate", (object)card.ReleaseDate ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Reprint", (object)card.Reprint ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@SetName", (object)card.SetName ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Set", (object)card.Set ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@SetId", (object)card.SetId ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@Variation", (object)card.Variation ?? DBNull.Value);
+                upsertCardCmd.Parameters.AddWithValue("@VariationOf", (object)card.VariationOf ?? DBNull.Value);
+                await upsertCardCmd.ExecuteNonQueryAsync();
+
+                // Upsert the price data using the UpsertPrice stored procedure
+                var upsertPriceCmd = new SqlCommand("dbo.UpsertPrice", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                upsertPriceCmd.Parameters.AddWithValue("@ScryfallCardId", card.Id);
+                upsertPriceCmd.Parameters.AddWithValue("@Usd", (object)card.Prices?.Usd ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@UsdFoil", (object)card.Prices?.Usd_Foil ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@UsdEtched", (object)card.Prices?.Usd_Etched ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@Eur", (object)card.Prices?.Eur ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@EurFoil", (object)card.Prices?.Eur_Foil ?? DBNull.Value);
+                upsertPriceCmd.Parameters.AddWithValue("@Tix", (object)card.Prices?.Tix ?? DBNull.Value);
+                await upsertPriceCmd.ExecuteNonQueryAsync();
+
+                // Upsert the image URIs using the UpsertImageUri stored procedure
+                var upsertImageCmd = new SqlCommand("dbo.UpsertImageUri", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                upsertImageCmd.Parameters.AddWithValue("@ScryfallCardId", card.Id);
+                upsertImageCmd.Parameters.AddWithValue("@Small", (object)card.ImageUris?.Small ?? DBNull.Value);
+                upsertImageCmd.Parameters.AddWithValue("@Normal", (object)card.ImageUris?.Normal ?? DBNull.Value);
+                upsertImageCmd.Parameters.AddWithValue("@Large", (object)card.ImageUris?.Large ?? DBNull.Value);
+                upsertImageCmd.Parameters.AddWithValue("@Png", (object)card.ImageUris?.Png ?? DBNull.Value);
+                upsertImageCmd.Parameters.AddWithValue("@ArtCrop", (object)card.ImageUris?.ArtCrop ?? DBNull.Value);
+                upsertImageCmd.Parameters.AddWithValue("@BorderCrop", (object)card.ImageUris?.BorderCrop ?? DBNull.Value);
+                await upsertImageCmd.ExecuteNonQueryAsync();
+
+                // Upsert the legalities using the UpsertLegalities stored procedure
+                var upsertLegalitiesCmd = new SqlCommand("dbo.UpsertLegalities", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                upsertLegalitiesCmd.Parameters.AddWithValue("@ScryfallCardId", card.Id);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Standard", (object)card.Legalities?.Standard ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Future", (object)card.Legalities?.Future ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Historic", (object)card.Legalities?.Historic ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Timeless", (object)card.Legalities?.Timeless ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Gladiator", (object)card.Legalities?.Gladiator ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Pioneer", (object)card.Legalities?.Pioneer ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Explorer", (object)card.Legalities?.Explorer ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Modern", (object)card.Legalities?.Modern ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Legacy", (object)card.Legalities?.Legacy ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Pauper", (object)card.Legalities?.Pauper ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Vintage", (object)card.Legalities?.Vintage ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Penny", (object)card.Legalities?.Penny ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Commander", (object)card.Legalities?.Commander ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Oathbreaker", (object)card.Legalities?.Oathbreaker ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@StandardBrawl", (object)card.Legalities?.StandardBrawl ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Brawl", (object)card.Legalities?.Brawl ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Alchemy", (object)card.Legalities?.Alchemy ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@PauperCommander", (object)card.Legalities?.PauperCommander ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Duel", (object)card.Legalities?.Duel ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@OldSchool", (object)card.Legalities?.OldSchool ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Premodern", (object)card.Legalities?.Premodern ?? DBNull.Value);
+                upsertLegalitiesCmd.Parameters.AddWithValue("@Predh", (object)card.Legalities?.Predh ?? DBNull.Value);
+                await upsertLegalitiesCmd.ExecuteNonQueryAsync();
             }
-            else
-            {
-                // Existing card - update its data
-
-                // Update the card's properties
-                existingCard.Name = card.Name;
-                existingCard.Cmc = card.Cmc;
-                existingCard.ColorIdentity = card.ColorIdentity;
-                existingCard.Colors = card.Colors;
-                existingCard.Keywords = card.Keywords;
-                existingCard.ManaCost = card.ManaCost;
-                existingCard.Power = card.Power;
-                existingCard.Toughness = card.Toughness;
-                existingCard.TypeLine = card.TypeLine;
-                existingCard.Artist = card.Artist;
-                existingCard.CollectorNumber = card.CollectorNumber;
-                existingCard.Digital = card.Digital;
-                existingCard.FlavorText = card.FlavorText;
-                existingCard.OracleText = card.OracleText;
-                existingCard.FullArt = card.FullArt;
-                existingCard.Games = card.Games;
-                existingCard.Rarity = card.Rarity;
-                existingCard.ReleaseDate = card.ReleaseDate;
-                existingCard.Reprint = card.Reprint;
-                existingCard.SetName = card.SetName;
-                existingCard.Set = card.Set;
-                existingCard.SetId = card.SetId;
-                existingCard.Variation = card.Variation;
-                existingCard.VariationOf = card.VariationOf;
-                existingCard.Legalities = card.Legalities;
-                existingCard.Prices = card.Prices;
-                existingCard.ImageUris = card.ImageUris;
-
-
-                // Update Prices
-                if (card.Prices != null)
-                {
-                    existingCard.Prices = card.Prices;
-                    existingCard.Prices.ScryfallCardId = card.Id;
-                }
-
-                // Update Image URIs
-                if (card.ImageUris != null)
-                {
-                    existingCard.ImageUris = card.ImageUris;
-                    existingCard.ImageUris.ScryfallCardId = card.Id;
-                }
-
-                // Update Legalities
-                if (card.Legalities != null)
-                {
-                    existingCard.Legalities = card.Legalities;
-                    existingCard.Legalities.ScryfallCardId = card.Id;
-                }
-
-                // Update the existing card in the context
-                context.ScryfallCards.Update(existingCard);
-            }
-
-            await context.SaveChangesAsync();
         }
-    }
-}
+
+
 
 
         public class ScryfallBulkDataResponse
-{
-    public string Object { get; set; }
-    public bool HasMore { get; set; }
-    public List<ScryfallBulkDataEntry> Data { get; set; }
+        {
+            public string Object { get; set; }
+            public bool HasMore { get; set; }
+            public List<ScryfallBulkDataEntry> Data { get; set; }
+        }
+
+        public class ScryfallBulkDataEntry
+        {
+            public string Object { get; set; }
+            public string Id { get; set; }
+            public string Type { get; set; }
+            public DateTime UpdatedAt { get; set; }
+
+            [JsonProperty("download_uri")]
+            public string DownloadUri { get; set; }
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public long Size { get; set; }
+
+            //[JsonProperty("uri")]
+            //public string Uri { get; set; }
+            public string ContentType { get; set; }
+            public string ContentEncoding { get; set; }
+        }
+
+    }
 }
-
-public class ScryfallBulkDataEntry
-{
-    public string Object { get; set; }
-    public string Id { get; set; }
-    public string Type { get; set; }
-    public DateTime UpdatedAt { get; set; }
-
-    [JsonProperty("download_uri")]
-    public string DownloadUri { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public long Size { get; set; }
-
-    //[JsonProperty("uri")]
-    //public string Uri { get; set; }
-    public string ContentType { get; set; }
-    public string ContentEncoding { get; set; }
-}
-
-public class DefualtCards
-{
-
-}
+    

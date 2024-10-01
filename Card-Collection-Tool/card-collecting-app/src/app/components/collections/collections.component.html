@@ -16,14 +16,15 @@
                 <!-- Loop through collections and display each one as a card -->
                 <div class="col" *ngFor="let collection of collections">
                     <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden"
-                         (click)="goToCollectionDetails(collection.id)"
-                         [style.backgroundImage]="'url(' + (cardImages[collection.id] || defaultImageUrl) + ')'"
+                         (click)="goToCollectionDetails(collection.collectionID)"
+                         [style.backgroundImage]="'url(' + (cardImages[collection.collectionID] || defaultImageUrl) + ')'"
                          style="background-size: cover; background-position: center; aspect-ratio: 3/4; width: 100%;">
 
                         <!-- Info Box with Gradient Background -->
                         <div class="info-box p-3 pb-5 text-light">
                             <h3 class="card-title text-capitalize mb-1">{{ collection.collectionName }}</h3>
-                            <p class="medium mb-0">{{ collection.cardIds.length }} Cards</p>
+                            <p class="medium mb-0">{{ collection.totalCards }} Cards</p>
+                            <p class="medium mb-0">${{ collection.totalValue }}</p>
                         </div>
                     </div>
                 </div>

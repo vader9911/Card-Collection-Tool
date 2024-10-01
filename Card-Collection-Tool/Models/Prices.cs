@@ -8,10 +8,10 @@
 
         // Different price types
         public string? Usd { get; set; }
-        public string? UsdFoil { get; set; }
-        public string? UsdEtched { get; set; }
+        public string? Usd_Foil { get; set; }
+        public string? Usd_Etched { get; set; }
         public string? Eur { get; set; }
-        public string? EurFoil { get; set; }
+        public string? Eur_Foil { get; set; }
         public string? Tix { get; set; }
     }
 

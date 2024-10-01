@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { GroupByPipe } from '../../shared/group-by.pipe';
@@ -19,7 +19,7 @@ export class CardDetailModalComponent implements OnInit {
 
   cardDetails: any;
   alternateVersions: any[] = [];
-
+  @ViewChild(AddToCollectionModalComponent) addToCollectionModal!: AddToCollectionModalComponent;
   constructor(private apiService: ApiService) { }
 
   ngOnInit(): void {
@@ -92,8 +92,8 @@ export class CardDetailModalComponent implements OnInit {
     console.log("modal for add card opened", cardId);
     this.cardId = cardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');
-    if (modal) {
-      modal.style.display = 'block';
+    if (this.addToCollectionModal) {
+      this.addToCollectionModal.openModal(this.cardId);
     }
   }
 }

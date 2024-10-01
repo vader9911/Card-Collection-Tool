@@ -20,6 +20,9 @@ namespace Card_Collection_Tool
             // Add authorization services
             builder.Services.AddAuthorization();
 
+            // Add logging to the services
+            builder.Services.AddLogging();
+
             // Register the database context with Identity support
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

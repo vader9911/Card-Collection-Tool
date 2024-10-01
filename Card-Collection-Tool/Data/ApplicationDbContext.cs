@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿// ApplicationDbContext.cs
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Card_Collection_Tool.Models; // Imports the Card and Collection models
-using Newtonsoft.Json;
 
 namespace Card_Collection_Tool.Data
 {
@@ -12,55 +11,26 @@ namespace Card_Collection_Tool.Data
         {
         }
 
+        // Keep DbSets related to Identity and other essential configuration
+        // Remove if not directly used by EF Core in your current architecture
 
-        public DbSet<UserCardCollection> UserCardCollections { get; set; }
-
-        public DbSet<ScryfallCard> ScryfallCards { get; set; }
-
-        public DbSet<Legalities> Legalities { get; set; }
-
-        public DbSet<ImageUris> ImageUris { get; set; }
-        public DbSet<Prices> Prices { get; set; }
-
+        // public DbSet<UserCardCollection> UserCardCollection { get; set; } (Remove if not needed)
+        // public DbSet<ScryfallCard> ScryfallCards { get; set; } (Remove if not needed)
+        // public DbSet<Legalities> Legalities { get; set; } (Remove if not needed)
+        // public DbSet<ImageUris> ImageUris { get; set; } (Remove if not needed)
+        // public DbSet<Prices> Prices { get; set; } (Remove if not needed)
+        // public DbSet<CollectionCard> CollectionCards { get; set; } (Remove if not needed)
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<UserCardCollection>()
-                .HasKey(c => c.Id); // Ensure 'Id' is set as the primary key
+            // Retain Identity-related configurations
+            // Remove any table-specific configurations not required by Identity
 
-            modelBuilder.Entity<UserCardCollection>()
-                .Property(c => c.Id)
-                .ValueGeneratedOnAdd(); // Assuming 'Id' is auto-generated
-
-            // Configure Legalities as a one-to-one relationship with ScryfallCard
-            modelBuilder.Entity<ScryfallCard>()
-                .HasOne(c => c.Legalities)
-                .WithOne(l => l.ScryfallCard)
-                .HasForeignKey<Legalities>(l => l.ScryfallCardId);
-
-            // Configure Prices as a one-to-one relationship with ScryfallCard
-            // Allow NULLs by not enforcing the unique constraint
-            modelBuilder.Entity<ScryfallCard>()
-                .HasOne(c => c.Prices)
-                .WithOne(p => p.ScryfallCard)
-                .HasForeignKey<Prices>(p => p.ScryfallCardId)
-                .IsRequired(false); // Allow Prices to be optional
-
-            // Configure ImageUris as a one-to-one relationship with ScryfallCard
-            modelBuilder.Entity<ScryfallCard>()
-                .HasOne(c => c.ImageUris)
-                .WithOne(i => i.ScryfallCard)
-                .HasForeignKey<ImageUris>(i => i.ScryfallCardId)
-                .IsRequired(false); // Allow ImageUris to be optional
-
-            modelBuilder.Entity<UserCardCollection>()
-                .Property(c => c.CardIds)
-                .HasConversion(
-                    v => JsonConvert.SerializeObject(v), // Convert list to JSON string for storage
-                    v => JsonConvert.DeserializeObject<List<CardEntry>>(v)); // Convert JSON string back to list
+            // Example:
+            // modelBuilder.Entity<UserCardCollection>()
+            //     .HasKey(c => c.Id); (Remove if not needed)
         }
-
-        public DbSet<AppSettings> AppSettings { get; set; }
     }
 }
