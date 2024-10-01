@@ -6,7 +6,87 @@
 @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Almendra:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Montserrat:wght@400;700&display=swap');
+
+/* Base Font Settings */
+body {
+  font-family: 'Lora', serif; 
+  font-size: 16px;
+  color: #333;
+  background-color: #f4f4f4;
+  line-height: 1.7;
+  margin: 0;
+  padding: 0;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  color: #111;
+  margin: 1rem 0;
+}
+
+/* Heading Sizes */
+h1 {
+  font-size: 2.8rem;
+  font-weight: 700; 
+  letter-spacing: 1px;
+}
+
+h2 {
+  font-size: 2.2rem; 
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+h6 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Navigation and Buttons */
+.navbar, .btn, .button, input, select, textarea {
+  font-family: 'Montserrat', sans-serif;
+  font-size: large;
+  font-weight: 400;
+  color: #fff;
+}
 
 
 
+
+/* Additional Styling for Links */
+a {
+  color: #004085;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #0062cc;
+}
+
+
+/* Footer Text */
+.footer {
+  font-family: 'Lora', serif;
+  font-size: 0.9rem; 
+  color: #777;
+}
 

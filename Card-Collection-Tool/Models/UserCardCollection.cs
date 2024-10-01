@@ -6,7 +6,7 @@ namespace Card_Collection_Tool.Models
     public class UserCardCollection
     {
         [Key]
-        public int Id { get; set; } // Primary Key
+        public int CollectionID { get; set; } // Primary Key
 
         [Required]
         public string UserId { get; set; } // Foreign Key for the User
@@ -14,7 +14,14 @@ namespace Card_Collection_Tool.Models
         [Required]
         public string CollectionName { get; set; } // Name of the Collection
 
-        public List<CardEntry> CardIds { get; set; } = new List<CardEntry>(); // List of Card IDs
+        public DateTime CreatedDate  { get; set; } 
+        
+        public string ImageUri { get; set; }
+
+        public string Notes {  get; set; }
+
+        public int TotalCards { get; set; }
+        public decimal TotalValue { get; set; }
     }
 
     public class CardEntry
@@ -28,5 +35,27 @@ namespace Card_Collection_Tool.Models
         public string CardId { get; set; } // The ID of the card being added
         public int Quantity { get; set; } // The quantity of the card being added
     }
+
+
+    public class CreateCollectionRequest
+    {
+        public string CollectionName { get; set; }
+
+
+        public string ImageUri { get; set; }
+
+        public string Notes { get; set; }
+    }
+
+    public class UpdateCollectionRequest
+    {
+        public string CollectionName { get; set; }
+
+
+        public string ImageUri { get; set; }
+
+        public string Notes { get; set; }
+    }
+
 
 }

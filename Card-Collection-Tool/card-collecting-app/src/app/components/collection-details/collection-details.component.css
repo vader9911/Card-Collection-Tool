@@ -28,3 +28,9 @@
   .card-image:hover {
     transform: scale(1.05);
   }
+
+
+#card-info {
+  background-color: rgb(49, 56, 62);
+  box-shadow: rgb(20, 25, 27)1px 4px 8px;
+}

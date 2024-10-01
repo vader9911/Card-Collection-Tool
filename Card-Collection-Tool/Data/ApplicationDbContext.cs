@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿// ApplicationDbContext.cs
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Card_Collection_Tool.Models; // Imports the Card and Collection models
-using Newtonsoft.Json;
 
 namespace Card_Collection_Tool.Data
 {
@@ -12,30 +11,26 @@ namespace Card_Collection_Tool.Data
         {
         }
 
-        public DbSet<UserCardCollection> UserCardCollections { get; set; }
+        // Keep DbSets related to Identity and other essential configuration
+        // Remove if not directly used by EF Core in your current architecture
 
-        public DbSet<ScryfallCard> ScryfallCards { get; set; }
-
+        // public DbSet<UserCardCollection> UserCardCollection { get; set; } (Remove if not needed)
+        // public DbSet<ScryfallCard> ScryfallCards { get; set; } (Remove if not needed)
+        // public DbSet<Legalities> Legalities { get; set; } (Remove if not needed)
+        // public DbSet<ImageUris> ImageUris { get; set; } (Remove if not needed)
+        // public DbSet<Prices> Prices { get; set; } (Remove if not needed)
+        // public DbSet<CollectionCard> CollectionCards { get; set; } (Remove if not needed)
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<UserCardCollection>()
-            .HasKey(c => c.Id); // Ensure 'Id' is set as the primary key
+            // Retain Identity-related configurations
+            // Remove any table-specific configurations not required by Identity
 
-            modelBuilder.Entity<UserCardCollection>()
-                .Property(c => c.Id)
-                .ValueGeneratedOnAdd(); // Assuming 'Id' is auto-generated
-
-            // Configure ImageUris as an owned entity type
-            modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.ImageUris);
-            modelBuilder.Entity<ScryfallCard>().OwnsOne(p => p.Prices);
-            modelBuilder.Entity<UserCardCollection>()
-                .Property(c => c.CardIds)
-                .HasConversion(
-                    v => JsonConvert.SerializeObject(v), // Convert list to JSON string for storage
-                    v => JsonConvert.DeserializeObject<List<CardEntry>>(v)); // Convert JSON string back to list
+            // Example:
+            // modelBuilder.Entity<UserCardCollection>()
+            //     .HasKey(c => c.Id); (Remove if not needed)
         }
-    public DbSet<AppSettings> AppSettings { get; set; }
     }
 }

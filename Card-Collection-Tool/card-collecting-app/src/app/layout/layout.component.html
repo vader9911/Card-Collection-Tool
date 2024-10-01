@@ -1,59 +1,64 @@
 <body class="d-flex flex-column min-vh-100 bg-dark text-light">
     <header class="header-transparent position-relative">
-        <nav class="navbar navbar-expand-lg navbar-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand text-light" routerLink="/">Mana Codex</a>
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <a class="navbar-brand text-capitalize fw-bolder text-info" routerLink="/">Mana Codex</a>
+
                 <div class="navbar-collapse collapse d-lg-inline-flex justify-content-end">
-                    <ul class="navbar-nav me-3">
+                    <!-- Show other nav Buttons if Logged In -->
+                    <ul class="navbar-nav me-3" *ngIf="isLoggedIn">
+
                         <li class="nav-item">
-                            <a class="nav-link text-light" [routerLink]="'/'">Home</a>
+                            <a class="nav-link text-light" (click)="logout()">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-light" [routerLink]="'/collections'">Collections</a>
+                            <a class="nav-link text-light" (click)="collections()">Collections</a>
                         </li>
-                        <!--
                         <li class="nav-item">
-                            <a class="nav-link text-light" [routerLink]="'/privacy'">Privacy</a>
+                            <a class="nav-link text-light " (click)="logout()">Account</a>
                         </li>
-                        -->
+                        <li class="border-end mx-4">
+
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link text-light" (click)="logout()">Logout</a>
+                        </li>
                     </ul>
-
-                    <div class="vr mx-2 text-light"></div>
-
-                    <app-login-partial></app-login-partial>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Welcome Section (only shown on home page) -->
-    <section *ngIf="showWelcomeSection"
-             [ngClass]="{'hidden': searchActive}"
-             (transitionend)="handleTransitionEnd()"
-             class="welcome-section text-center p-5 mx-auto my-4">
-        <div class="container">
-            <h1>Welcome to Mana Codex</h1>
-            <p>Discover, collect, and manage your card collection with ease.</p>
-            <p>To get started, simply search for a card below. To start managing your collections, please login.</p>
+    <!-- Main Content -->
+    <main class="container flex-grow-1 pb-1 pt-5 text-light">
+        <!-- Conditional Content Based on Authentication -->
+        <div *ngIf="!isLoggedIn; else mainContent">
+            <!-- About and Login/Register Section -->
+            <section class="text-center p-5 mx-auto my-4">
+                <h1 class="fs-1 fw-bolder m-5">Welcome to Mana Codex!</h1>
+                <p class="fs-5">Experience a better way to manage and organize your card collections with Mana Codex. Whether you're a beginner or a seasoned collector, our platform provides powerful search features, personalized collection management, and easy-to-use tools to help you keep track of your cards.</p>
+                <p class="fs-5">Get started today by logging in or registering to explore all the features Mana Codex has to offer and elevate your collecting experience!</p>
+            </section>
+            <div class="row">
+                <div class="col-md-6 border-end">
+                    <app-login></app-login>
+                </div>
+                <div class="col-md-6">
+                    <app-register></app-register>
+                </div>
+            </div>
         </div>
-    </section>
 
-    <main class="container flex-grow-1 pb-3 pt-5 text-light">
-        <router-outlet></router-outlet>
+        
+        <ng-template #mainContent>
+            <router-outlet></router-outlet>
+        </ng-template>
     </main>
 
-    <footer class="border-top footer text-light bg-dark">
+    <!-- Footer -->
+    <footer class="border-top footer text-light bg-dark mt-auto">
         <div class="container p-5">
-            &copy; 2024 - Card Collection Tool - <a routerLink="/privacy" class="text-secondary">Privacy</a>
+            &copy; 2024 - Mana Codex - <a routerLink="/privacy" class="text-secondary">Privacy</a>
         </div>
     </footer>
 </body>
