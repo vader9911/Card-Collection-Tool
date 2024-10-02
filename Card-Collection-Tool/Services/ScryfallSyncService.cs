@@ -23,7 +23,6 @@ namespace Card_Collection_Tool.Services
 {
     public class ScryfallSyncService
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILogger<ScryfallSyncService> _logger;
         private readonly HttpClient _httpClient;
         private DateTime? _lastSync;
