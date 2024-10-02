@@ -111,6 +111,9 @@ namespace Card_Collection_Tool.Services
                     }
                 });
 
+                // Sync symbols table
+                await FetchAndStoreSymbolsAsync();
+
                 _lastSync = DateTime.UtcNow;
                 _logger.LogInformation("Scryfall data synchronization completed successfully.");
             }
@@ -270,6 +273,75 @@ namespace Card_Collection_Tool.Services
                 await upsertLegalitiesCmd.ExecuteNonQueryAsync();
             }
         }
+
+        public async Task FetchAndStoreSymbolsAsync()
+        {
+            var response = await _httpClient.GetAsync("https://api.scryfall.com/symbology");
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var symbolsData = JsonConvert.DeserializeObject<ScryfallSymbolsResponse>(content);
+
+                    if (symbolsData != null && symbolsData.Data.Any())
+                    {
+                        foreach (var symbol in symbolsData.Data)
+                        {
+                            await SaveSymbolToDatabase(symbol);
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to fetch symbols: {response.StatusCode}");
+                }
+            }
+        }
+
+        private async Task SaveSymbolToDatabase(ScryfallSymbol symbol)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var query = @"
+            IF NOT EXISTS (SELECT 1 FROM CardSymbols WHERE Symbol = @Symbol)
+            BEGIN
+                INSERT INTO CardSymbols (Symbol, EnglishDescription, SvgUri)
+                VALUES (@Symbol, @English, @SvgUri)
+            END
+            ELSE
+            BEGIN
+                UPDATE CardSymbols
+                SET EnglishDescription = @English, SvgUri = @SvgUri
+                WHERE Symbol = @Symbol
+            END";
+
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Symbol", symbol.Symbol);
+                    command.Parameters.AddWithValue("@English", symbol.English);
+                    command.Parameters.AddWithValue("@SvgUri", symbol.Svg_Uri);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+
+
+        public class ScryfallSymbolsResponse
+        {
+            public List<ScryfallSymbol> Data { get; set; }
+        }
+
+        public class ScryfallSymbol
+        {
+            public string Symbol { get; set; }
+            public string English { get; set; }
+            public string Svg_Uri { get; set; }
+        }
+
 
 
 

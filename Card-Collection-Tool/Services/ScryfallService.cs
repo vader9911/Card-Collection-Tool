@@ -51,9 +51,6 @@ namespace Card_Collection_Tool.Services
             return card;
         }
 
-
-
-
         public async Task<List<string>> GetAutocompleteResultsAsync(string query)
         {
 
@@ -71,6 +68,40 @@ namespace Card_Collection_Tool.Services
         {
             public List<string>? data { get; set; }
         }
-    }
 
+
+        public async Task<Dictionary<string, string>> GetSymbolsFromDatabase()
+        {
+            var symbols = new Dictionary<string, string>();
+
+            using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            {
+                await connection.OpenAsync();
+                var query = "SELECT Symbol, SvgUri FROM CardSymbols";
+                using (var command = new SqlCommand(query, connection))
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        symbols.Add(reader["Symbol"].ToString(), reader["SvgUri"].ToString());
+                    }
+                }
+            }
+
+            return symbols;
+        }
+
+        private string ReplaceSymbols(string text, Dictionary<string, string> symbols)
+        {
+            foreach (var symbol in symbols)
+            {
+                text = text.Replace(symbol.Key, $"<img src='{symbol.Value}' alt='{symbol.Key}' />");
+            }
+
+            return text;
+        }
+
+
+
+    }
 }
