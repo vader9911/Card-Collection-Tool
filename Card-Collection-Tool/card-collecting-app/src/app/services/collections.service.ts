@@ -93,7 +93,11 @@ export class CollectionsService {
     );
   }
 
-
+  getSymbols(): Observable<any> {
+    console.log("ran get symbols collection.service.ts")
+    const url = `${this.baseUrl}/symbols`; // Ensure this matches your backend route
+    return this.http.get<any>(url, { headers: this.getAuthHeaders() });
+  }
 
   // New method to fetch card details and update the collection summary
   getCardIdsByCollectionId(collectionId: number): Observable<string[]> {

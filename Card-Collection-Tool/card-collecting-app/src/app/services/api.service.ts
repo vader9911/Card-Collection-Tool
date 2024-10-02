@@ -41,4 +41,16 @@ export class ApiService {
     console.error('API call error:', error);
     return throwError('Something went wrong; please try again later.');
   }
+
+  replaceSymbolsWithSvg(cardText: string, symbols: any): string {
+    // Iterate through the symbols dictionary and replace occurrences in the card text
+    Object.keys(symbols).forEach(symbol => {
+      // regex that matches the symbol, e.g., {T}, {PW}, etc.
+      const regex = new RegExp(`\\${symbol}`, 'g'); // escape the { and }
+      cardText = cardText.replace(regex, `<img class="symbol-icon" src="${symbols[symbol]}" alt="${symbol}" />`);
+    });
+    return cardText;
+  }
+
+
 }
