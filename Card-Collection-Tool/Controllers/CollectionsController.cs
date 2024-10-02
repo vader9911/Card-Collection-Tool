@@ -1,5 +1,6 @@
 ﻿using Card_Collection_Tool.Data;
 using Card_Collection_Tool.Models;
+using Card_Collection_Tool.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -15,12 +16,15 @@ using System.Security.Claims;
 public class CollectionsController : ControllerBase
 {
     private readonly string _connectionString;
+    private readonly ScryfallService _scryfallService;
     private readonly ILogger<CollectionsController> _logger;
 
-    public CollectionsController(IConfiguration configuration, ILogger<CollectionsController> logger)
+    public CollectionsController(IConfiguration configuration, ILogger<CollectionsController> logger, ScryfallService scryfallService)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
         _logger = logger;
+        _scryfallService = scryfallService;
+
     }
 
 
@@ -601,5 +605,34 @@ public class CollectionsController : ControllerBase
 
         return Ok(cardIds);
     }
+
+
+    [HttpGet("symbols")]
+    public async Task<IActionResult> GetSymbols()
+    {
+        try
+        {
+            Console.WriteLine("Fetching symbols from database...");
+            var symbols = await _scryfallService.GetSymbolsFromDatabase(); // Fetch from the DB
+
+            if (symbols != null)
+            {
+                Console.WriteLine($"Fetched {symbols.Count} symbols.");
+                return Ok(symbols);
+            }
+            else
+            {
+                Console.WriteLine("No symbols found in the database.");
+                return NotFound();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching symbols: {ex.Message}");
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+
 
 }

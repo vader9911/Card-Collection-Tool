@@ -559,7 +559,6 @@ namespace Card_Collection_Tool.Controllers
 
 
 
-
         private ScryfallCard CreateScryfallCard(SqlDataReader reader)
         {
             var cardId = reader["Id"].ToString();

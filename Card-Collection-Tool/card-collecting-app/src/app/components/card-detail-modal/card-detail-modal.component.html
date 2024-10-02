@@ -23,9 +23,42 @@
                         <span><strong>Set:</strong> {{ cardDetails?.setName }}</span>
                     </div>
                     <p><strong>Keywords:</strong> {{ cardDetails?.keywords?.join(', ') }}</p>
-                    <p><strong>Oracle Text:</strong> {{ cardDetails?.oracleText }}</p>
+                    <p><strong>Oracle Text:</strong> <span [innerHTML]="cardDetails?.oracleText"></span></p>
                     <p *ngIf="cardDetails?.flavorText"><strong>Flavor Text:</strong> {{ cardDetails?.flavorText }}</p>
                 </div>
+
+                <!-- Additional Details -->
+                <!-- Additional Details -->
+                <div class="card p-3 my-4">
+                    <p *ngIf="cardDetails?.manaCost">
+                        <strong>Mana Cost:</strong> <span [innerHTML]="cardDetails?.manaCost"></span>
+                    </p>
+
+                    <p *ngIf="cardDetails?.power && cardDetails?.toughness">
+                        <strong>Power/Toughness:</strong> {{ cardDetails?.power }}/{{ cardDetails?.toughness }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.artist">
+                        <strong>Artist:</strong> {{ cardDetails?.artist }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.collectorNumber">
+                        <strong>Collector Number:</strong> {{ cardDetails?.collectorNumber }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.releaseDate">
+                        <strong>Release Date:</strong> {{ cardDetails?.releaseDate | date: 'yyyy-MM-dd' }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.reprint !== undefined">
+                        <strong>Reprint:</strong> {{ cardDetails?.reprint ? 'Yes' : 'No' }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.set">
+                        <strong>Set Code:</strong><span class="text-uppercase"> {{ cardDetails?.set }}</span>
+                    </p>
+                </div>
+
 
                 <!-- Tabs for Variations and Legalities -->
                 <ul class="nav nav-tabs mb-3" id="cardDetailTabs" role="tablist">
@@ -58,7 +91,7 @@
                                         <span>{{ version.name }}</span>
                                         <span>
                                             <strong>USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
-                                            
+
                                         </span>
                                     </li>
                                 </ul>
@@ -82,22 +115,7 @@
                     </div>
                 </div>
 
-                <!-- Additional Details -->
-                <div class="card p-3 mt-4">
-                    <p><strong>Mana Cost:</strong> {{ cardDetails?.manaCost }}</p>
-                    <p *ngIf="cardDetails?.power && cardDetails?.toughness">
-                        <strong>Power/Toughness:</strong> {{ cardDetails?.power }}/{{ cardDetails?.toughness }}
-                    </p>
-                    <p><strong>Artist:</strong> {{ cardDetails?.artist }}</p>
-                    <p><strong>Collector Number:</strong> {{ cardDetails?.collectorNumber }}</p>
-                    <p><strong>Full Art:</strong> {{ cardDetails?.fullArt ? 'Yes' : 'No' }}</p>
-                    <p><strong>Games:</strong> {{ cardDetails?.games?.join(', ') }}</p>
-                    <p><strong>Release Date:</strong> {{ cardDetails?.releaseDate | date: 'yyyy-MM-dd' }}</p>
-                    <p><strong>Reprint:</strong> {{ cardDetails?.reprint ? 'Yes' : 'No' }}</p>
-                    <p><strong>Set Code:</strong><span class="text-uppercase"> {{ cardDetails?.set }}</span></p>
-                    <p><strong>Colors:</strong> {{ cardDetails?.colors?.join(', ') }}</p>
-                    <p><strong>Color Identity:</strong> {{ cardDetails?.colorIdentity?.join(', ') }}</p>
-                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id)">Add To Collection</button>
