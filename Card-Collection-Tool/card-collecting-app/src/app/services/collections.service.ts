@@ -104,4 +104,13 @@ export class CollectionsService {
     return this.http.get<string[]>(`${this.baseUrl}/${collectionId}/card-ids`, { headers: this.getAuthHeaders() });
   }
 
+  removeCardFromCollection(collectionId: number, cardId: string | undefined): Observable<any> {
+    return this.http.post(`${this.baseUrl}/delete-card`, { collectionId, cardId }, { headers: this.getAuthHeaders() });
+  }
+
+  updateCardQuantity(collectionId: number, cardId: string | undefined, quantityChange: number): Observable<any> {
+    
+    return this.http.post(`${this.baseUrl}/update-card-quantity`, { collectionId, cardId, quantityChange }, { headers: this.getAuthHeaders() });
+  }
+
 }

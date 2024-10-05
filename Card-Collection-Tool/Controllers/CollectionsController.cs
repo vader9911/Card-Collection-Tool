@@ -403,16 +403,16 @@ public class CollectionsController : ControllerBase
 
 
     [HttpPost("delete-card")]
-    public async Task RemoveCardFromCollection(int collectionId, string cardId)
+    public async Task<IActionResult> RemoveCardFromCollection(int collectionId, string cardId)
     {
         using (var connection = new SqlConnection(_connectionString))
         {
-            await connection.OpenAsync();
-
+            await connection.OpenAsync(); ;
+            Console.WriteLine(cardId);
             // Remove the card from the collection
             var deleteCardQuery = @"
-            DELETE FROM CollectionCards 
-            WHERE CollectionID = @CollectionID AND CardID = @CardID";
+        DELETE FROM CollectionCards 
+        WHERE CollectionID = @CollectionID AND CardID = @CardID";
 
             using (var command = new SqlCommand(deleteCardQuery, connection))
             {
@@ -421,13 +421,15 @@ public class CollectionsController : ControllerBase
                 await command.ExecuteNonQueryAsync();
             }
 
-            // Call the stored procedure to update the collection summary
+            // Update the collection summary after removing the card
             using (var command = new SqlCommand("UpsertCollectionSummary", connection))
             {
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.AddWithValue("@CollectionID", collectionId);
                 await command.ExecuteNonQueryAsync();
             }
+
+            return Ok(new { message = "Card removed from the collection." });
         }
     }
 
@@ -632,6 +634,45 @@ public class CollectionsController : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+
+
+    [HttpPost("update-card-quantity")]
+    public async Task<IActionResult> UpdateCardQuantity([FromBody] UpdateCardQuantityRequest request)
+    {
+        Console.WriteLine(request.CardId);
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            // Update the quantity of the card in the collection
+            var updateCardQuery = @"
+        UPDATE CollectionCards 
+        SET Quantity = Quantity + @QuantityChange 
+        WHERE CollectionID = @CollectionID AND CardID = @CardID";
+
+            using (var command = new SqlCommand(updateCardQuery, connection))
+            {
+                command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+                command.Parameters.AddWithValue("@CardID", request.CardId);
+                command.Parameters.AddWithValue("@QuantityChange", request.QuantityChange);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            // Update the collection summary
+            using (var command = new SqlCommand("UpsertCollectionSummary", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            return Ok(new { message = "Card quantity updated successfully." });
+        }
+    }
+
+
 
 
 

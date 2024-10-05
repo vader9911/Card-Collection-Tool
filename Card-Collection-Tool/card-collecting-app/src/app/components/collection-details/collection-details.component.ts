@@ -112,6 +112,36 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
+  removeCard(cardId: string): void {
+    this.collectionsService.removeCardFromCollection(this.collectionId, cardId).subscribe(
+      () => {
+        // Update the collection details after the card is removed
+        this.loadCollectionDetails();
+      },
+      error => {
+        console.error('Error removing card:', error);
+      }
+    );
+  }
+
+  updateQuantity(cardId: string | undefined, quantityChange: number): void {
+   console.log(cardId)
+    this.collectionsService.updateCardQuantity(this.collectionId, cardId, quantityChange).subscribe(
+      () => {
+        
+        // Update the collection details after the quantity is changed
+        this.loadCollectionDetails();
+
+        
+      },
+      error => {
+        console.error('Error updating card quantity:', error);
+      }
+    );
+  }
+
+
+
   // Method to navigate to card details page
   openCardDetailModal(cardId: string | undefined, cardName: string | undefined): void {
     console.log('Card clicked with ID:', cardId, cardName);

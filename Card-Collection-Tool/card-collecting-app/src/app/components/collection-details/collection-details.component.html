@@ -15,10 +15,15 @@
         <!-- Grid View -->
         <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4 card-collection">
             <div *ngFor="let card of collectionDetails.cards" class="carm-2 " style="width: 18rem;">
-                <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}} " (click)="openCardDetailModal(card.cardID, card.name)" />
+                <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.cardID}} " (click)="openCardDetailModal(card.cardID, card.name)" />
                 <div class="container  rounded-1  my-3 col-6" id="card-info">
                     <div class="text-center">In Collection: {{ card.quantity }}</div>
                     <div class="text-center">Current Value: ${{ card.usd }}</div>
+                     <div class="btn-group mt-2">
+      <button class="btn btn-sm btn-danger" (click)="removeCard(card.id)">X</button>
+      <button class="btn btn-sm btn-primary" (click)="updateQuantity(card.cardID, -1)">-</button>
+      <button class="btn btn-sm btn-primary" (click)="updateQuantity(card.cardID, 1)">+</button>
+    </div>
                 </div>
             </div>
         </div>

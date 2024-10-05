@@ -42,7 +42,7 @@ namespace Card_Collection_Tool.Services
                         {
                             // Map fields from the database to the Card object
                             card.Id = reader.GetString(reader.GetOrdinal("CardId"));
-                            // Map other fields as needed
+                    
                         }
                     }
                 }
