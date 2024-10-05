@@ -20,10 +20,10 @@
                     <div class="text-center">In Collection: {{ card.quantity }}</div>
                     <div class="text-center">Current Value: ${{ card.usd }}</div>
                      <div class="btn-group mt-2">
-      <button class="btn btn-sm btn-danger" (click)="removeCard(card.id)">X</button>
-      <button class="btn btn-sm btn-primary" (click)="updateQuantity(card.cardID, -1)">-</button>
-      <button class="btn btn-sm btn-primary" (click)="updateQuantity(card.cardID, 1)">+</button>
-    </div>
+                         <button class="btn btn-sm btn-danger" (click)="removeCard(card.cardID)">X</button>
+                         <button class="btn btn-sm btn-primary" (click)="updateQuantity(card.cardID, -1)">-</button>
+                         <button class="btn btn-sm btn-primary" (click)="updateQuantity(card.cardID, 1)">+</button>
+                     </div>
                 </div>
             </div>
         </div>

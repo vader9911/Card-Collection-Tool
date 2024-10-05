@@ -113,6 +113,7 @@ export class CollectionDetailsComponent implements OnInit {
   }
 
   removeCard(cardId: string): void {
+    console.log(cardId);
     this.collectionsService.removeCardFromCollection(this.collectionId, cardId).subscribe(
       () => {
         // Update the collection details after the card is removed
@@ -123,6 +124,7 @@ export class CollectionDetailsComponent implements OnInit {
       }
     );
   }
+
 
   updateQuantity(cardId: string | undefined, quantityChange: number): void {
    console.log(cardId)

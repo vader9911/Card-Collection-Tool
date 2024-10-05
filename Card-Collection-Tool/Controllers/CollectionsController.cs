@@ -401,37 +401,49 @@ public class CollectionsController : ControllerBase
 
 
 
-
-    [HttpPost("delete-card")]
-    public async Task<IActionResult> RemoveCardFromCollection(int collectionId, string cardId)
+    [HttpDelete("delete-card")]
+    public async Task<IActionResult> DeleteCard([FromBody] UpdateCardQuantityRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User is not authenticated.");
+        }
+
         using (var connection = new SqlConnection(_connectionString))
         {
-            await connection.OpenAsync(); ;
-            Console.WriteLine(cardId);
-            // Remove the card from the collection
-            var deleteCardQuery = @"
-        DELETE FROM CollectionCards 
-        WHERE CollectionID = @CollectionID AND CardID = @CardID";
+            await connection.OpenAsync();
 
-            using (var command = new SqlCommand(deleteCardQuery, connection))
+            // Start a transaction to ensure safe operations
+            using (var transaction = connection.BeginTransaction())
             {
-                command.Parameters.AddWithValue("@CollectionID", collectionId);
-                command.Parameters.AddWithValue("@CardID", cardId);
-                await command.ExecuteNonQueryAsync();
-            }
+                try
+                {
+                    // Delete the card from the collection
+                    var deleteCardQuery = "DELETE FROM CollectionCards WHERE CollectionID = @CollectionID AND CardID = @CardID";
 
-            // Update the collection summary after removing the card
-            using (var command = new SqlCommand("UpsertCollectionSummary", connection))
-            {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@CollectionID", collectionId);
-                await command.ExecuteNonQueryAsync();
-            }
+                    using (var deleteCardCmd = new SqlCommand(deleteCardQuery, connection, transaction))
+                    {
+                        deleteCardCmd.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+                        deleteCardCmd.Parameters.AddWithValue("@CardID", request.CardId);
+                        await deleteCardCmd.ExecuteNonQueryAsync();
+                    }
 
-            return Ok(new { message = "Card removed from the collection." });
+                    // Commit transaction after deletion
+                    transaction.Commit();
+
+                    return Ok(new { message = "Card deleted successfully." });
+                }
+                catch (Exception ex)
+                {
+                    // Roll back the transaction on error
+                    transaction.Rollback();
+                    return StatusCode(500, new { message = "An error occurred while deleting the card.", error = ex.Message });
+                }
+            }
         }
     }
+
 
 
 
@@ -638,39 +650,39 @@ public class CollectionsController : ControllerBase
 
 
     [HttpPost("update-card-quantity")]
-    public async Task<IActionResult> UpdateCardQuantity([FromBody] UpdateCardQuantityRequest request)
+public async Task<IActionResult> UpdateCardQuantity([FromBody] UpdateCardQuantityRequest request)
+{
+    Console.WriteLine(request.CardId);
+
+    using (var connection = new SqlConnection(_connectionString))
     {
-        Console.WriteLine(request.CardId);
+        await connection.OpenAsync();
 
-        using (var connection = new SqlConnection(_connectionString))
-        {
-            await connection.OpenAsync();
-
-            // Update the quantity of the card in the collection
-            var updateCardQuery = @"
+        // Update the quantity of the card in the collection
+        var updateCardQuery = @"
         UPDATE CollectionCards 
         SET Quantity = Quantity + @QuantityChange 
         WHERE CollectionID = @CollectionID AND CardID = @CardID";
 
-            using (var command = new SqlCommand(updateCardQuery, connection))
-            {
-                command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
-                command.Parameters.AddWithValue("@CardID", request.CardId);
-                command.Parameters.AddWithValue("@QuantityChange", request.QuantityChange);
-                await command.ExecuteNonQueryAsync();
-            }
-
-            // Update the collection summary
-            using (var command = new SqlCommand("UpsertCollectionSummary", connection))
-            {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
-                await command.ExecuteNonQueryAsync();
-            }
-
-            return Ok(new { message = "Card quantity updated successfully." });
+        using (var command = new SqlCommand(updateCardQuery, connection))
+        {
+            command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+            command.Parameters.AddWithValue("@CardID", request.CardId);
+            command.Parameters.AddWithValue("@QuantityChange", request.QuantityChange);
+            await command.ExecuteNonQueryAsync();
         }
+
+        // Update the collection summary
+        using (var command = new SqlCommand("UpsertCollectionSummary", connection))
+        {
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        return Ok(new { message = "Card quantity updated successfully." });
     }
+}
 
 
 
