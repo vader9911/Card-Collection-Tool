@@ -2,16 +2,18 @@
     <!-- Show collection details if loaded -->
     <div *ngIf="collectionDetails; else noCollectionDetails">
         <h2>{{ collectionDetails.collectionName }}</h2>
+        <div class="container p-0 my-3">
+            <!-- Delete Collection Button -->
+            <button class="btn btn-success mb-3" (click)="openDeleteModal()">Edit</button>
+            <button class="btn btn-danger mb-3 mx-3" (click)="openDeleteModal()">Delete Collection</button>
 
-        <!-- Delete Collection Button -->
-        <button class="btn btn-danger mb-3" (click)="openDeleteModal()">Delete Collection</button>
-
-        <!-- Toggle buttons for display formats -->
-        <div class="mb-3">
-            <button class="btn btn-primary me-2" (click)="toggleDisplayFormat('grid')">Grid View</button>
-            <button class="btn btn-secondary" (click)="toggleDisplayFormat('table')">Table View</button>
+            <!-- Toggle buttons for display formats
+    <div class="mb-3">
+        <button class="btn btn-primary me-2" (click)="toggleDisplayFormat('grid')">Grid View</button>
+        <button class="btn btn-secondary" (click)="toggleDisplayFormat('table')">Table View</button>
+    </div>
+    -->
         </div>
-
         <!-- Grid View -->
         <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4 card-collection">
             <div *ngFor="let card of collectionDetails.cards" class="carm-2 " style="width: 18rem;">
