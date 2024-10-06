@@ -74,6 +74,10 @@ export class LayoutComponent implements OnInit {
   collections() {
     this.router.navigate(['/collections']);
   }
+
+  home() {
+    this.router.navigate(['/']);
+  }
 }
 
   //ngOnInit() {

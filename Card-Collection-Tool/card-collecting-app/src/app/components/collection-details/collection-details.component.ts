@@ -41,7 +41,7 @@ export class CollectionDetailsComponent implements OnInit {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       this.collectionId = Number(params.get('collectionId'));
       console.log('Collection ID from route:', this.collectionId);
-
+      this.attachRemoveModalHandler();
       if (isNaN(this.collectionId) || this.collectionId <= 0) {
         console.error('Invalid collection ID:', this.collectionId);
         this.router.navigate(['/']); // Redirect to default route if invalid
@@ -112,7 +112,7 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
-  removeCard(cardId: string): void {
+  removeCard(cardId: string | undefined): void {
     console.log(cardId);
     this.collectionsService.removeCardFromCollection(this.collectionId, cardId).subscribe(
       () => {
@@ -125,23 +125,74 @@ export class CollectionDetailsComponent implements OnInit {
     );
   }
 
-
-  updateQuantity(cardId: string | undefined, quantityChange: number): void {
-   console.log(cardId)
-    this.collectionsService.updateCardQuantity(this.collectionId, cardId, quantityChange).subscribe(
-      () => {
-        
-        // Update the collection details after the quantity is changed
-        this.loadCollectionDetails();
-
-        
-      },
-      error => {
-        console.error('Error updating card quantity:', error);
-      }
-    );
+  removeCardButton(cardId: string | undefined): void {
+    console.log(cardId);
+    this.showRemoveModal(cardId)
   }
 
+
+  updateCardQuantity(cardId: string | undefined, quantityChange: number): void {
+    console.log("this one jeff",this.collectionDetails);
+    const card = this.collectionDetails.cards.find((c: { cardID: string | undefined; }) => c.cardID === cardId);
+
+    console.log(card);
+    if (card.quantity == 1 && quantityChange == -1) {
+      this.showRemoveModal(cardId)
+
+    } else {
+      this.collectionsService.updateCardQuantity(this.collectionId, cardId, quantityChange).subscribe(
+        () => {
+          // Update the collection details after the quantity is changed
+          this.loadCollectionDetails();
+
+        },
+        error => {
+          console.error('Error updating card quantity:', error);
+        }
+      );
+    }
+  }
+
+  // Show the modal to confirm card removal
+  showRemoveModal(cardId: string | undefined): void {
+    this.selectedCardId = cardId;
+    const modalElement = document.getElementById('removeModal');
+    if (modalElement) {
+      const modal = new bootstrap.Modal(modalElement); // Use Bootstrap's modal
+      modal.show();
+    } else {
+        console.log('Error showing modal');
+    }
+    
+    
+  }
+
+  // Attach handler for remove button click
+  attachRemoveModalHandler(): void {
+    const removeButton = document.getElementById('confirmRemoveBtn');
+    if (removeButton) {
+      removeButton.addEventListener('click', () => {
+        this.confirmRemove();
+      });
+    }
+  }
+
+  // Confirm removal of the card
+  confirmRemove(): void {
+    if (this.selectedCardId) {
+      console.log(this.selectedCardId);
+      this.removeCard(this.selectedCardId);
+    }
+
+    const modalElement = document.getElementById('removeModal');
+    if (modalElement) {
+      const modalInstance = bootstrap.Modal.getInstance(modalElement); // Retrieve existing instance
+
+      if (modalInstance) {
+        modalInstance.hide(); // Hide the modal after confirming
+      }
+    }
+  }
 
 
   // Method to navigate to card details page

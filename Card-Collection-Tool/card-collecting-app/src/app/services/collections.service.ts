@@ -104,7 +104,7 @@ export class CollectionsService {
     return this.http.get<string[]>(`${this.baseUrl}/${collectionId}/card-ids`, { headers: this.getAuthHeaders() });
   }
 
-  removeCardFromCollection(collectionId: number, cardId: string): Observable<any> {
+  removeCardFromCollection(collectionId: number, cardId: string | undefined): Observable<any> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
     return this.http.delete(`${this.baseUrl}/delete-card`, {
       headers: headers,
