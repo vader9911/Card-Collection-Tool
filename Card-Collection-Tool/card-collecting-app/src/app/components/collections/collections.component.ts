@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CollectionsService } from '../../services/collections.service';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup  } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Card } from '../../models/card';
 import { Collection } from '../../models/collection';
@@ -25,11 +25,26 @@ export class CollectionsComponent implements OnInit {
   defaultImageUrl: string = 'https://archive.org/download/placeholder-image/placeholder-image.jpg'; // Default image for no card collections
   cardImages: { [key: string]: string } = {}; // Store card images by collection ID
   cardDetailsList: any[] = [];
+  sortOption: string = 'name';
+  sortDirection: string = 'asc'; // Default direction is ascending
+  sortForm: FormGroup;
+
   constructor(
     private collectionsService: CollectionsService,
     private apiService: ApiService,
-    private router: Router
-  ) { }
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.sortForm = this.fb.group({
+      sortOrder: ['name'], // Default sort order
+      sortDirection: ['asc'], // Default sort direction
+    });
+
+    // Listen for value changes on the form
+    this.sortForm.valueChanges.subscribe(() => {
+      this.sortCollections();
+    });
+}
 
   ngOnInit(): void {
     this.loadCollections(); // Load collections when the component initializes
@@ -56,6 +71,37 @@ export class CollectionsComponent implements OnInit {
       }
     );
   }
+
+  sortCollections(): void {
+    const { sortOrder, sortDirection } = this.sortForm.value;
+
+    const multiplier = sortDirection === 'asc' ? 1 : -1;
+
+    switch (sortOrder) {
+      case 'name':
+        this.collections.sort((a, b) => a.collectionName.localeCompare(b.collectionName) * multiplier);
+        break;
+      case 'totalValue':
+        this.collections.sort((a, b) => {
+          const valueA = parseFloat(a.totalValue.toString());
+          const valueB = parseFloat(b.totalValue.toString());
+          console.log('Comparing values:', valueA, valueB);
+          return (valueA - valueB) * multiplier;
+        });
+        break;
+      case 'totalCards':
+        this.collections.sort((a, b) => (a.totalCards - b.totalCards) * multiplier);
+        break;
+      default:
+        console.warn('Invalid sort option');
+    }
+
+
+    console.log('Sorted Collections:', this.collections);
+  }
+
+
+
 
 
   // Method to fetch the first card details by card ID
@@ -101,29 +147,6 @@ export class CollectionsComponent implements OnInit {
   );
   }
 
-  // Example: Calling the update method from the component
-  // Example: Calling the update method from the component
-  //updateCollectionDetails(): void {
-  //  if (this.collection.colle && this.collectionDetails) {
-  //    this.collectionsService.updateCollection(
-  //      this.collectionId,
-  //      this.collectionDetails.collectionName,  // Make sure this matches the correct property name
-  //      this.collectionDetails.imageUri,
-  //      this.collectionDetails.notes
-  //    ).subscribe(
-  //      (response) => {
-  //        console.log('Collection updated successfully:', response);
-  //        // Optionally reload collection data
-  //        this.loadCollectionDetails();
-  //      },
-  //      (error) => {
-  //        console.error('Error updating collection:', error);
-  //      }
-  //    );
-  //  }
-  //}
-
-
 
 
 
@@ -140,6 +163,7 @@ export class CollectionsComponent implements OnInit {
         (response) => {
           this.collections.push(response); // Add the new collection to the list
           this.newCollectionName = ''; // Clear the input field
+          this.loadCollections();
         },
         (error) => {
           console.error('Error creating collection:', error);

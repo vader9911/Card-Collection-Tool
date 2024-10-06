@@ -4,7 +4,7 @@
         <div class="position-relative">
             <img class="card-image" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="openCardDetailModal(card.id, card.name)" />
             <div class="text-center fw-bold">{{card.name}}</div>
-            <div class="text-center mb-1">{{card.prices.usd}}</div>
+            <div class="text-center mb-1">{{card.prices.usd | currency:'USD': 'symbol':'1.2-2'}}</div>
             <!-- Button positioned at the bottom of the card image -->
             <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id)">+</button>
 

@@ -17,6 +17,7 @@ export class CollectionsService {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     });
+    console.log(HttpHeaders);
   }
 
   getCollections(): Observable<any[]> {
@@ -72,8 +73,13 @@ export class CollectionsService {
     );
   }
 
+  //deleteCollection(collectionId: number): Observable<void> {
+  //  const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
+  //  return this.http.delete<void>(`${this.baseUrl}/${collectionId}`, { headers: headers });
+  //}
+
   deleteCollection(collectionId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${collectionId}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<void>(`${this.baseUrl}/${collectionId}/delete`, { headers: this.getAuthHeaders() });
   }
 
   // Updated method to add a card to a collection and ensure collection summary is updated

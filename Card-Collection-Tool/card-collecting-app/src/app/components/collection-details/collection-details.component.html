@@ -20,7 +20,7 @@
                 <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.cardID}} " (click)="openCardDetailModal(card.cardID, card.name)" />
                 <div class="container  rounded-1  my-3  py-2 col-6" id="card-info">
                     <div class="text-center">In Collection: {{ card.quantity }}</div>
-                    <div class="text-center">Current Value: ${{ card.usd }}</div>
+                    <div class="text-center">Current Value: {{ card.usd | currency:'USD': 'symbol':'1.2-2' }}</div>
                     <div class="btn-group container mt-2 p-2">
 
                         <button class="btn btn-sm btn-primary " (click)="updateCardQuantity(card.cardID, -1)">-</button>

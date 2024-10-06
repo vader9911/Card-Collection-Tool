@@ -29,63 +29,102 @@ public class CollectionsController : ControllerBase
 
 
     // GET: api/Collections
-    [HttpGet]
-    public async Task<IActionResult> GetUserCardCollections()
+[HttpGet]
+public async Task<IActionResult> GetUserCardCollections()
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    if (string.IsNullOrEmpty(userId))
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Unauthorized("User is not authenticated.");
+    }
 
-        if (string.IsNullOrEmpty(userId))
+    using (var connection = new SqlConnection(_connectionString))
+    {
+        await connection.OpenAsync();
+
+        // First, update the collection summary to ensure data is fresh
+        var updateSummaryCommand = new SqlCommand("UpsertCollectionSummary", connection)
         {
-            return Unauthorized("User is not authenticated.");
-        }
+            CommandType = CommandType.StoredProcedure
+        };
 
-        using (var connection = new SqlConnection(_connectionString))
+        // Assuming you need to call it for all the collections of the user,
+        // you'll need to get the list of Collection IDs first.
+        var collectionIdQuery = @"
+        SELECT CollectionID
+        FROM UserCardCollection 
+        WHERE UserID = @UserID";
+
+        var collectionIds = new List<int>();
+        using (var collectionIdCommand = new SqlCommand(collectionIdQuery, connection))
         {
-            await connection.OpenAsync();
+            collectionIdCommand.Parameters.AddWithValue("@UserID", userId);
 
-            var query = @"
-            SELECT CollectionID, CollectionName, ImageUri, TotalCards, TotalValue
-            FROM UserCardCollection 
-            WHERE UserID = @UserID";
-
-            var collections = new List<UserCardCollection>();
-            using (var command = new SqlCommand(query, connection))
+            using (var reader = await collectionIdCommand.ExecuteReaderAsync())
             {
-                command.Parameters.AddWithValue("@UserID", userId);
-
-                using (var reader = await command.ExecuteReaderAsync())
+                while (await reader.ReadAsync())
                 {
-                    while (await reader.ReadAsync())
+                    if (!reader.IsDBNull(reader.GetOrdinal("CollectionID")))
                     {
-                        collections.Add(new UserCardCollection
-                        {
-                            CollectionID = reader.IsDBNull(reader.GetOrdinal("CollectionID"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("CollectionID")),
-
-                            CollectionName = reader.IsDBNull(reader.GetOrdinal("CollectionName"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("CollectionName")),
-
-                            ImageUri = reader.IsDBNull(reader.GetOrdinal("ImageUri"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("ImageUri")),
-
-                            TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("TotalCards")),
-
-                            TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
-                                ? 0
-                                : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
-                        });
+                        collectionIds.Add(reader.GetInt32(reader.GetOrdinal("CollectionID")));
                     }
                 }
             }
-
-            return Ok(collections);
         }
+
+        // Execute the stored procedure for each collection ID
+        foreach (var collectionId in collectionIds)
+        {
+            updateSummaryCommand.Parameters.Clear();
+            updateSummaryCommand.Parameters.AddWithValue("@CollectionID", collectionId);
+            await updateSummaryCommand.ExecuteNonQueryAsync();
+        }
+
+        // Now that collection summaries have been updated, proceed to fetch the collections
+        var query = @"
+        SELECT CollectionID, CollectionName, ImageUri, TotalCards, TotalValue
+        FROM UserCardCollection 
+        WHERE UserID = @UserID";
+
+        var collections = new List<UserCardCollection>();
+        using (var command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@UserID", userId);
+
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    collections.Add(new UserCardCollection
+                    {
+                        CollectionID = reader.IsDBNull(reader.GetOrdinal("CollectionID"))
+                            ? 0
+                            : reader.GetInt32(reader.GetOrdinal("CollectionID")),
+
+                        CollectionName = reader.IsDBNull(reader.GetOrdinal("CollectionName"))
+                            ? null
+                            : reader.GetString(reader.GetOrdinal("CollectionName")),
+
+                        ImageUri = reader.IsDBNull(reader.GetOrdinal("ImageUri"))
+                            ? null
+                            : reader.GetString(reader.GetOrdinal("ImageUri")),
+
+                        TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
+                            ? 0
+                            : reader.GetInt32(reader.GetOrdinal("TotalCards")),
+
+                        TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
+                            ? 0
+                            : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
+                    });
+                }
+            }
+        }
+
+        return Ok(collections);
     }
+}
 
 
 
@@ -219,7 +258,7 @@ public class CollectionsController : ControllerBase
 
             // Execute and get the new CollectionID
             var newCollectionId = Convert.ToInt32(await command.ExecuteScalarAsync());
-
+    
             return Ok(new { CollectionID = newCollectionId, message = "Collection created successfully." });
         }
     }
