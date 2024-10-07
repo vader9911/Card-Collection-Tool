@@ -132,7 +132,6 @@ export class CollectionDetailsComponent implements OnInit {
 
 
   updateCardQuantity(cardId: string | undefined, quantityChange: number): void {
-    console.log("this one jeff",this.collectionDetails);
     const card = this.collectionDetails.cards.find((c: { cardID: string | undefined; }) => c.cardID === cardId);
 
     console.log(card);

@@ -1,13 +1,13 @@
-import { Component, OnInit, EventEmitter, Output, Input, NgModule, OnDestroy} from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, NgModule, OnDestroy, ElementRef, AfterViewInit, NgZone} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl, FormsModule, FormGroup, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormControl, FormsModule, FormGroup, FormBuilder, FormArray } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, switchMap, filter, catchError, tap } from 'rxjs/operators';
 import { Observable, Subscription, of } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { SearchService } from '../../services/search.service';
 import { CardListComponent } from '../card-list/card-list.component';
-
+declare var bootstrap: any;
 @Component({
   selector: 'app-card-search',
   standalone: true,
@@ -28,16 +28,38 @@ export class CardSearchComponent implements OnInit, OnDestroy {
   noResultsReturned = false;
   errorMessage: string = '';
   isModalOpen: boolean = false;
+  isDrawerOpen: boolean = false; // Replaced modal with drawer
   loading: boolean = false;
+  selectedTypes: string[] = [];
+  cardTypes: string[] = [
+    'Artifact',
+    'Battle',
+    'Conspiracy',
+    'Creature',
+    'Dungeon',
+    'Emblem',
+    'Enchantment',
+    'Hero',
+    'Instant',
+    'Kindred',
+    'Land',
+    'Phenomenon',
+    'Plane',
+    'Planeswalker',
+    'Scheme',
+    'Sorcery',
+    'Vanguard'
+  ];
+
 
   private searchSubscription: Subscription | null = null;
 
-  constructor(private fb: FormBuilder, private searchService: SearchService) {
+  constructor(private fb: FormBuilder, private searchService: SearchService, private elementRef: ElementRef, private ngZone: NgZone) {
     this.searchForm = this.fb.group({
       name: [''],
       set: [''],
       oracleText: [''],
-      type: [''],
+      type: [[]], // Update to an array to handle multiple card types
       colors: [[]],
       colorParams: ['any'],
       colorIdentity: [[]],
@@ -54,6 +76,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       sortDirection: ['asc'],
       showAllVersions: [false]
     });
+
   }
 
   ngOnInit(): void {
@@ -63,12 +86,31 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     this.syncNameFields();
   }
 
+
   ngOnDestroy(): void {
     // Unsubscribe to prevent memory leaks
     if (this.searchSubscription) {
       this.searchSubscription.unsubscribe();
     }
   }
+
+  ngAfterViewInit(): void {
+    this.initializeDropdown();
+  }
+
+  // Initialize dropdown functionality in Bootstrap
+  initializeDropdown(): void {
+    this.ngZone.runOutsideAngular(() => {
+      const dropdownElement = this.elementRef.nativeElement.querySelector('#cardTypeDropdown');
+      if (dropdownElement) {
+        dropdownElement.addEventListener('click', () => {
+          const bootstrapDropdown = new bootstrap.Dropdown(dropdownElement);
+          bootstrapDropdown.toggle();
+        });
+      }
+    });
+  }
+
 
   setupSortingListeners(): void {
     // Listen for changes in sort order and direction
@@ -123,32 +165,6 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-
-  //initAutocomplete(field: string): void {
-  //  const formControl = this.searchForm.get(field);
-  //  if (!formControl) {
-  //    console.error(`Form control for field '${field}' not found`);
-  //    return;
-  //  }
-
-  //  this.autocompleteOptions[field] = formControl.valueChanges.pipe(
-  //    debounceTime(800),
-  //    distinctUntilChanged(),
-  //    switchMap(value => this.searchService.autocomplete(field, value || '')),
-  //    catchError(error => {
-  //      console.error('Error in autocomplete observable:', error);
-  //      return of([]);
-  //    })
-  //  );
-  //}
-
-  //selectOption(option: string): void {
-  //  const typeControl = this.searchForm.get('type');
-  //  if (typeControl) {
-  //    typeControl.setValue(option);
-  //  }
-  //}
-
   onSearch(): void {
     // Clear previous results and reset search state before each search
     this.cards = [];
@@ -156,17 +172,19 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.loading = true;
 
+
     if (this.searchSubscription) {
       this.searchSubscription.unsubscribe(); // Unsubscribe before making a new request
     }
 
-    const nameValue = this.searchForm.get('name')?.value;
-    if (nameValue) {
-      this.searchForm.patchValue({ name: nameValue });
+    const formData = this.searchForm.value;
+
+    // Make sure we pass an array for the card types
+    if (Array.isArray(formData.type) && formData.type.length > 0) {
+      formData.type = formData.type.join(',');
     }
 
-    const formData = this.searchForm.value;
-    this.closeModal();
+    this.closeDrawer();
 
     // Initiate the search request
     this.searchSubscription = this.searchService.searchCards(formData).subscribe(
@@ -190,8 +208,87 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     );
   }
 
-  
+  onTypeSelectionChange(type: string, event: any): void {
+    if (event.target.checked) {
+      this.selectedTypes.push(type);
+    } else {
+      const index = this.selectedTypes.indexOf(type);
+      if (index > -1) {
+        this.selectedTypes.splice(index, 1);
+      }
+    }
+    // Update the form control value to keep it in sync
+    this.searchForm.get('type')?.setValue(this.selectedTypes);
+  }
 
+
+  toggleDrawer(): void {
+    this.isDrawerOpen = !this.isDrawerOpen;
+
+    if (this.isDrawerOpen) {
+      // Copy the name field from the main search to the advanced search form
+      const nameValue = this.searchForm.get('name')?.value;
+      if (nameValue) {
+        this.searchForm.patchValue({ name: nameValue });
+      }
+    }
+  }
+
+  closeDrawer(): void {
+    this.isDrawerOpen = false;
+  }
+
+
+
+
+ onCheckboxChange(event: any, controlName: string) {
+    const formArray: FormArray = this.searchForm.get(controlName) as FormArray;
+
+    if (event.target.checked) {
+      // Add the value if checked
+      formArray.value.push(event.target.value);
+    } else {
+      // Remove the value if unchecked
+      const index = formArray.value.indexOf(event.target.value);
+      if (index !== -1) {
+        formArray.value.splice(index, 1);
+      }
+    }
+    this.searchForm.get(controlName)?.setValue([...formArray.value]);
+  }
+
+  resetForm(): void {
+    this.searchForm.reset({
+      name: '',
+      set: '',
+      oracleText: '',
+      type: '',
+      colors: [],
+      colorParams: 'any',
+      colorIdentity: [],
+      colorIdentityParams: 'any',
+      manaValue: null,
+      manaValueComparator: 'equals',
+      power: '',
+      powerComparator: 'equals',
+      toughness: '',
+      toughnessComparator: 'equals',
+      loyalty: '',
+      loyaltyComparator: 'equals',
+      sortOrder: 'name',
+      sortDirection: 'asc',
+      showAllVersions: false
+    });
+
+    // Resetting the checkboxes manually to ensure UI matches state
+    const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+  }
+
+
+  
   syncNameFields(): void {
     // Sync changes from the advanced search 'name' field back to the main search
     this.searchForm.get('name')?.valueChanges.subscribe((value) => {
@@ -215,4 +312,5 @@ export class CardSearchComponent implements OnInit, OnDestroy {
   closeModal(): void {
     this.isModalOpen = false;
   }
+
 }

@@ -23,8 +23,27 @@
   padding: 10px;
 }
 
+.form-group {
+  margin-bottom: 10px;
+  padding: 0 5px 0 5px;
+}
+
+.form-group label {
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration:underline;
+  margin-bottom: 4px
+}
+
+.form-group input {
+    box-shadow:#ddd 0px 0px 3px;
+
+
+}
 .form-control {
   border-radius: 8px;
+
+  
 }
 
 .btn-primary {
@@ -38,6 +57,7 @@
   gap: 10px; /* Space between the elements */
   margin-bottom: 20px; /* Margin below the container */
 }
+
 
 /* Style for the dropdown labels */
 //.sort-container label {
@@ -68,3 +88,35 @@
 //  border-color: #00aaff; /* Highlight border color on focus */
 //  box-shadow: 0 0 5px rgba(0, 170, 255, 0.5); /* Add a subtle shadow effect */
 //}
+
+.drawer {
+  display: none; // Initially hidden
+  position: relative;
+  width: 100%;
+  padding: 20px;
+  //background-color: #f8f9fa; // Background color for the drawer
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &.drawer-open {
+    display: block;
+  }
+
+  .drawer-content {
+    padding: 10px;
+    border-top: 1px solid #ddd; // Divider between main form and drawer
+  }
+  /* card-search.component.css */
+  /* Increase size of dropdown button text */
+  .btn-secondary.dropdown-toggle {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Limit dropdown menu size */
+  .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}
