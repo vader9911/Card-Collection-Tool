@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, switchMap, filter, catchError, tap } from 'rxjs/operators';
 import { Observable, Subscription, of } from 'rxjs';
 import { ApiService } from '../../services/api.service';
-import { SearchService } from '../../services/search.service';
+import { CardSearchRequest, SearchService } from '../../services/search.service';
 import { CardListComponent } from '../card-list/card-list.component';
 declare var bootstrap: any;
 @Component({
@@ -31,6 +31,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
   isDrawerOpen: boolean = false; // Replaced modal with drawer
   loading: boolean = false;
   selectedTypes: string[] = [];
+  showWarning: boolean = false;
   cardTypes: string[] = [
     'Artifact',
     'Battle',
@@ -61,7 +62,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       oracleText: [''],
       type: [[]], // Update to an array to handle multiple card types
       colors: [[]],
-      colorParams: ['any'],
+      colorCriteria: ['any'],
       colorIdentity: [[]],
       colorIdentityParams: ['any'],
       manaValue: [null],
@@ -166,47 +167,51 @@ export class CardSearchComponent implements OnInit, OnDestroy {
   }
 
   onSearch(): void {
-    // Clear previous results and reset search state before each search
-    this.cards = [];
-    this.noResultsReturned = false;
-    this.errorMessage = '';
-    this.loading = true;
-
-
-    if (this.searchSubscription) {
-      this.searchSubscription.unsubscribe(); // Unsubscribe before making a new request
+    const formValues = this.searchForm.value;
+    if ((formValues.name && formValues.name.length < 3) ||
+      (formValues.set && formValues.set.length < 3) ||
+      (formValues.oracleText && formValues.oracleText.length < 3)) {
+      this.showWarning = true;
+      setTimeout(() => this.showWarning = false, 3000); // Hide the warning after 3 seconds
+      return;
     }
 
-    const formData = this.searchForm.value;
+    // Reset warning if search proceeds
+    this.showWarning = false;
 
-    // Make sure we pass an array for the card types
-    if (Array.isArray(formData.type) && formData.type.length > 0) {
-      formData.type = formData.type.join(',');
-    }
+    const searchParams: CardSearchRequest = {
+      name: this.searchForm.value.name || undefined,
+      set: this.searchForm.value.set || undefined,
+      oracleText: this.searchForm.value.oracleText || undefined,
+      type: this.searchForm.value.type.length ? this.searchForm.value.type.join(',') : undefined,
+      colors: this.searchForm.value.colors.length ? this.searchForm.value.colors.join(',') : undefined,
+      colorCriteria: this.searchForm.value.colorCriteria || 'any',
+      colorIdentity: this.searchForm.value.colorIdentity.length ? this.searchForm.value.colorIdentity.join(',') : undefined,
+      colorIdentityCriteria: this.searchForm.value.colorIdentityParams || 'any',
+      manaValue: this.searchForm.value.manaValue || undefined,
+      manaValueComparator: this.searchForm.value.manaValueComparator || 'equals',
+      power: this.searchForm.value.power !== null ? this.searchForm.value.power.toString() : undefined,
+      powerComparator: this.searchForm.value.powerComparator || 'equals',
+      toughness: this.searchForm.value.toughness !== null ? this.searchForm.value.toughness.toString() : undefined,
+      toughnessComparator: this.searchForm.value.toughnessComparator || 'equals',
+      loyalty: this.searchForm.value.loyalty !== null ? this.searchForm.value.loyalty.toString() : undefined,
+      loyaltyComparator: this.searchForm.value.loyaltyComparator || 'equals',
+      sortOrder: this.searchForm.value.sortOrder || 'name',
+      sortDirection: this.searchForm.value.sortDirection || 'asc'
+    };
 
-    this.closeDrawer();
+    console.log('Form Values to be sent:', searchParams);
 
-    // Initiate the search request
-    this.searchSubscription = this.searchService.searchCards(formData).subscribe(
-      (results) => {
-        this.loading = false;
-        if (!results || results.length === 0) {
-          this.noResultsReturned = true;
-        } else {
-          this.cards = results;
-          this.searchPerformed = true;
-          this.sortCards(); // Sort after receiving results
-        }
-      },
-      (error) => {
-        this.loading = false;
-        console.error('Error fetching search results:', error);
-        this.cards = []; // Clear results in case of error
-        this.searchPerformed = true;
-        this.errorMessage = 'An error occurred while searching. Please try again.';
-      }
-    );
+    this.searchService.searchCards(searchParams).subscribe(cards => {
+      this.cards = cards;
+      this.noResultsReturned = cards.length === 0;
+    }, error => {
+      console.error('Error fetching cards:', error);
+      this.noResultsReturned = true;
+    });
   }
+
+
 
   onTypeSelectionChange(type: string, event: any): void {
     if (event.target.checked) {
@@ -259,12 +264,11 @@ export class CardSearchComponent implements OnInit, OnDestroy {
 
   resetForm(): void {
     this.searchForm.reset({
-      name: '',
       set: '',
       oracleText: '',
-      type: '',
+      type: [],
       colors: [],
-      colorParams: 'any',
+      colorCriteria: 'any',
       colorIdentity: [],
       colorIdentityParams: 'any',
       manaValue: null,

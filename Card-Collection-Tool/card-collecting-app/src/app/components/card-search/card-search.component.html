@@ -92,34 +92,34 @@
                     <div class="d-flex flex-wrap gap-3 mb-2">
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="W" id="colorWhite">
-                            <label class="form-check-label" for="colorWhite">White</label>
+                            <label class="form-check-label" for="W">White</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="U" id="colorBlue">
-                            <label class="form-check-label" for="colorBlue">Blue</label>
+                            <label class="form-check-label" for="U">Blue</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="B" id="colorBlack">
-                            <label class="form-check-label" for="colorBlack">Black</label>
+                            <label class="form-check-label" for="B">Black</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="R" id="colorRed">
-                            <label class="form-check-label" for="colorRed">Red</label>
+                            <label class="form-check-label" for="R">Red</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="G" id="colorGreen">
-                            <label class="form-check-label" for="colorGreen">Green</label>
+                            <label class="form-check-label" for="G">Green</label>
                         </div>
                     </div>
-                    <label for="colorParams">Color Matching</label>
-                    <select class="form-control" formControlName="colorParams">
+                    <label for="colorCriteria">Color Matching</label>
+                    <select class="form-control" formControlName="colorCriteria">
                         <option value="any">Any</option>
                         <option value="exactly">Exactly</option>
                         <option value="atMost">At Most These</option>
                     </select>
                 </div>
 
-            
+
 
                 <!-- Mana Value -->
                 <div class="form-group">
@@ -140,8 +140,8 @@
                     <div class="input-group mb-1">
                         <select class="form-control" formControlName="powerComparator">
                             <option value="equals">Equals</option>
-                            <option value="greaterThan">Greater Than</option>
-                            <option value="lessThan">Less Than</option>
+                            <option value="greater">Greater Than</option>
+                            <option value="less">Less Than</option>
                         </select>
                         <input type="number" class="form-control" placeholder="Power..." formControlName="power">
                     </div>
@@ -153,8 +153,8 @@
                     <div class="input-group mb-1">
                         <select class="form-control" formControlName="toughnessComparator">
                             <option value="equals">Equals</option>
-                            <option value="greaterThan">Greater Than</option>
-                            <option value="lessThan">Less Than</option>
+                            <option value="greater">Greater Than</option>
+                            <option value="less">Less Than</option>
                         </select>
                         <input type="number" class="form-control" placeholder="Toughness..." formControlName="toughness">
                     </div>
@@ -171,6 +171,10 @@
     <!-- No Results Message -->
     <div *ngIf="noResultsReturned && !loading" class="no-results">
         <p class="text-center fs-2 m-5">No results found.</p>
+    </div>
+
+    <div *ngIf="showWarning" class="alert alert-warning">
+        Search fields must contain more than 3 characters.
     </div>
 
     <!-- Results Section -->

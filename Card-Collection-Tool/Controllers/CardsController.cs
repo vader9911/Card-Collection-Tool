@@ -10,121 +10,165 @@ using Microsoft.Data.SqlClient;
 using System.Text;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Text.Json;
 
 namespace Card_Collection_Tool.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class CardsController : ControllerBase
-    {
-        private readonly ApplicationDbContext _context;
-        private readonly ScryfallService _scryfallService;
 
-        public CardsController(ApplicationDbContext context, ScryfallService scryfallService)
+        [ApiController]
+        [Route("api/[controller]")]
+        public class CardsController : ControllerBase
         {
-            _context = context;
-            _scryfallService = scryfallService;
-        }
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchCards(
-      [FromQuery] string name = null,
-      [FromQuery] string set = null,
-      [FromQuery] string oracleText = null,
-      [FromQuery] string types = null,  // Updated parameter to accept comma-separated types
-      [FromQuery] string[] colors = null,
-      [FromQuery] string colorParams = "",
-      [FromQuery] string colorIdentity = null,
-      [FromQuery] string colorIdentityCriteria = "",
-      [FromQuery] float? manaValue = null,
-      [FromQuery] string manaValueComparator = "equals",
-      [FromQuery] string manaCost = null,
-      [FromQuery] string power = null,
-      [FromQuery] string powerComparator = "equals",
-      [FromQuery] string toughness = null,
-      [FromQuery] string toughnessComparator = "equals",
-      [FromQuery] string loyalty = null,
-      [FromQuery] string loyaltyComparator = "equals",
-      [FromQuery] string sortOrder = "name",
-      [FromQuery] string sortDirection = "asc",
-      [FromQuery] bool showAllVersions = false)
-        {
-            string combinedType = null;
+            private readonly string _connectionString;
+            private readonly ScryfallService _scryfallService;
 
-            if (types != null && types.Length > 0)
+            public CardsController(IConfiguration configuration, ScryfallService scryfallService)
             {
-                combinedType = string.Join("%", types);
-            }
-            string colorsParam = colors != null ? string.Join(",", colors) : null;
-
-            // Define the parameters to pass to the stored procedure
-            var parameters = new List<SqlParameter>
-
-    {
-        new SqlParameter("@name", name ?? (object)DBNull.Value),
-        new SqlParameter("@set", set ?? (object)DBNull.Value),
-        new SqlParameter("@oracleText", oracleText ?? (object)DBNull.Value),
-        new SqlParameter("@colors", colorsParam ?? (object)DBNull.Value),
-        new SqlParameter("@colorCriteria", colorParams ?? (object)DBNull.Value),
-        new SqlParameter("@type", combinedType ?? (object)DBNull.Value),
-        new SqlParameter("@colorIdentity", colorIdentity ?? (object)DBNull.Value),
-        new SqlParameter("@colorIdentityCriteria", colorIdentityCriteria ?? (object)DBNull.Value),
-        new SqlParameter("@manaValue", manaValue ?? (object)DBNull.Value),
-        new SqlParameter("@manaValueComparator", manaValueComparator ?? (object)DBNull.Value),
-        new SqlParameter("@power", power ?? (object)DBNull.Value),
-        new SqlParameter("@powerComparator", powerComparator ?? (object)DBNull.Value),
-        new SqlParameter("@toughness", toughness ?? (object)DBNull.Value),
-        new SqlParameter("@toughnessComparator", toughnessComparator ?? (object)DBNull.Value),
-        new SqlParameter("@loyalty", loyalty ?? (object)DBNull.Value),
-        new SqlParameter("@loyaltyComparator", loyaltyComparator ?? (object)DBNull.Value),
-        new SqlParameter("@sortOrder", sortOrder ?? (object)DBNull.Value),
-        new SqlParameter("@sortDirection", sortDirection ?? (object)DBNull.Value)
-    };
-
-            // Handle the types filter - split the comma-separated string into individual types
-            if (!string.IsNullOrEmpty(types))
-            {
-                var typeList = types.Split(',').Select(t => t.Trim()).ToList();
-                var typeConditions = typeList
-                    .Select((type, index) => {
-                        var paramName = $"@Type{index}";
-                        parameters.Add(new SqlParameter(paramName, $"%{type}%"));
-                        return $"TypeLine LIKE {paramName}";
-                    });
-
-                // Add the types condition to the query using dynamic SQL construction
-                var typeConditionString = string.Join(" OR ", typeConditions);
-                parameters.Add(new SqlParameter("@typesCondition", typeConditionString));
+                _connectionString = configuration.GetConnectionString("DefaultConnection");
             }
 
-            // Execute the stored procedure
-            var results = new List<ScryfallCard>();
-            using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+
+        [HttpPost("search")]
+        public async Task<IActionResult> SearchCards([FromBody] CardSearchRequest searchRequest)
+        {
+            if (searchRequest == null)
             {
-                using (var command = new SqlCommand("SearchCards", connection))
+                Console.WriteLine("Received a null searchRequest.");
+                return BadRequest("Invalid search request.");
+            }
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddRange(parameters.ToArray());
-                    connection.Open();
+                    await connection.OpenAsync();
+
+                    var command = new SqlCommand("SearchCards", connection)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+
+                    // Add parameters for the stored procedure
+                    command.Parameters.AddWithValue("@name", string.IsNullOrEmpty(searchRequest.Name) ? DBNull.Value : searchRequest.Name);
+                    command.Parameters.AddWithValue("@set", string.IsNullOrEmpty(searchRequest.Set) ? DBNull.Value : searchRequest.Set);
+                    command.Parameters.AddWithValue("@oracleText", string.IsNullOrEmpty(searchRequest.OracleText) ? DBNull.Value : searchRequest.OracleText);
+                    command.Parameters.AddWithValue("@type", string.IsNullOrEmpty(searchRequest.Type) ? DBNull.Value : searchRequest.Type);
+                    command.Parameters.AddWithValue("@colors", string.IsNullOrEmpty(searchRequest.Colors) ? DBNull.Value : searchRequest.Colors);
+                    command.Parameters.AddWithValue("@colorCriteria", string.IsNullOrEmpty(searchRequest.ColorCriteria) ? "exact" : searchRequest.ColorCriteria);
+                    command.Parameters.AddWithValue("@colorIdentity", string.IsNullOrEmpty(searchRequest.ColorIdentity) ? DBNull.Value : searchRequest.ColorIdentity);
+                    command.Parameters.AddWithValue("@colorIdentityCriteria", string.IsNullOrEmpty(searchRequest.ColorIdentityCriteria) ? "exact" : searchRequest.ColorIdentityCriteria);
+                    command.Parameters.AddWithValue("@manaValue", searchRequest.ManaValue.HasValue ? (object)searchRequest.ManaValue.Value : DBNull.Value);
+                    command.Parameters.AddWithValue("@manaValueComparator", string.IsNullOrEmpty(searchRequest.ManaValueComparator) ? "equals" : searchRequest.ManaValueComparator);
+                    command.Parameters.AddWithValue("@power", string.IsNullOrEmpty(searchRequest.Power) ? DBNull.Value : searchRequest.Power);
+                    command.Parameters.AddWithValue("@powerComparator", string.IsNullOrEmpty(searchRequest.PowerComparator) ? "equals" : searchRequest.PowerComparator);
+                    command.Parameters.AddWithValue("@toughness", string.IsNullOrEmpty(searchRequest.Toughness) ? DBNull.Value : searchRequest.Toughness);
+                    command.Parameters.AddWithValue("@toughnessComparator", string.IsNullOrEmpty(searchRequest.ToughnessComparator) ? "equals" : searchRequest.ToughnessComparator);
+                    command.Parameters.AddWithValue("@loyalty", string.IsNullOrEmpty(searchRequest.Loyalty) ? DBNull.Value : searchRequest.Loyalty);
+                    command.Parameters.AddWithValue("@loyaltyComparator", string.IsNullOrEmpty(searchRequest.LoyaltyComparator) ? "equals" : searchRequest.LoyaltyComparator);
+                    command.Parameters.AddWithValue("@sortOrder", string.IsNullOrEmpty(searchRequest.SortOrder) ? "name" : searchRequest.SortOrder);
+                    command.Parameters.AddWithValue("@sortDirection", string.IsNullOrEmpty(searchRequest.SortDirection) ? "asc" : searchRequest.SortDirection);
+
+                    var cards = new List<ScryfallCard>();
 
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
-                            // Use the helper method to create a ScryfallCard object
-                            results.Add(CreateScryfallCard(reader));
+                            cards.Add(new ScryfallCard
+                            {
+                                Id = reader["Id"].ToString(),
+                                Name = reader["Name"].ToString(),
+                                Cmc = reader["Cmc"] != DBNull.Value ? Convert.ToSingle(reader["Cmc"]) : (float?)null,
+                                ManaCost = reader["ManaCost"].ToString(),
+                                TypeLine = reader["TypeLine"].ToString(),
+                                OracleText = reader["OracleText"].ToString(),
+                                Power = reader["Power"]?.ToString(),
+                                Toughness = reader["Toughness"]?.ToString(),
+                                FlavorText = reader["FlavorText"]?.ToString(),
+                                Artist = reader["Artist"].ToString(),
+                                CollectorNumber = reader["CollectorNumber"].ToString(),
+                                ReleaseDate = reader["ReleaseDate"].ToString(),
+                                Rarity = reader["Rarity"].ToString(),
+                                Colors = reader["Colors"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
+                                ColorIdentity = reader["ColorIdentity"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
+                                Keywords = reader["Keywords"]?.ToString()?.Split(',').ToList() ?? new List<string>(),
+                                Digital = reader["Digital"] != DBNull.Value ? Convert.ToBoolean(reader["Digital"]) : false,
+                                Variation = reader["Variation"] != DBNull.Value ? Convert.ToBoolean(reader["Variation"]) : false,
+
+                                // Map to Prices model
+                                Prices = new Prices
+                                {
+                                    Usd = reader["Usd"]?.ToString(),
+                                    Usd_Foil = reader["UsdFoil"]?.ToString(),
+                                    Usd_Etched = reader["UsdEtched"]?.ToString(),
+                                    Eur = reader["Eur"]?.ToString(),
+                                    Eur_Foil = reader["EurFoil"]?.ToString(),
+                                    Tix = reader["Tix"]?.ToString()
+                                },
+
+                                // Map to ImageUris model
+                                ImageUris = new ImageUris
+                                {
+                                    Small = reader["Small"]?.ToString(),
+                                    Normal = reader["Normal"]?.ToString(),
+                                    Large = reader["Large"]?.ToString(),
+                                    Png = reader["Png"]?.ToString(),
+                                    ArtCrop = reader["ArtCrop"]?.ToString(),
+                                    BorderCrop = reader["BorderCrop"]?.ToString()
+                                },
+
+                                // Map to Legalities model
+                                Legalities = new Legalities
+                                {
+                                    Standard = reader["Standard"]?.ToString(),
+                                    Future = reader["Future"]?.ToString(),
+                                    Historic = reader["Historic"]?.ToString(),
+                                    Timeless = reader["Timeless"]?.ToString(),
+                                    Gladiator = reader["Gladiator"]?.ToString(),
+                                    Pioneer = reader["Pioneer"]?.ToString(),
+                                    Explorer = reader["Explorer"]?.ToString(),
+                                    Modern = reader["Modern"]?.ToString(),
+                                    Legacy = reader["Legacy"]?.ToString(),
+                                    Pauper = reader["Pauper"]?.ToString(),
+                                    Vintage = reader["Vintage"]?.ToString(),
+                                    Penny = reader["Penny"]?.ToString(),
+                                    Commander = reader["Commander"]?.ToString(),
+                                    Oathbreaker = reader["Oathbreaker"]?.ToString(),
+                                    StandardBrawl = reader["StandardBrawl"]?.ToString(),
+                                    Brawl = reader["Brawl"]?.ToString(),
+                                    Alchemy = reader["Alchemy"]?.ToString(),
+                                    PauperCommander = reader["PauperCommander"]?.ToString(),
+                                    Duel = reader["Duel"]?.ToString(),
+                                    OldSchool = reader["OldSchool"]?.ToString(),
+                                    Premodern = reader["Premodern"]?.ToString(),
+                                    Predh = reader["Predh"]?.ToString()
+                                }
+                            });
                         }
                     }
+
+                    if (cards.Count == 0)
+                    {
+                        return NotFound(new { message = "No cards found with the given search criteria." });
+                    }
+
+                    return Ok(cards);
                 }
             }
-
-            // Optionally filter the most recent versions if applicable
-            if (!showAllVersions)
+            catch (Exception ex)
             {
-                results = FilterMostRecentNonDigitalVersion(results);
+                // Log the error
+                Console.WriteLine($"Error in SearchCards: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
-
-            return Ok(results);
         }
+
+
+
+
+
+
 
 
 
@@ -215,7 +259,7 @@ namespace Card_Collection_Tool.Controllers
             List<string> results = new List<string>();
 
             // Use ADO.NET to execute the query
-            using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 using (var command = new SqlCommand(sqlQuery, connection))
@@ -243,7 +287,7 @@ namespace Card_Collection_Tool.Controllers
 
             try
             {
-                using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
                     Console.WriteLine("Database connection opened successfully.");
@@ -383,7 +427,7 @@ namespace Card_Collection_Tool.Controllers
 
             try
             {
-                using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
                     Console.WriteLine("Database connection opened successfully.");
@@ -468,7 +512,7 @@ namespace Card_Collection_Tool.Controllers
 
             try
             {
-                using (var connection = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
                     Console.WriteLine("Database connection opened successfully.");
