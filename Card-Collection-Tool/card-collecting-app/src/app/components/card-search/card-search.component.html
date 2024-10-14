@@ -48,7 +48,7 @@
                 </div>
 
 
-                <!-- Card Type Multi-select Dropdown -->
+                <!-- Card Type Single-select Dropdown (Cleaned Up) -->
                 <div class="form-group mb-2">
                     <label for="type">Card Type</label>
                     <div class="dropdown">
@@ -58,22 +58,21 @@
                                 id="cardTypeDropdown"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                            {{ selectedTypes.length > 0 ? selectedTypes.join(', ') : 'Select Card Types' }}
+                            {{ selectedType ? selectedType : 'Select Card Type' }}
                         </button>
                         <div class="dropdown-menu w-100 p-3" aria-labelledby="cardTypeDropdown" style="max-height: 300px; overflow-y: auto;">
-                            <div class="form-check" *ngFor="let type of cardTypes">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       [value]="type"
-                                       [checked]="selectedTypes.includes(type)"
-                                       (change)="onTypeSelectionChange(type, $event)">
-                                <label class="form-check-label ms-1">
-                                    {{ type }}
-                                </label>
+                            <div class="dropdown-item"
+                                 *ngFor="let type of cardTypes"
+                                 (click)="onTypeSelectionChange(type)"
+                                 [class.active]="selectedType === type">
+                                {{ type }}
                             </div>
                         </div>
                     </div>
                 </div>
+
+
+
 
 
 
@@ -87,49 +86,48 @@
                 </div>
 
                 <!-- Colors Section -->
-                <div class="form-group">
-                    <label>Colors</label>
-                    <div class="d-flex flex-wrap gap-3 mb-2">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="W" id="colorWhite">
-                            <label class="form-check-label" for="W">White</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="U" id="colorBlue">
-                            <label class="form-check-label" for="U">Blue</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="B" id="colorBlack">
-                            <label class="form-check-label" for="B">Black</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="R" id="colorRed">
-                            <label class="form-check-label" for="R">Red</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="G" id="colorGreen">
-                            <label class="form-check-label" for="G">Green</label>
-                        </div>
-                    </div>
-                    <label for="colorCriteria">Color Matching</label>
-                    <select class="form-control" formControlName="colorCriteria">
-                        <option value="any">Any</option>
-                        <option value="exactly">Exactly</option>
-                        <option value="atMost">At Most These</option>
-                    </select>
-                </div>
-
-
-
+                <!--
+    <div class="form-group">
+        <label>Colors</label>
+        <div class="d-flex flex-wrap gap-3 mb-2">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="W" id="colorWhite">
+                <label class="form-check-label" for="W">White</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="U" id="colorBlue">
+                <label class="form-check-label" for="U">Blue</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="B" id="colorBlack">
+                <label class="form-check-label" for="B">Black</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="R" id="colorRed">
+                <label class="form-check-label" for="R">Red</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" (change)="onCheckboxChange($event, 'colors')" value="G" id="colorGreen">
+                <label class="form-check-label" for="G">Green</label>
+            </div>
+        </div>
+        <label for="colorCriteria">Color Matching</label>
+        <select class="form-control" formControlName="colorCriteria">
+            <option value="any">Any</option>
+            <option value="exactly">Exactly</option>
+            <option value="atMost">At Most These</option>
+        </select>
+    </div>
+                -->
                 <!-- Mana Value -->
                 <div class="form-group">
                     <label for="manaValue">Mana Value</label>
                     <div class="input-group mb-1">
-                        <select class="form-control" formControlName="manaValueComparator">
-                            <option value="equals">Equals</option>
-                            <option value="greaterThan">Greater Than</option>
-                            <option value="lessThan">Less Than</option>
-                        </select>
+                        <!--  <select class="form-control" formControlName="manaValueComparator">
+                <option value="equals">Equals</option>
+                <option value="greaterThan">Greater Than</option>
+                <option value="lessThan">Less Than</option>
+            </select> -->
                         <input type="number" class="form-control" placeholder="Mana Value..." formControlName="manaValue">
                     </div>
                 </div>
@@ -138,11 +136,11 @@
                 <div class="form-group">
                     <label for="power">Power</label>
                     <div class="input-group mb-1">
-                        <select class="form-control" formControlName="powerComparator">
-                            <option value="equals">Equals</option>
-                            <option value="greater">Greater Than</option>
-                            <option value="less">Less Than</option>
-                        </select>
+                        <!--    <select class="form-control" formControlName="powerComparator">
+                <option value="equals">Equals</option>
+                <option value="greater">Greater Than</option>
+                <option value="less">Less Than</option>
+            </select> -->
                         <input type="number" class="form-control" placeholder="Power..." formControlName="power">
                     </div>
                 </div>
@@ -151,11 +149,11 @@
                 <div class="form-group">
                     <label for="toughness">Toughness</label>
                     <div class="input-group mb-1">
-                        <select class="form-control" formControlName="toughnessComparator">
-                            <option value="equals">Equals</option>
-                            <option value="greater">Greater Than</option>
-                            <option value="less">Less Than</option>
-                        </select>
+                        <!--   <select class="form-control" formControlName="toughnessComparator">
+                <option value="equals">Equals</option>
+                <option value="greater">Greater Than</option>
+                <option value="less">Less Than</option>
+            </select> -->
                         <input type="number" class="form-control" placeholder="Toughness..." formControlName="toughness">
                     </div>
                 </div>

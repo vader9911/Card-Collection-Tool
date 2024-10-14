@@ -7,6 +7,7 @@ import { CardDetailModalComponent } from '../../components/card-detail-modal/car
 
 import * as bootstrap from 'bootstrap';
 import { Subscription } from 'rxjs';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-collection-details',
@@ -30,11 +31,16 @@ export class CollectionDetailsComponent implements OnInit {
   selectedCardName: string | undefined;
   showModal: boolean = false;
   @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
+
+  editCollectionForm: FormGroup | undefined; // Form group for editing the collection
+  editModal: any; // Reference to the edit modal
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private fb: FormBuilder
+
   ) { }
 
   ngOnInit(): void {
@@ -42,6 +48,10 @@ export class CollectionDetailsComponent implements OnInit {
       this.collectionId = Number(params.get('collectionId'));
       console.log('Collection ID from route:', this.collectionId);
       this.attachRemoveModalHandler();
+      this.editCollectionForm = this.fb.group({
+        collectionName: [''],  // Default value empty
+        collectionImage: ['']  // Default value empty
+      });
       if (isNaN(this.collectionId) || this.collectionId <= 0) {
         console.error('Invalid collection ID:', this.collectionId);
         this.router.navigate(['/']); // Redirect to default route if invalid
@@ -192,6 +202,8 @@ export class CollectionDetailsComponent implements OnInit {
       }
     }
   }
+
+
 
 
   // Method to navigate to card details page

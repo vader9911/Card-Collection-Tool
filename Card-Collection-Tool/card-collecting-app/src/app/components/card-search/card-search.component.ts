@@ -30,26 +30,18 @@ export class CardSearchComponent implements OnInit, OnDestroy {
   isModalOpen: boolean = false;
   isDrawerOpen: boolean = false; // Replaced modal with drawer
   loading: boolean = false;
-  selectedTypes: string[] = [];
+  selectedType: string | null = null;
   showWarning: boolean = false;
   cardTypes: string[] = [
     'Artifact',
-    'Battle',
-    'Conspiracy',
     'Creature',
-    'Dungeon',
-    'Emblem',
     'Enchantment',
-    'Hero',
     'Instant',
-    'Kindred',
     'Land',
-    'Phenomenon',
-    'Plane',
+    'Legend',
     'Planeswalker',
-    'Scheme',
-    'Sorcery',
-    'Vanguard'
+    'Sorcery'
+
   ];
 
 
@@ -60,7 +52,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       name: [''],
       set: [''],
       oracleText: [''],
-      type: [[]], // Update to an array to handle multiple card types
+      type: [''], // Update to an array to handle multiple card types
       colors: [[]],
       colorCriteria: ['any'],
       colorIdentity: [[]],
@@ -183,7 +175,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       name: this.searchForm.value.name || undefined,
       set: this.searchForm.value.set || undefined,
       oracleText: this.searchForm.value.oracleText || undefined,
-      type: this.searchForm.value.type.length ? this.searchForm.value.type.join(',') : undefined,
+      type: formValues.type || undefined ,
       colors: this.searchForm.value.colors.length ? this.searchForm.value.colors.join(',') : undefined,
       colorCriteria: this.searchForm.value.colorCriteria || 'any',
       colorIdentity: this.searchForm.value.colorIdentity.length ? this.searchForm.value.colorIdentity.join(',') : undefined,
@@ -196,8 +188,8 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       toughnessComparator: this.searchForm.value.toughnessComparator || 'equals',
       loyalty: this.searchForm.value.loyalty !== null ? this.searchForm.value.loyalty.toString() : undefined,
       loyaltyComparator: this.searchForm.value.loyaltyComparator || 'equals',
-      sortOrder: this.searchForm.value.sortOrder || 'name',
-      sortDirection: this.searchForm.value.sortDirection || 'asc'
+      sortOrder: /*this.searchForm.value.sortOrder ||*/ 'name',
+      sortDirection: /*this.searchForm.value.sortDirection ||*/ 'asc'
     };
 
     console.log('Form Values to be sent:', searchParams);
@@ -213,17 +205,12 @@ export class CardSearchComponent implements OnInit, OnDestroy {
 
 
 
-  onTypeSelectionChange(type: string, event: any): void {
-    if (event.target.checked) {
-      this.selectedTypes.push(type);
-    } else {
-      const index = this.selectedTypes.indexOf(type);
-      if (index > -1) {
-        this.selectedTypes.splice(index, 1);
-      }
-    }
+  onTypeSelectionChange(type: string): void {
+    this.selectedType = type;
+   
+    
     // Update the form control value to keep it in sync
-    this.searchForm.get('type')?.setValue(this.selectedTypes);
+    this.searchForm.get('type')?.setValue(this.selectedType);
   }
 
 
@@ -264,9 +251,10 @@ export class CardSearchComponent implements OnInit, OnDestroy {
 
   resetForm(): void {
     this.searchForm.reset({
+      name:'',
       set: '',
       oracleText: '',
-      type: [],
+      type: '',
       colors: [],
       colorCriteria: 'any',
       colorIdentity: [],
