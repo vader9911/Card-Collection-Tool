@@ -18,7 +18,7 @@ export class CardDetailModalComponent implements OnInit {
   @Input() cardName: string | undefined = undefined;
   @Input() isOpen: boolean = false;
 
-  cardDetails: any;
+  cardDetails: any | undefined;
   alternateVersions: any[] = [];
   symbols: any = {};
   @ViewChild(AddToCollectionModalComponent) addToCollectionModal!: AddToCollectionModalComponent;
@@ -120,7 +120,7 @@ export class CardDetailModalComponent implements OnInit {
     this.cardId = cardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');
     if (this.addToCollectionModal) {
-      this.addToCollectionModal.openModal(this.cardId);
+      this.addToCollectionModal.openModal(this.cardId, this.cardName);
     }
   }
 }

@@ -73,11 +73,12 @@ export class CardListComponent implements OnInit {
     }
   }
 
- openAddToCollectionModal(cardId: string | undefined) {
+  openAddToCollectionModal(cardId: string | undefined, cardName: string | undefined) {
   console.log("Modal for add card opened with ID:", cardId); // Log card ID
-  this.selectedCardId = cardId; // Store the selected card ID
+   this.selectedCardId = cardId; 
+   this.selectedCardName = cardName;
    if (this.addToCollectionModal) {
-     this.addToCollectionModal.openModal(this.selectedCardId);
+     this.addToCollectionModal.openModal(this.selectedCardId, this.selectedCardName);
    }
 }
 }

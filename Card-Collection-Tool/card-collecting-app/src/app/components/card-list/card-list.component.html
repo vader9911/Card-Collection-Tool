@@ -6,7 +6,7 @@
             <div class="text-center fw-bold">{{card.name}}</div>
             <div class="text-center mb-1">{{card.prices.usd | currency:'USD': 'symbol':'1.2-2'}}</div>
             <!-- Button positioned at the bottom of the card image -->
-            <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id)">+</button>
+            <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id, card.name)">+</button>
 
         </div>
 
@@ -14,7 +14,7 @@
 </div>
 
 <app-card-detail-modal></app-card-detail-modal>
-<app-addcard-modal [selectedCardId]="selectedCardId"></app-addcard-modal>
+<app-addcard-modal [selectedCardId]="selectedCardId" [selectedCardName]="selectedCardName"></app-addcard-modal>
 
     <ng-template #noResults>
         <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>

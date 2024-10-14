@@ -1,0 +1,20 @@
+.scrollable-versions {
+  max-height: 550px;
+  overflow-y: auto; 
+  padding-right: 10px; 
+}
+
+
+.scrollable-versions::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-versions::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+
+.selected-card-img {
+  max-height: 350px;
+}

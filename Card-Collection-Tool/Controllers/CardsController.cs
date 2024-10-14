@@ -435,7 +435,7 @@ namespace Card_Collection_Tool.Controllers
                     // SQL query to fetch cards with matching names
                     var sqlQuery = @"
                 SELECT 
-                    Id, Name, SetName, ReleaseDate, Digital, Usd, UsdFoil, UsdEtched
+                    Id, Name, SetName, ReleaseDate, Digital, Usd, UsdFoil, UsdEtched, Normal
                 FROM 
                     dbo.v_CardData
                 WHERE 
@@ -472,7 +472,8 @@ namespace Card_Collection_Tool.Controllers
                                     Digital = reader["Digital"].ToString(),
                                     Usd = reader["Usd"].ToString(),
                                     UsdFoil = reader["UsdFoil"].ToString(),
-                                    UsdEtched = reader["UsdEtched"].ToString()
+                                    UsdEtched = reader["UsdEtched"].ToString(),
+                                    Normal = reader["Normal"].ToString()
                                 };
 
                                 variations.Add(card);

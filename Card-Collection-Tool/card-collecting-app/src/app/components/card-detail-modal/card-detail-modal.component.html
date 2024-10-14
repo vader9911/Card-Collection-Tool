@@ -28,7 +28,6 @@
                 </div>
 
                 <!-- Additional Details -->
-                <!-- Additional Details -->
                 <div class="card p-3 my-4">
                     <p *ngIf="cardDetails?.manaCost">
                         <strong>Mana Cost:</strong> <span [innerHTML]="cardDetails?.manaCost"></span>
@@ -125,4 +124,4 @@
     </div>
 </div>
 
-<app-addcard-modal [selectedCardId]="cardId"></app-addcard-modal>
+<app-addcard-modal [selectedCardId]="cardId" [selectedCardName]="cardName"></app-addcard-modal>
