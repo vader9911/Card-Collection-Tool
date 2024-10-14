@@ -41,6 +41,12 @@ export class CardDetailModalComponent implements OnInit {
     if (cardId && cardName) {
       this.fetchCardDetails(cardId);
       this.fetchAlternateVersions(cardName);
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop fade show';
+      document.body.appendChild(backdrop);
+
+     
+      document.body.classList.add('modal-open');
       console.log('Modal opened:', this.isOpen);
     } else {
       console.error('Invalid cardId or cardName provided to openModal');
@@ -51,6 +57,10 @@ export class CardDetailModalComponent implements OnInit {
   closeModal(): void {
     this.isOpen = false;
     const modal = document.getElementById('cardDetailModal');
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+      backdrop.remove();
+    }
     if (modal) {
       modal.style.display = 'none';
     }
@@ -117,6 +127,7 @@ export class CardDetailModalComponent implements OnInit {
 
   openAddToCollectionModal(cardId: string | undefined) {
     console.log("modal for add card opened", cardId);
+    this.closeModal();
     this.cardId = cardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');
     if (this.addToCollectionModal) {

@@ -85,11 +85,12 @@
                             <div *ngFor="let set of alternateVersions | groupBy: 'setName'" class="mb-2">
                                 <h6 class="text-muted">{{ set.key }}</h6>
                                 <ul class="list-group">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                        *ngFor="let version of set.values" (click)="onVersionClick(version.id, version.name)">
-                                        <span>{{ version.name }}</span>
+                                    <li class="list-group-item d-flex justify-content-start align-items-center"
+                                        *ngFor="let version of set.values" (click)="onVersionClick(version.id, version.name)" style="cursor: pointer;">
+                                        <img src="{{ version.normal }}" class="img-fluid w-25 rounded px-2 pe-5" alt="{{ version.name }}" />
                                         <span>
-                                            <strong>USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
+                                            <strong class="px-2">USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
+                                            <strong class="px-2">Release Date:</strong> ${{ version.releaseDate }}
 
                                         </span>
                                     </li>

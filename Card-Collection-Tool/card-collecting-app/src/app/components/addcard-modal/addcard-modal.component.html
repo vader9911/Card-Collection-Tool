@@ -26,7 +26,7 @@
                             <ul class="list-group">
                                 <li class="list-group-item d-flex justify-content-between align-items-center"
                                     *ngFor="let version of set.values" (click)="switchVersion(version.id, version.name)">
-                                    <img src="{{ version.normal }}" class="img-fluid w-50 rounded" alt="{{ version.normal }}" />
+                                    <img src="{{ version.normal }}" class="img-fluid w-50 rounded" alt="{{ version.name }}" />
                                     <span>
                                         <strong>USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
                                     </span>

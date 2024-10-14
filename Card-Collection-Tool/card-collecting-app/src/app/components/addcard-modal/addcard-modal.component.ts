@@ -131,8 +131,6 @@ export class AddToCollectionModalComponent implements OnInit {
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop fade show';
     document.body.appendChild(backdrop);
-
-    // Ensure the body class prevents scrolling
     document.body.classList.add('modal-open');
   }
 
