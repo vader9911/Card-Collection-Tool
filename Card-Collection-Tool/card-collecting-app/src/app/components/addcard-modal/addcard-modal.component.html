@@ -19,7 +19,7 @@
                
                 <!-- Right column: Scrollable alternate versions list -->
                 <div class="col-6">
-                    <h6 class="text-muted">Alternate Versions:</h6>
+                    <h6 class="fw-bold fs-4 text-decoration-underline">Alternate Versions:</h6>
                     <div class="scrollable-versions">
                         <div *ngFor="let set of alternateVersions | groupBy: 'setName'" class="mb-2">
                             <h6 class="text-muted">{{ set.key }}</h6>

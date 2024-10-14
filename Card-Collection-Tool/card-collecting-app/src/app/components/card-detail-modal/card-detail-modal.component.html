@@ -81,7 +81,7 @@
                     <!-- Variations Tab -->
                     <div class="tab-pane fade show active" id="variations" role="tabpanel" aria-labelledby="variations-tab">
                         <div class="mb-3">
-                            <h6>Alternate Versions:</h6>
+                            <h6 class="fw-bold fs-4 text-decoration-underline">Alternate Versions:</h6>
                             <div *ngFor="let set of alternateVersions | groupBy: 'setName'" class="mb-2">
                                 <h6 class="text-muted">{{ set.key }}</h6>
                                 <ul class="list-group">
