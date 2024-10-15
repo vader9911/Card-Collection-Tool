@@ -20,9 +20,10 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 export class AddToCollectionModalComponent implements OnInit {
   @Input() selectedCardId: string | undefined; // Card ID passed to the modal
   @Input() selectedCardName: string | undefined;
-  
+  @Input() selectedCardImage: string | undefined;
   cardId: string | undefined;
   cardName: string | undefined;
+  cardImage: string | undefined;
   cardDetails: any;
   collections: any[] = []; // List of collections
   alternateVersions: any[] = [];
@@ -36,7 +37,7 @@ export class AddToCollectionModalComponent implements OnInit {
     this.loadCollections(); // Load collections when the modal opens
     this.cardId = this.selectedCardId;
     this.cardName = this.selectedCardName;
-    
+    this.cardImage = this.selectedCardImage
     if (this.cardId && this.cardName) {
       this.fetchCardDetails(this.cardId);
       this.fetchAlternateVersions(this.cardName);
@@ -55,7 +56,7 @@ export class AddToCollectionModalComponent implements OnInit {
   addToCollection() {
     if (this.selectedCollectionId && this.cardId && this.quantity > 0) {
       const collectionID = Number(this.selectedCollectionId);
-      this.collectionsService.addCardToCollection(collectionID, this.cardId, this.quantity).subscribe(
+      this.collectionsService.addCardToCollection(collectionID, this.cardId, this.quantity, this.cardImage ).subscribe(
         () => {
           this.closeModal();
         },
@@ -71,7 +72,7 @@ export class AddToCollectionModalComponent implements OnInit {
     if (collectionName.trim()) {
       this.collectionsService.createCollection(collectionName).subscribe(
         (newCollection) => {
-          this.collectionsService.addCardToCollection(newCollection.id, this.cardId!, this.quantity).subscribe(
+          this.collectionsService.addCardToCollection(newCollection.id, this.cardId!, this.quantity, this.cardImage).subscribe(
             () => {
               this.closeModal();
             },
@@ -123,10 +124,11 @@ export class AddToCollectionModalComponent implements OnInit {
   }
 
   // Open the modal
-  openModal(selectedCardId: string | undefined, selectedCardName: string | undefined): void {
+  openModal(selectedCardId: string | undefined, selectedCardName: string | undefined, selectedCardImage?: string | undefined): void {
     this.addCollectIsOpen = true;
     this.cardId = selectedCardId;
     this.cardName = selectedCardName;
+    this.cardImage = selectedCardImage;
     this.fetchCardDetails(this.cardId);
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop fade show';

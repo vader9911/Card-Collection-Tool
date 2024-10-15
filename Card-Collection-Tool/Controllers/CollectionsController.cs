@@ -340,11 +340,6 @@ public async Task<IActionResult> GetUserCardCollections()
             return Unauthorized("User is not authenticated.");
         }
 
-        if (string.IsNullOrEmpty(request.CollectionName))
-        {
-            return BadRequest("Collection name is required.");
-        }
-
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
@@ -357,9 +352,36 @@ public async Task<IActionResult> GetUserCardCollections()
 
             command.Parameters.AddWithValue("@CollectionID", collectionId);  // Pass the existing CollectionID
             command.Parameters.AddWithValue("@UserID", userId);
-            command.Parameters.AddWithValue("@CollectionName", request.CollectionName);
-            command.Parameters.AddWithValue("@ImageUri", (object)request.ImageUri ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Notes", (object)request.Notes ?? DBNull.Value);
+
+            // Only pass CollectionName if it's provided in the request
+            if (!string.IsNullOrEmpty(request.CollectionName))
+            {
+                command.Parameters.AddWithValue("@CollectionName", request.CollectionName);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@CollectionName", DBNull.Value); // Or handle this differently in your stored procedure
+            }
+
+            // Only pass ImageUri if it's provided
+            if (!string.IsNullOrEmpty(request.ImageUri))
+            {
+                command.Parameters.AddWithValue("@ImageUri", request.ImageUri);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@ImageUri", DBNull.Value);
+            }
+
+            // Only pass Notes if it's provided
+            if (!string.IsNullOrEmpty(request.Notes))
+            {
+                command.Parameters.AddWithValue("@Notes", request.Notes);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@Notes", DBNull.Value);
+            }
 
             // Execute and confirm the CollectionID
             var updatedCollectionId = Convert.ToInt32(await command.ExecuteScalarAsync());
@@ -372,6 +394,7 @@ public async Task<IActionResult> GetUserCardCollections()
             return Ok(new { message = "Collection updated successfully." });
         }
     }
+
 
     [HttpPost("upsert-card")]
     public async Task<IActionResult> AddCardToCollection([FromBody] AddCardToCollectionRequest request)

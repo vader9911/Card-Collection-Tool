@@ -14,8 +14,9 @@ import { AddToCollectionModalComponent } from '../../components/addcard-modal/ad
   styleUrls: ['./card-detail-modal.component.scss'],
 })
 export class CardDetailModalComponent implements OnInit {
-  @Input() cardId: string | undefined = undefined;
-  @Input() cardName: string | undefined = undefined;
+  @Input() cardId: string | undefined;
+  @Input() cardName: string | undefined;
+  @Input() cardImage: string | undefined;
   @Input() isOpen: boolean = false;
 
   cardDetails: any | undefined;
@@ -125,8 +126,8 @@ export class CardDetailModalComponent implements OnInit {
   }
 
 
-  openAddToCollectionModal(cardId: string | undefined) {
-    console.log("modal for add card opened", cardId);
+  openAddToCollectionModal(cardId: string | undefined, cardImage: string | undefined, cardName: string | undefined) {
+    console.log("modal for add card opened", cardId, cardImage);
     this.closeModal();
     this.cardId = cardId; // Store the selected card ID
     const modal = document.getElementById('addToCollectionModal');

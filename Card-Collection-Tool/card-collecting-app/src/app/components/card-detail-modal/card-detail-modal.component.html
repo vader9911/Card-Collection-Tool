@@ -118,11 +118,11 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id)">Add To Collection</button>
+                <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id, cardDetails.imageUris.normal, cardDetails.name)">Add To Collection</button>
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<app-addcard-modal [selectedCardId]="cardId" [selectedCardName]="cardName"></app-addcard-modal>
+<app-addcard-modal [selectedCardId]="cardId" [selectedCardName]="cardName" [selectedCardImage]="cardImage"></app-addcard-modal>

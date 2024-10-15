@@ -42,15 +42,35 @@ export class ApiService {
     return throwError('Something went wrong; please try again later.');
   }
 
-  replaceSymbolsWithSvg(cardText: string, symbols: any): string {
-    // Iterate through the symbols dictionary and replace occurrences in the card text
-    Object.keys(symbols).forEach(symbol => {
-      // regex that matches the symbol, e.g., {T}, {PW}, etc.
-      const regex = new RegExp(`\\${symbol}`, 'g'); // escape the { and }
-      cardText = cardText.replace(regex, `<img class="symbol-icon" src="${symbols[symbol]}" alt="${symbol}" />`);
-    });
-    return cardText;
+  replaceSymbolsWithSvg(cardText: any, symbols: any): string {
+    // If cardText is an array, iterate over each element
+    if (Array.isArray(cardText)) {
+      return cardText.map(text => {
+        // Ensure each item in the array is a string before applying replace
+        if (typeof text === 'string') {
+          return this.replaceSymbolsInText(text, symbols);
+        }
+        return text; // Return the original item if it's not a string
+      }).join(' '); // Join the array back into a single string with spaces in between
+    } else if (typeof cardText === 'string') {
+      // If cardText is already a string, just replace symbols
+      return this.replaceSymbolsInText(cardText, symbols);
+    } else {
+      console.error('Invalid card text format:', cardText);
+      return ''; // Return an empty string if it's neither a string nor an array
+    }
   }
+
+  // Helper method to replace symbols in text
+  private replaceSymbolsInText(text: string, symbols: any): string {
+    Object.keys(symbols).forEach(symbol => {
+      const regex = new RegExp(`\\${symbol}`, 'g'); // Escape the { and }
+      text = text.replace(regex, `<img class="symbol-icon" src="${symbols[symbol]}" alt="${symbol}" />`);
+    });
+    return text;
+  }
+
+
 
 
 }
