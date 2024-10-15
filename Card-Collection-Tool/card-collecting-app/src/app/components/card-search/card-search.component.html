@@ -1,6 +1,9 @@
 <div class="flex-column my-5 ">
     <h2 class="text-center mb-2 fs-2">Search For Cards To Start Collecting!</h2>
+
     <div class="col-8 container-fluid mb-5">
+
+
         <!-- Basic Search Form -->
         <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
             <div class="input-group mb-3 mt-5 pt-2">
@@ -33,6 +36,9 @@
                 </select>
             </div>
         </form>
+
+       
+
 
         <!-- Advanced Search Drawer (Initially Hidden) -->
         <div class="drawer" [ngClass]="{'drawer-open': isDrawerOpen}">
@@ -160,7 +166,10 @@
                 </form>
             </div>
         </div>
+
     </div>
+   
+
     <!-- Loading Indicator -->
     <div *ngIf="loading" class="loading-indicator">
         <p class="text-center fs-2 m-5">Loading results, please wait...</p>

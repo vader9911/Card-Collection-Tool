@@ -32,6 +32,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   selectedType: string | null = null;
   showWarning: boolean = false;
+  recentSearches: CardSearchRequest[] = [];
   cardTypes: string[] = [
     'Artifact',
     'Creature',
@@ -77,6 +78,11 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     //this.initAutocomplete('type');
     this.setupSortingListeners();
     this.syncNameFields();
+    if (this.recentSearches != null) {
+      this.recentSearches = localStorage.getItem('recentSearches')
+        ? JSON.parse(localStorage.getItem('recentSearches')!)
+        : [];
+    }
   }
 
 
@@ -160,6 +166,8 @@ export class CardSearchComponent implements OnInit, OnDestroy {
 
   onSearch(): void {
     const formValues = this.searchForm.value;
+
+    // Check if the search query meets the minimum character requirement
     if ((formValues.name && formValues.name.length < 3) ||
       (formValues.set && formValues.set.length < 3) ||
       (formValues.oracleText && formValues.oracleText.length < 3)) {
@@ -175,7 +183,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       name: this.searchForm.value.name || undefined,
       set: this.searchForm.value.set || undefined,
       oracleText: this.searchForm.value.oracleText || undefined,
-      type: formValues.type || undefined ,
+      type: formValues.type || undefined,
       colors: this.searchForm.value.colors.length ? this.searchForm.value.colors.join(',') : undefined,
       colorCriteria: this.searchForm.value.colorCriteria || 'any',
       colorIdentity: this.searchForm.value.colorIdentity.length ? this.searchForm.value.colorIdentity.join(',') : undefined,
@@ -188,21 +196,62 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       toughnessComparator: this.searchForm.value.toughnessComparator || 'equals',
       loyalty: this.searchForm.value.loyalty !== null ? this.searchForm.value.loyalty.toString() : undefined,
       loyaltyComparator: this.searchForm.value.loyaltyComparator || 'equals',
-      sortOrder: /*this.searchForm.value.sortOrder ||*/ 'name',
-      sortDirection: /*this.searchForm.value.sortDirection ||*/ 'asc'
+      sortOrder: 'name',
+      sortDirection: 'asc'
     };
 
     console.log('Form Values to be sent:', searchParams);
 
+    // Perform search
     this.searchService.searchCards(searchParams).subscribe(cards => {
       this.cards = cards;
       this.noResultsReturned = cards.length === 0;
+
+      // Save this search to recent searches
+      this.saveRecentSearch(searchParams);
+
     }, error => {
       console.error('Error fetching cards:', error);
       this.noResultsReturned = true;
     });
   }
 
+  saveRecentSearch(searchParams: CardSearchRequest): void {
+    // Get the recent searches from localStorage and safely parse it, or use an empty array if null
+    let recentSearches = localStorage.getItem('recentSearches')
+      ? JSON.parse(localStorage.getItem('recentSearches')!)
+      : [];
+
+    // Add the new search to the beginning of the array
+    recentSearches.unshift(searchParams);
+
+    // Limit to 5 recent searches
+    recentSearches = recentSearches.slice(0, 5);
+
+    // Save back to localStorage
+    localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+  }
+
+
+  populateFormAndSearch(search: CardSearchRequest): void {
+    this.searchForm.patchValue({
+      name: search.name,
+      set: search.set,
+      oracleText: search.oracleText,
+      type: search.type,
+      colors: search.colors ? search.colors.split(',') : [],
+      colorCriteria: search.colorCriteria,
+      colorIdentity: search.colorIdentity ? search.colorIdentity.split(',') : [],
+      colorIdentityCriteria: search.colorIdentityCriteria,
+      manaValue: search.manaValue,
+      power: search.power,
+      toughness: search.toughness,
+      loyalty: search.loyalty
+    });
+
+    // Trigger the search
+    this.onSearch();
+  }
 
 
   onTypeSelectionChange(type: string): void {
