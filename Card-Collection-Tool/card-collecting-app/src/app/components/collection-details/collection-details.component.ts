@@ -8,53 +8,58 @@ import { CardDetailModalComponent } from '../../components/card-detail-modal/car
 import { Collection } from '../../models/collection';
 import * as bootstrap from 'bootstrap';
 import { Subscription } from 'rxjs';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators  } from '@angular/forms';
 
 @Component({
   selector: 'app-collection-details',
   standalone: true,
   imports: [
     CommonModule,
-    CardDetailModalComponent
+    CardDetailModalComponent,
+    ReactiveFormsModule
+
+    
   ],
   templateUrl: './collection-details.component.html',
   styleUrls: ['./collection-details.component.scss']
+
 })
 export class CollectionDetailsComponent implements OnInit {
   isLoggedIn: boolean = false;
   collections: Collection[] = [];
-  collectionDetails: any = null;
+  collectionDetails: any | null;
   authSubscription?: Subscription;
   routeSubscription?: Subscription;
   collectionId: number = 0;
+  collectionName: string | undefined;
   displayFormat: string = 'grid'; // Default display format is 'grid'
   deleteModal: any;
   selectedCardId: string | undefined;
   selectedCardName: string | undefined;
   showModal: boolean = false;
   @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
-
-  editCollectionForm: FormGroup | undefined; // Form group for editing the collection
-  editModal: any; // Reference to the edit modal
+  editCollectionForm!: FormGroup | undefined; // Form group for editing the collection
+  editModal: any;
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+   
 
-  ) { }
+  ) {
+    
+  }
 
   ngOnInit(): void {
+  
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       this.collectionId = Number(params.get('collectionId'));
       console.log('Collection ID from route:', this.collectionId);
       this.attachRemoveModalHandler();
-      this.editCollectionForm = this.fb.group({
-        collectionName: [''],  // Default value empty
-        collectionImage: ['']  // Default value empty
-      });
+      
       if (isNaN(this.collectionId) || this.collectionId <= 0) {
         console.error('Invalid collection ID:', this.collectionId);
         this.router.navigate(['/']); // Redirect to default route if invalid
@@ -65,14 +70,21 @@ export class CollectionDetailsComponent implements OnInit {
         this.isLoggedIn = status;
         if (this.isLoggedIn) {
           this.loadCollectionDetails();
+          
         } else {
           this.router.navigate(['/login']); // Redirect to login if not authenticated
         }
+
       });
+
+    });
+
+    this.editCollectionForm = this.fb.group({
+      collectionName: ['', Validators.required],
+      collectionImage: [''],
+      notes: ['']
     });
   }
-
-
 
   ngOnDestroy(): void {
     if (this.authSubscription) {
@@ -100,8 +112,13 @@ export class CollectionDetailsComponent implements OnInit {
   openDeleteModal(): void {
     const deleteModalElement = document.getElementById('deleteModal');
     if (deleteModalElement) {
-      this.deleteModal = new bootstrap.Modal(deleteModalElement);
-      this.deleteModal.show();
+      const deleteModal = new bootstrap.Modal(deleteModalElement);
+      deleteModal.show();
+
+      // Hide the edit modal if it is currently open
+      if (this.editModal) {
+        this.editModal.hide();
+      }
     }
   }
 
@@ -129,6 +146,7 @@ export class CollectionDetailsComponent implements OnInit {
       this.collectionsService.getCollectionDetails(this.collectionId).subscribe(
         (details) => {
           this.collectionDetails = details;
+        
           console.log('Collection details loaded:', this.collectionDetails);
         },
         (error) => {
@@ -221,7 +239,50 @@ export class CollectionDetailsComponent implements OnInit {
     }
   }
 
+  openEditModal(): void {
 
+    if (!this.collectionDetails || !this.collectionDetails.cards || !this.editCollectionForm) {
+      console.error('Collection details or cards are not loaded yet.');
+      return; // Exit if the data is not ready
+    }
+
+    const modalElement = document.getElementById('editModal');
+    if (modalElement) {
+      this.editModal = new bootstrap.Modal(modalElement);
+      this.editModal.show();
+
+      // Pre-fill the form with existing values
+      this.editCollectionForm.patchValue({
+        collectionName: this.collectionDetails.collectionDetails.collectionName,
+        collectionImage: this.collectionDetails.collectionDetails.imageUri || this.collectionDetails.cards[0]?.imageUri, // Safely access cards[0]
+        notes: this.collectionDetails.collectionDetails.notes || ''
+      });
+    }
+  }
+
+  // Save the changes made to the collection
+  saveCollectionEdits(): void {
+    if (this.editCollectionForm) {
+      const updatedData = this.editCollectionForm.value;
+
+      const collectionId = this.collectionId;
+      const collectionName = updatedData.collectionName;
+      const imageUri = updatedData.collectionImage;
+      const notes = updatedData.notes;
+      console.log(notes);
+
+      this.collectionsService.updateCollection(collectionId, collectionName, imageUri, notes).subscribe(
+        () => {
+          console.log('Collection updated successfully');
+          this.editModal.hide();  // Hide the modal after successful update
+          this.loadCollectionDetails();  // Refresh the collection details
+        },
+        (error) => {
+          console.error('Error updating collection:', error);
+        }
+      );
+    }
+  }
 
 
   // Method to navigate to card details page
