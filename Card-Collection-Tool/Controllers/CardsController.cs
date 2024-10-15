@@ -43,30 +43,31 @@ namespace Card_Collection_Tool.Controllers
                 {
                     await connection.OpenAsync();
 
-                    var command = new SqlCommand("SearchCards", connection)
+                    var command = new SqlCommand("SearchCards2", connection)
                     {
                         CommandType = CommandType.StoredProcedure
                     };
 
-                    // Add parameters for the stored procedure
+              
+
                     command.Parameters.AddWithValue("@name", string.IsNullOrEmpty(searchRequest.Name) ? DBNull.Value : searchRequest.Name);
                     command.Parameters.AddWithValue("@set", string.IsNullOrEmpty(searchRequest.Set) ? DBNull.Value : searchRequest.Set);
                     command.Parameters.AddWithValue("@oracleText", string.IsNullOrEmpty(searchRequest.OracleText) ? DBNull.Value : searchRequest.OracleText);
                     command.Parameters.AddWithValue("@type", string.IsNullOrEmpty(searchRequest.Type) ? DBNull.Value : searchRequest.Type);
-                    command.Parameters.AddWithValue("@colors", string.IsNullOrEmpty(searchRequest.Colors) ? DBNull.Value : searchRequest.Colors);
-                    command.Parameters.AddWithValue("@colorCriteria", string.IsNullOrEmpty(searchRequest.ColorCriteria) ? "exact" : searchRequest.ColorCriteria);
-                    command.Parameters.AddWithValue("@colorIdentity", string.IsNullOrEmpty(searchRequest.ColorIdentity) ? DBNull.Value : searchRequest.ColorIdentity);
-                    command.Parameters.AddWithValue("@colorIdentityCriteria", string.IsNullOrEmpty(searchRequest.ColorIdentityCriteria) ? "exact" : searchRequest.ColorIdentityCriteria);
+                    //command.Parameters.AddWithValue("@colors", string.IsNullOrEmpty(searchRequest.Colors) ? DBNull.Value : searchRequest.Colors);
+                    //command.Parameters.AddWithValue("@colorCriteria", string.IsNullOrEmpty(searchRequest.ColorCriteria) ? "exact" : searchRequest.ColorCriteria);
+                    //command.Parameters.AddWithValue("@colorIdentity", string.IsNullOrEmpty(searchRequest.ColorIdentity) ? DBNull.Value : searchRequest.ColorIdentity);
+                    //command.Parameters.AddWithValue("@colorIdentityCriteria", string.IsNullOrEmpty(searchRequest.ColorIdentityCriteria) ? "exact" : searchRequest.ColorIdentityCriteria);
                     command.Parameters.AddWithValue("@manaValue", searchRequest.ManaValue.HasValue ? (object)searchRequest.ManaValue.Value : DBNull.Value);
-                    command.Parameters.AddWithValue("@manaValueComparator", string.IsNullOrEmpty(searchRequest.ManaValueComparator) ? "equals" : searchRequest.ManaValueComparator);
+                    //command.Parameters.AddWithValue("@manaValueComparator", string.IsNullOrEmpty(searchRequest.ManaValueComparator) ? "equals" : searchRequest.ManaValueComparator);
                     command.Parameters.AddWithValue("@power", string.IsNullOrEmpty(searchRequest.Power) ? DBNull.Value : searchRequest.Power);
-                    command.Parameters.AddWithValue("@powerComparator", string.IsNullOrEmpty(searchRequest.PowerComparator) ? "equals" : searchRequest.PowerComparator);
+                    //command.Parameters.AddWithValue("@powerComparator", string.IsNullOrEmpty(searchRequest.PowerComparator) ? "equals" : searchRequest.PowerComparator);
                     command.Parameters.AddWithValue("@toughness", string.IsNullOrEmpty(searchRequest.Toughness) ? DBNull.Value : searchRequest.Toughness);
-                    command.Parameters.AddWithValue("@toughnessComparator", string.IsNullOrEmpty(searchRequest.ToughnessComparator) ? "equals" : searchRequest.ToughnessComparator);
-                    command.Parameters.AddWithValue("@loyalty", string.IsNullOrEmpty(searchRequest.Loyalty) ? DBNull.Value : searchRequest.Loyalty);
-                    command.Parameters.AddWithValue("@loyaltyComparator", string.IsNullOrEmpty(searchRequest.LoyaltyComparator) ? "equals" : searchRequest.LoyaltyComparator);
-                    command.Parameters.AddWithValue("@sortOrder", string.IsNullOrEmpty(searchRequest.SortOrder) ? "name" : searchRequest.SortOrder);
-                    command.Parameters.AddWithValue("@sortDirection", string.IsNullOrEmpty(searchRequest.SortDirection) ? "asc" : searchRequest.SortDirection);
+                    //command.Parameters.AddWithValue("@toughnessComparator", string.IsNullOrEmpty(searchRequest.ToughnessComparator) ? "equals" : searchRequest.ToughnessComparator);
+                    //command.Parameters.AddWithValue("@loyalty", string.IsNullOrEmpty(searchRequest.Loyalty) ? DBNull.Value : searchRequest.Loyalty);
+                    //command.Parameters.AddWithValue("@loyaltyComparator", string.IsNullOrEmpty(searchRequest.LoyaltyComparator) ? "equals" : searchRequest.LoyaltyComparator);
+                    //command.Parameters.AddWithValue("@sortOrder", string.IsNullOrEmpty(searchRequest.SortOrder) ? "name" : searchRequest.SortOrder);
+                    //command.Parameters.AddWithValue("@sortDirection", string.IsNullOrEmpty(searchRequest.SortDirection) ? "asc" : searchRequest.SortDirection);
 
                     var cards = new List<ScryfallCard>();
 
