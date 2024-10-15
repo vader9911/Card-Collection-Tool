@@ -150,7 +150,7 @@ public async Task<IActionResult> GetUserCardCollections()
 
             // SQL query to select the collection based on the collection ID and user ID
             var query = @"
-            SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate
+            SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate, TotalCards, TotalValue
             FROM UserCardCollection
             WHERE CollectionID = @CollectionID AND UserID = @UserID";
 
@@ -172,7 +172,14 @@ public async Task<IActionResult> GetUserCardCollections()
                             CollectionName = reader.GetString(reader.GetOrdinal("CollectionName")),
                             ImageUri = reader["ImageUri"] as string,
                             Notes = reader["Notes"] as string,
-                            CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+                            CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate")),
+                            TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
+                            ? 0
+                            : reader.GetInt32(reader.GetOrdinal("TotalCards")),
+
+                            TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
+                            ? 0
+                            : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
                         };
                     }
                 }
@@ -609,10 +616,7 @@ public async Task<IActionResult> GetUserCardCollections()
             // Return the combined collection and card details
             return Ok(new
             {
-                collectionDetails.CollectionName,
-                collectionDetails.ImageUri,
-                collectionDetails.Notes,
-                collectionDetails.CreatedDate,
+                collectionDetails,
                 Cards = cardDataList
             });
         }

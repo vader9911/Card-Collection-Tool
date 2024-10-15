@@ -57,13 +57,9 @@ export class CollectionsComponent implements OnInit {
         this.collections = response; // Store the fetched collections
         console.log('Loaded collections:', this.collections);
 
-        // Fetch first card details for each collection after loading collections
+        // Loop through each collection and fetch the image or card details
         this.collections.forEach((collection) => {
-          this.fetchCollectionCards(collection.collectionID);
-          if (collection.cards && collection.cards.length > 0) {
-            const firstCardId = collection.cards[0].cardID; // Get the first card's ID
-            this.fetchCardDetails(firstCardId, collection.collectionID); // Fetch card details using the correct `collectionID`
-          }
+          this.fetchCardDetailsOrUseCollectionImage(collection);
         });
       },
       (error) => {
@@ -71,6 +67,7 @@ export class CollectionsComponent implements OnInit {
       }
     );
   }
+
 
   sortCollections(): void {
     const { sortOrder, sortDirection } = this.sortForm.value;
@@ -101,18 +98,45 @@ export class CollectionsComponent implements OnInit {
   }
 
 
+  // Method to fetch the first card details or use the collection image if available
+  fetchCardDetailsOrUseCollectionImage(collection: Collection): void {
+    if (collection.imageUri) {
+      // If the collection has a custom image, use it
+      this.cardImages[collection.collectionID] = collection.imageUri;
+      console.log(`Using collection image for collection ID: ${collection.collectionID}`);
+    } else if (collection.cards && collection.cards.length > 0) {
+      // Otherwise, use the first card's image
+      const firstCardId = collection.cards[0].cardID;
+      this.fetchCardDetails(firstCardId, collection.collectionID);
+    } else {
+      // If there are no cards, use a default image
+      this.cardImages[collection.collectionID] = this.defaultImageUrl;
+    }
+  }
 
 
 
   // Method to fetch the first card details by card ID
+  // Fetch the card details by card ID and include collection name and ID
   fetchCardDetails(cardId: string, collectionId: number): void {
     console.log(`Fetching details for card ID: ${cardId}, collection ID: ${collectionId}`);
 
     this.apiService.getCardDetails(cardId).subscribe(
       (details) => {
         if (details && details.imageUri) {
-          this.cardImages[collectionId] = details.imageUri; // Store the image URI using collection ID as key
+          this.cardImages[collectionId] = details.imageUri; // Store the image URI
           console.log(`Image fetched for card ID: ${cardId} - URI: ${details.imageUri}`);
+
+          // Extend the card details to include the collection name and ID
+          const collection = this.collections.find(c => c.collectionID === collectionId);
+          if (collection) {
+            details.collectionName = collection.collectionName;
+            details.collectionID = collection.collectionID;
+            console.log('Updated card details with collection info:', details);
+          }
+
+          // Push the updated details into the card details list
+          this.cardDetailsList.push(details);
         } else {
           console.warn(`No image URI found for card ID: ${cardId}`);
           this.cardImages[collectionId] = this.defaultImageUrl; // Use default image if no URI is found
@@ -125,7 +149,8 @@ export class CollectionsComponent implements OnInit {
     );
   }
 
-  fetchCollectionCards(collectionID: number) {  // Ensure `collectionID` is used here
+
+  fetchCollectionCards(collectionID: number) { 
   this.collectionsService.getCardIdsByCollectionId(collectionID).subscribe(
     (cardIds: string[] | undefined) => {
       console.log('Card IDs retrieved:',cardIds, "For Collection:", collectionID);
@@ -146,9 +171,6 @@ export class CollectionsComponent implements OnInit {
     }
   );
   }
-
-
-
 
   // Navigate to collection details page
   goToCollectionDetails(collectionId: number): void {

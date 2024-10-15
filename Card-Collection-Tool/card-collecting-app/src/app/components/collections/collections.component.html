@@ -59,7 +59,7 @@
             <div class="col" *ngFor="let collection of collections">
                 <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden"
                      (click)="goToCollectionDetails(collection.collectionID)"
-                     [style.backgroundImage]="'url(' + (cardImages[collection.collectionID] || defaultImageUrl) + ')'"
+                     [style.backgroundImage]="collection.imageUri "
                      style="background-size: cover; background-position: center; aspect-ratio: 3/4; width: 100%;">
 
                     <!-- Info Box with Gradient Background -->

@@ -3,8 +3,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { CollectionsService } from '../../services/collections.service';
+import { ApiService } from '../../services/api.service';
 import { CardDetailModalComponent } from '../../components/card-detail-modal/card-detail-modal.component';
-
+import { Collection } from '../../models/collection';
 import * as bootstrap from 'bootstrap';
 import { Subscription } from 'rxjs';
 import { FormBuilder, FormGroup } from '@angular/forms';
@@ -21,6 +22,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 })
 export class CollectionDetailsComponent implements OnInit {
   isLoggedIn: boolean = false;
+  collections: Collection[] = [];
   collectionDetails: any = null;
   authSubscription?: Subscription;
   routeSubscription?: Subscription;
@@ -37,6 +39,7 @@ export class CollectionDetailsComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
+    private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder
@@ -69,6 +72,8 @@ export class CollectionDetailsComponent implements OnInit {
     });
   }
 
+
+
   ngOnDestroy(): void {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
@@ -76,6 +81,19 @@ export class CollectionDetailsComponent implements OnInit {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+  }
+
+
+  loadCollections(): void {
+    this.collectionsService.getCollections().subscribe(
+      (response) => {
+        this.collections = response; // Store the fetched collections
+        console.log('Loaded collections:', this.collections);
+      },
+      (error) => {
+        console.error('Error fetching collections:', error);
+      }
+    );
   }
 
   // Method to open the delete confirmation modal
