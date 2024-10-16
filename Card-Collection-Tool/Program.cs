@@ -116,11 +116,12 @@ namespace Card_Collection_Tool
             // Map controllers and endpoints.
             app.UseEndpoints(endpoints =>
             {
-                _ = endpoints.MapControllers();
+                endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
             });
 
             // Fallback route for Angular app.
-            app.MapFallbackToFile("index.html");
+            //app.MapFallbackToFile("index.html");
 
             // Run the application.
             app.Run();

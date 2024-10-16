@@ -6,8 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "build-and-copy": "ng build && xcopy /E /I dist\\card-collecting-app\\* ..\\wwwroot\\"
   },
+  
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.2.0",

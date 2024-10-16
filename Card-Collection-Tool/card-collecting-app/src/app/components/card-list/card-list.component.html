@@ -4,7 +4,8 @@
         <div class="card bg-transparent text-light border-0 m-1">
             <img class="card-image rounded-3" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="openCardDetailModal(card.id, card.name)" />
             <div class="text-center fw-bold">{{card.name}}</div>
-            <div class="text-center mb-1">{{card.prices.usd | currency:'USD': 'symbol':'1.2-2'}}</div>
+            <div class="text-center mb-1">{{ card.prices.usd || card.prices.usd_Foil || card.prices.usd_Etched | currency:'USD':'symbol':'1.2-2' }}
+            </div>
             <!-- Button positioned at the bottom of the card image -->
             <button *ngIf="isLoggedIn" class="btn btn-outline-primary  text-light fw-bold" (click)="openAddToCollectionModal(card.id, card.name, card.imageUris.normal)">Add to collection</button>
 

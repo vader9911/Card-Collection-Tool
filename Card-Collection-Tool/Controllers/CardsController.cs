@@ -21,8 +21,9 @@ namespace Card_Collection_Tool.Controllers
         {
             private readonly string _connectionString;
             private readonly ScryfallService _scryfallService;
+            private List<ScryfallCard?> filteredCards;
 
-            public CardsController(IConfiguration configuration, ScryfallService scryfallService)
+        public CardsController(IConfiguration configuration, ScryfallService scryfallService)
             {
                 _connectionString = configuration.GetConnectionString("DefaultConnection");
             }
@@ -152,8 +153,10 @@ namespace Card_Collection_Tool.Controllers
                     {
                         return NotFound(new { message = "No cards found with the given search criteria." });
                     }
+                    
+                    filteredCards = FilterMostRecentVersions(cards);
 
-                    return Ok(cards);
+                    return Ok(filteredCards);
                 }
             }
             catch (Exception ex)

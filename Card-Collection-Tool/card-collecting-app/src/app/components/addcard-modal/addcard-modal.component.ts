@@ -4,6 +4,7 @@ import { CollectionsService } from '../../services/collections.service';
 import { ApiService } from '../../services/api.service';
 import { GroupByPipe } from '../../shared/group-by.pipe';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-addcard-modal',
@@ -72,14 +73,19 @@ export class AddToCollectionModalComponent implements OnInit {
     if (collectionName.trim()) {
       this.collectionsService.createCollection(collectionName).subscribe(
         (newCollection) => {
-          this.collectionsService.addCardToCollection(newCollection.id, this.cardId!, this.quantity, this.cardImage).subscribe(
-            () => {
-              this.closeModal();
-            },
-            (error) => {
-              console.error('Error adding card to new collection:', error);
-            }
-          );
+          // Ensure newCollection.id exists before proceeding
+          if (newCollection?.collectionID) {
+            this.collectionsService.addCardToCollection(newCollection.collectionID, this.cardId!, this.quantity, this.cardImage).subscribe(
+              () => {
+                this.closeModal();
+              },
+              (error) => {
+                console.error('Error adding card to new collection:', error);
+              }
+            );
+          } else {
+            console.error('New collection created but no ID was returned');
+          }
         },
         (error) => {
           console.error('Error creating new collection:', error);
@@ -87,6 +93,8 @@ export class AddToCollectionModalComponent implements OnInit {
       );
     }
   }
+
+
 
   switchVersion(versionId: string, versionName: string): void {
     console.log('Version clicked:', versionId, versionName);
