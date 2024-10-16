@@ -1,7 +1,7 @@
 <div class="flex-column my-5 ">
     <h2 class="text-center mb-2 fs-2">Search For Cards To Start Collecting!</h2>
 
-    <div class="col-10 container-fluid mb-5">
+    <div class="col-8 container-fluid mb-5">
 
 
         <!-- Basic Search Form -->
@@ -56,7 +56,9 @@
                                formControlName="set"
                                (input)="filterSetNames($event)"
                                (focus)="showDropdown = true"
-                               (blur)="hideDropdown()">
+                               (blur)="hideDropdown()"
+                               data-bs-toggle="tooltip"
+                               title="Enter the Set you're looking for (e.g., Innistrad, Double Masters, Ravnica)">
                         <ul *ngIf="showDropdown && filteredSetNames.length > 0" class="list-group position-absolute w-100 dropdown-overlay">
                             <li *ngFor="let setName of filteredSetNames"
                                 (mousedown)="selectSetName(setName)"
@@ -75,7 +77,9 @@
                                     type="button"
                                     id="cardTypeDropdown"
                                     data-bs-toggle="dropdown"
-                                    aria-expanded="false">
+                                    aria-expanded="false"
+                                    data-bs-toggle="tooltip"
+                                    title="Select the type of card (e.g., Creature, Artifact, Sorcery).">
                                 {{ selectedType ? selectedType : 'Select Card Type' }}
                             </button>
                             <ul class="dropdown-menu w-100 text-e">
@@ -93,14 +97,24 @@
                     <!-- Oracle Text -->
                     <div class="col-md-4 form-group">
                         <label for="oracleText">Oracle Text</label>
-                        <input type="text" class="form-control" placeholder="Oracle Text..." formControlName="oracleText">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Oracle Text..."
+                               formControlName="oracleText"
+                               data-bs-toggle="tooltip"
+                               title="Search for cards with specific rules or abilities in their text.">
                     </div>
 
                     <!-- Mana Value -->
                     <div class="col-md-4 form-group">
                         <label for="manaValue">Mana Value</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Mana Value..." formControlName="manaValue">
+                            <input type="number"
+                                   class="form-control"
+                                   placeholder="Mana Value..."
+                                   formControlName="manaValue"
+                                   data-bs-toggle="tooltip"
+                                   title="Filter cards by their mana cost value.">
                         </div>
                     </div>
 
@@ -108,7 +122,12 @@
                     <div class="col-md-4 form-group">
                         <label for="power">Power</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Power..." formControlName="power">
+                            <input type="number"
+                                   class="form-control"
+                                   placeholder="Power..."
+                                   formControlName="power"
+                                   data-bs-toggle="tooltip"
+                                   title="Filter cards by their power value.">
                         </div>
                     </div>
 
@@ -116,14 +135,20 @@
                     <div class="col-md-4 form-group">
                         <label for="toughness">Toughness</label>
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Toughness..." formControlName="toughness">
+                            <input type="number"
+                                   class="form-control"
+                                   placeholder="Toughness..."
+                                   formControlName="toughness"
+                                   data-bs-toggle="tooltip"
+                                   title="Filter cards by their toughness value.">
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Basic styling for the set name dropdown -->
+    </div>
+
         <!-- Loading Indicator -->
         <div *ngIf="loading" class="loading-indicator">
             <p class="text-center fs-2 m-5">Loading results, please wait...</p>
@@ -139,7 +164,9 @@
         </div>
 
         <!-- Results Section -->
-        <div *ngIf="!loading && !noResultsReturned">
-            <app-card-list [cards]="cards"></app-card-list>
-        </div>
+
+    </div>
+
+    <div *ngIf="!loading && !noResultsReturned">
+        <app-card-list [cards]="cards"></app-card-list>
     </div>

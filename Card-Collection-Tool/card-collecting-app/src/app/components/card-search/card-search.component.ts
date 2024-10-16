@@ -23,7 +23,7 @@ declare var bootstrap: any;
   templateUrl: './card-search.component.html',
   styleUrls: ['./card-search.component.scss'],
   providers: [ApiService, SearchService]})
-export class CardSearchComponent implements OnInit, OnDestroy {
+export class CardSearchComponent implements OnInit, OnDestroy, AfterViewInit {
   searchForm: FormGroup;
   cards: any[] = [];
   searchPerformed = false;
@@ -108,8 +108,14 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     }
   }
 
+
+
   ngAfterViewInit(): void {
     this.initializeDropdown();
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach((tooltipTriggerEl) => {
+      new (window as any).bootstrap.Tooltip(tooltipTriggerEl);
+    });
   }
 
   // Initialize dropdown functionality in Bootstrap
@@ -299,6 +305,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     const value = (event.target as HTMLInputElement).value.toLowerCase();
     this.filteredSetNames = this.setNames
       .filter(setName => setName.toLowerCase().includes(value))
+      .sort((a, b) => a.length - b.length)
       .slice(0, 5); 
   }
 
