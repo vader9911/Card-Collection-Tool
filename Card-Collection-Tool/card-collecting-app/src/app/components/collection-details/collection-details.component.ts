@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { CollectionsService } from '../../services/collections.service';
@@ -40,6 +40,7 @@ export class CollectionDetailsComponent implements OnInit {
   @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
   editCollectionForm!: FormGroup | undefined; // Form group for editing the collection
   editModal: any;
+
   constructor(
     private authService: AuthService,
     private collectionsService: CollectionsService,
@@ -50,7 +51,11 @@ export class CollectionDetailsComponent implements OnInit {
    
 
   ) {
-    
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.removeModalBackdrops();
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -93,6 +98,8 @@ export class CollectionDetailsComponent implements OnInit {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    this.cleanUpModal();
+   
   }
 
 
@@ -114,8 +121,6 @@ export class CollectionDetailsComponent implements OnInit {
     if (deleteModalElement) {
       const deleteModal = new bootstrap.Modal(deleteModalElement);
       deleteModal.show();
-
-      // Hide the edit modal if it is currently open
       if (this.editModal) {
         this.editModal.hide();
       }
@@ -124,21 +129,51 @@ export class CollectionDetailsComponent implements OnInit {
 
   // Method to delete the collection
   deleteCollection(): void {
-    // Hide the modal explicitly before deletion
-    if (this.deleteModal) {
-      this.deleteModal.hide();
-    }
-
+    this.closeDeleteModal();
     this.collectionsService.deleteCollection(this.collectionId).subscribe(
       () => {
         console.log('Collection deleted successfully.');
-        this.router.navigate(['/collections']); // Redirect to collections list after deletion
+        this.cleanUpModal();
+        this.router.navigate(['/collections']);
       },
       (error) => {
         console.error('Error deleting collection:', error);
         alert('An unexpected error occurred while deleting the collection.');
       }
     );
+  }
+
+  // Method to close the delete modal and hide any artifacts
+  private closeDeleteModal(): void {
+    if (this.deleteModal) {
+      this.deleteModal.hide();
+    }
+    this.cleanUpModal();
+  }
+
+  // Method to clean up modal artifacts and restore scrolling
+  private cleanUpModal(): void {
+    document.body.classList.remove('modal-open');
+
+    const backdrops = document.getElementsByClassName('modal-backdrop');
+    while (backdrops.length > 0) {
+      backdrops[0].parentNode?.removeChild(backdrops[0]);
+    }
+    document.body.style.overflow = 'auto';
+  }
+
+  private enablePageScroll(): void {
+    document.body.classList.remove('modal-open');
+  }
+
+  private removeModalBackdrops(): void {
+    // Remove all modal backdrops
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach((backdrop) => backdrop.remove());
+
+    // Remove any overlay or other elements that may prevent interaction
+    const overlays = document.querySelectorAll('.modal-open');
+    overlays.forEach((overlay) => overlay.classList.remove('modal-open'));
   }
 
   loadCollectionDetails(): void {
@@ -236,6 +271,12 @@ export class CollectionDetailsComponent implements OnInit {
       if (modalInstance) {
         modalInstance.hide(); // Hide the modal after confirming
       }
+
+      // Remove any remaining modal backdrop manually
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach((backdrop) => {
+        backdrop.remove();
+      });
     }
   }
 

@@ -3,38 +3,49 @@
     <div *ngIf="collectionDetails; else noCollectionDetails">
 
         <!-- Collection Header with Stats and Notes -->
-        <div class="container p-0 my-4">
-            <div class="flex">
-                <h1 class="text-capitalize">{{ collectionDetails.collectionDetails.collectionName }}</h1>
-                <button class="btn btn-primary mb-3" (click)="openEditModal()" title="Edit Collection">
-                    <i class="bi bi-gear-fill"></i>
-                </button>
-            </div>
-            <!-- Collection Details Section -->
-            <div class="row mb-4">
-                <div class="col-lg-4 col-md-6 mb-3">
-                    <div class="card p-3 bg-light shadow-sm">
-                        <h5 class="card-title text-muted">Total Cards</h5>
-                        <p class="h4 mb-0">{{ collectionDetails.collectionDetails.totalCards }}</p>
-                    </div>
+        <div class="container-fluid p-0 my-4">
+            <div class="row align-items-start">
+                <!-- Left Side: Collection Name and Edit Button -->
+                <div class="col-3 d-flex align-items-start flex-column">
+                    <h1 class="text-capitalize me-3 mb-0 text-decoration-underline mb-2">{{ collectionDetails.collectionDetails.collectionName }}</h1>
+                    <button class="btn btn-primary" (click)="openEditModal()" title="Edit Collection">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
                 </div>
-                <div class="col-lg-4 col-md-6 mb-3">
-                    <div class="card p-3 bg-light shadow-sm">
-                        <h5 class="card-title text-muted">Total Value</h5>
-                        <p class="h4 mb-0">{{ collectionDetails.collectionDetails.totalValue | currency:'USD': 'symbol':'1.2-2' }}</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-12 mb-3">
-                    <div class="card p-3 bg-light shadow-sm">
-                        <h5 class="card-title text-muted">Notes</h5>
-                        <p class="mb-0">{{ collectionDetails.collectionDetails.notes || 'No notes available.' }}</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Edit Button -->
+                <!-- Right Side: Stacked Cards and Notes -->
+                <div class="col-9 pt-2">
+                    
+                    <div class="d-flex justify-content-between">
+                        <div class="row mx-2">
+                            <!-- Total Cards -->
+                            <div class="card info-card p-3 mb-2 bg-light shadow-sm me-2 flex-grow-1">
+                                <h4 class="card-title text-muted">Total Cards</h4>
+                                <p class="h4 mb-0">{{ collectionDetails.collectionDetails.totalCards || 0 }} Cards</p>
+                            </div>
 
-        </div>
+                            <!-- Total Value -->
+                            <div class="card info-card p-3 mb-2 bg-light shadow-sm me-2 flex-grow-1">
+                                <h4 class="card-title text-muted">Total Value</h4>
+                                <p class="h4 mb-0">{{ collectionDetails.collectionDetails.totalValue || 0 | currency:'USD': 'symbol':'1.2-2' }}</p>
+                            </div>
+                        </div>
+                        <!-- Notes -->
+                        <div class="card p-3 bg-light shadow-sm flex-grow-1 col-6 mb-2">
+                            <h4 class="card-title text-muted">Notes</h4>
+                            <div class="custom-scroll" style="max-height: 180px; overflow-y: auto;">
+                                <p class="h6 mb-0">{{ collectionDetails.collectionDetails.notes || 'No notes available.' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+       
+
+
+        <!-- Edit Button -->
+
+    </div>
 
         <!-- Grid View -->
         <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4 card-collection">
