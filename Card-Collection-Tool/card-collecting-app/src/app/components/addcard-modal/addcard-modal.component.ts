@@ -77,6 +77,7 @@ export class AddToCollectionModalComponent implements OnInit {
           if (newCollection?.collectionID) {
             this.collectionsService.addCardToCollection(newCollection.collectionID, this.cardId!, this.quantity, this.cardImage).subscribe(
               () => {
+                this.loadCollections()
                 this.closeModal();
               },
               (error) => {
@@ -96,10 +97,12 @@ export class AddToCollectionModalComponent implements OnInit {
 
 
 
-  switchVersion(versionId: string, versionName: string): void {
-    console.log('Version clicked:', versionId, versionName);
+  switchVersion(versionId: string, versionName: string, versionImage: string): void {
+    console.log('Version clicked:', versionId, versionName, versionImage);
     this.cardId = versionId;
     this.cardName = versionName;
+    this.cardImage = versionImage;
+    
     this.fetchCardDetails(versionId); // Fetch details for the clicked version
   }
 
