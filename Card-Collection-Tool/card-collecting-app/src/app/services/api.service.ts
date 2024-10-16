@@ -24,16 +24,9 @@ export class ApiService {
     );
   }
 
-  //getCardDetailsByIds(cardIds: [] | undefined): Observable<any> {
-  //  console.log('API Service called with card ID:', cardIds);
-  //  return this.http.get<any>(`${this.apiUrl}/details`).pipe(
-  //    catchError(this.handleError)
-  //  );
-  //}
 
-  // Method to fetch card details using card IDs (via POST)
   getCardDetailsByIds(cardIds: string[] | undefined): Observable<any[]> {
-    // Send the card IDs as a body in the POST request
+
     return this.http.post<any[]>(`${this.apiUrl}/details`, cardIds);
   }
 
@@ -43,15 +36,14 @@ export class ApiService {
   }
 
   replaceSymbolsWithSvg(cardText: any, symbols: any): string {
-    // If cardText is an array, iterate over each element
     if (Array.isArray(cardText)) {
       return cardText.map(text => {
         // Ensure each item in the array is a string before applying replace
         if (typeof text === 'string') {
           return this.replaceSymbolsInText(text, symbols);
         }
-        return text; // Return the original item if it's not a string
-      }).join(' '); // Join the array back into a single string with spaces in between
+        return text; 
+      }).join(' '); 
     } else if (typeof cardText === 'string') {
       // If cardText is already a string, just replace symbols
       return this.replaceSymbolsInText(cardText, symbols);
@@ -64,7 +56,7 @@ export class ApiService {
   // Helper method to replace symbols in text
   private replaceSymbolsInText(text: string, symbols: any): string {
     Object.keys(symbols).forEach(symbol => {
-      const regex = new RegExp(`\\${symbol}`, 'g'); // Escape the { and }
+      const regex = new RegExp(`\\${symbol}`, 'g'); 
       text = text.replace(regex, `<img class="symbol-icon" src="${symbols[symbol]}" alt="${symbol}" />`);
     });
     return text;

@@ -28,22 +28,10 @@ export class SearchService {
   }
 
 
-  //searchCards(searchParams: CardSearchRequest): Observable<Card[]> {
-  //  const payload = {
-  //    searchRequest: searchParams // Wrap the search parameters inside "searchRequest"
-  //  };
-  //  const headers = new HttpHeaders({
-  //    'Content-Type': 'application/json',
-  //  });
+  fetchSetNames(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/set-names`);
+  }
 
-  //  return this.http.post<Card[]>(`${this.apiUrl}/search`, JSON.stringify(payload), { headers }).pipe(
-  //    catchError(error => {
-  //      console.error('Search API error:', error);
-  //      return throwError(error);
-  //    })
-  //  );
-
-  //}
 
 
   autocomplete(field: string, searchTerm: string): Observable<string[]> {

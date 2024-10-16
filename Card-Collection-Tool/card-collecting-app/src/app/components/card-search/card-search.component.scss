@@ -58,7 +58,24 @@
   margin-bottom: 20px; /* Margin below the container */
 }
 
+.dropdown-overlay {
+  z-index: 1050; /* Ensure it's above other elements */
+  
+  overflow-y: auto;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
 
+/* Style for the list items */
+.list-group-item:hover {
+  cursor: pointer;
+  background-color: #f8f9fa;
+}
+
+/* Prevent the dropdown from collapsing when clicked inside */
+.position-relative .dropdown-overlay {
+  pointer-events: auto;
+}
 /* Style for the dropdown labels */
 //.sort-container label {
 //  font-weight: bold; /* Make the label text bold */

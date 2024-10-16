@@ -7,6 +7,8 @@ import { Observable, Subscription, of } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { CardSearchRequest, SearchService } from '../../services/search.service';
 import { CardListComponent } from '../card-list/card-list.component';
+import { map, startWith } from 'rxjs/operators';
+
 declare var bootstrap: any;
 @Component({
   selector: 'app-card-search',
@@ -44,6 +46,9 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     'Sorcery'
 
   ];
+  setNames: string[] = [];
+  filteredSetNames: string[] = [];
+  showDropdown: boolean = false;
 
 
   private searchSubscription: Subscription | null = null;
@@ -53,7 +58,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
       name: [''],
       set: [''],
       oracleText: [''],
-      type: [''], // Update to an array to handle multiple card types
+      type: [''],
       colors: [[]],
       colorCriteria: ['any'],
       colorIdentity: [[]],
@@ -83,6 +88,16 @@ export class CardSearchComponent implements OnInit, OnDestroy {
         ? JSON.parse(localStorage.getItem('recentSearches')!)
         : [];
     }
+    this.searchService.fetchSetNames().subscribe(
+      (names) => {
+        this.setNames = names;
+        
+        console.log('Set names fetched:', names);
+      },
+      (error) => {
+        console.error('Error fetching set names:', error);
+      }
+    );
   }
 
 
@@ -232,7 +247,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
   }
 
-
+  
   populateFormAndSearch(search: CardSearchRequest): void {
     this.searchForm.patchValue({
       name: search.name,
@@ -262,7 +277,7 @@ export class CardSearchComponent implements OnInit, OnDestroy {
     this.searchForm.get('type')?.setValue(this.selectedType);
   }
 
-
+  //Adv search drawer
   toggleDrawer(): void {
     this.isDrawerOpen = !this.isDrawerOpen;
 
@@ -277,6 +292,25 @@ export class CardSearchComponent implements OnInit, OnDestroy {
 
   closeDrawer(): void {
     this.isDrawerOpen = false;
+  }
+
+  //Set autocomplete 
+  filterSetNames(event: Event): void {
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredSetNames = this.setNames
+      .filter(setName => setName.toLowerCase().includes(value))
+      .slice(0, 5); 
+  }
+
+  selectSetName(setName: string): void {
+    this.searchForm.controls['set'].setValue(setName);
+    this.showDropdown = false;
+  }
+
+  hideDropdown(): void {
+    setTimeout(() => {
+      this.showDropdown = false;
+    }, 200);
   }
 
 

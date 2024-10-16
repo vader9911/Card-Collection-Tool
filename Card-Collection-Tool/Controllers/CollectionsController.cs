@@ -697,7 +697,6 @@ public async Task<IActionResult> GetUserCardCollections()
 
             if (symbols != null)
             {
-                Console.WriteLine($"Fetched {symbols.Count} symbols.");
                 return Ok(symbols);
             }
             else

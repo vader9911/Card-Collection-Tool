@@ -559,6 +559,66 @@ namespace Card_Collection_Tool.Controllers
             }
         }
 
+        [HttpGet("set-names")]
+        public async Task<IActionResult> GetDistinctSetNames()
+        {
+            Console.WriteLine("API called to fetch distinct set names.");
+
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    Console.WriteLine("Database connection opened successfully.");
+
+                    // SQL query to fetch distinct set names
+                    var sqlQuery = @"
+                SELECT DISTINCT SetName
+                FROM dbo.v_CardData";
+
+                    Console.WriteLine("Executing SQL Query: " + sqlQuery);
+
+                    var setNames = new List<string>();
+
+                    using (var command = new SqlCommand(sqlQuery, connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (!reader.HasRows)
+                            {
+                                Console.WriteLine("No set names found.");
+                                return NotFound("No set names found.");
+                            }
+
+                            Console.WriteLine("Rows returned from the query, processing results...");
+
+                            while (await reader.ReadAsync())
+                            {
+                                var setName = reader["SetName"].ToString();
+                                setNames.Add(setName);
+                                Console.WriteLine($"Found Set Name: {setName}");
+                            }
+                        }
+                    }
+
+                    if (setNames.Count == 0)
+                    {
+                        Console.WriteLine("No set names were added to the results list.");
+                        return NotFound();
+                    }
+
+                    Console.WriteLine($"Returning {setNames.Count} set name(s).");
+                    return Ok(setNames);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the full exception details
+                Console.WriteLine($"Error fetching set names: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
 
 
