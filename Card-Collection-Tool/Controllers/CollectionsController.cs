@@ -1,5 +1,6 @@
 ﻿using Card_Collection_Tool.Data;
 using Card_Collection_Tool.Models;
+using Card_Collection_Tool.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -15,73 +16,115 @@ using System.Security.Claims;
 public class CollectionsController : ControllerBase
 {
     private readonly string _connectionString;
+    private readonly ScryfallService _scryfallService;
     private readonly ILogger<CollectionsController> _logger;
 
-    public CollectionsController(IConfiguration configuration, ILogger<CollectionsController> logger)
+    public CollectionsController(IConfiguration configuration, ILogger<CollectionsController> logger, ScryfallService scryfallService)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
         _logger = logger;
+        _scryfallService = scryfallService;
+
     }
 
 
     // GET: api/Collections
-    [HttpGet]
-    public async Task<IActionResult> GetUserCardCollections()
+[HttpGet]
+public async Task<IActionResult> GetUserCardCollections()
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    if (string.IsNullOrEmpty(userId))
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Unauthorized("User is not authenticated.");
+    }
 
-        if (string.IsNullOrEmpty(userId))
+    using (var connection = new SqlConnection(_connectionString))
+    {
+        await connection.OpenAsync();
+
+        // First, update the collection summary to ensure data is fresh
+        var updateSummaryCommand = new SqlCommand("UpsertCollectionSummary", connection)
         {
-            return Unauthorized("User is not authenticated.");
-        }
+            CommandType = CommandType.StoredProcedure
+        };
 
-        using (var connection = new SqlConnection(_connectionString))
+        // Assuming you need to call it for all the collections of the user,
+        // you'll need to get the list of Collection IDs first.
+        var collectionIdQuery = @"
+        SELECT CollectionID
+        FROM UserCardCollection 
+        WHERE UserID = @UserID";
+
+        var collectionIds = new List<int>();
+        using (var collectionIdCommand = new SqlCommand(collectionIdQuery, connection))
         {
-            await connection.OpenAsync();
+            collectionIdCommand.Parameters.AddWithValue("@UserID", userId);
 
-            var query = @"
-            SELECT CollectionID, CollectionName, ImageUri, TotalCards, TotalValue
-            FROM UserCardCollection 
-            WHERE UserID = @UserID";
-
-            var collections = new List<UserCardCollection>();
-            using (var command = new SqlCommand(query, connection))
+            using (var reader = await collectionIdCommand.ExecuteReaderAsync())
             {
-                command.Parameters.AddWithValue("@UserID", userId);
-
-                using (var reader = await command.ExecuteReaderAsync())
+                while (await reader.ReadAsync())
                 {
-                    while (await reader.ReadAsync())
+                    if (!reader.IsDBNull(reader.GetOrdinal("CollectionID")))
                     {
-                        collections.Add(new UserCardCollection
-                        {
-                            CollectionID = reader.IsDBNull(reader.GetOrdinal("CollectionID"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("CollectionID")),
-
-                            CollectionName = reader.IsDBNull(reader.GetOrdinal("CollectionName"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("CollectionName")),
-
-                            ImageUri = reader.IsDBNull(reader.GetOrdinal("ImageUri"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("ImageUri")),
-
-                            TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("TotalCards")),
-
-                            TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
-                                ? 0
-                                : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
-                        });
+                        collectionIds.Add(reader.GetInt32(reader.GetOrdinal("CollectionID")));
                     }
                 }
             }
-
-            return Ok(collections);
         }
+
+        // Execute the stored procedure for each collection ID
+        foreach (var collectionId in collectionIds)
+        {
+            updateSummaryCommand.Parameters.Clear();
+            updateSummaryCommand.Parameters.AddWithValue("@CollectionID", collectionId);
+            await updateSummaryCommand.ExecuteNonQueryAsync();
+        }
+
+        // Now that collection summaries have been updated, proceed to fetch the collections
+        var query = @"
+        SELECT CollectionID, CollectionName, ImageUri, TotalCards, TotalValue
+        FROM UserCardCollection 
+        WHERE UserID = @UserID";
+
+        var collections = new List<UserCardCollection>();
+        using (var command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@UserID", userId);
+
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    collections.Add(new UserCardCollection
+                    {
+                        CollectionID = reader.IsDBNull(reader.GetOrdinal("CollectionID"))
+                            ? 0
+                            : reader.GetInt32(reader.GetOrdinal("CollectionID")),
+
+                        CollectionName = reader.IsDBNull(reader.GetOrdinal("CollectionName"))
+                            ? null
+                            : reader.GetString(reader.GetOrdinal("CollectionName")),
+
+                        ImageUri = reader.IsDBNull(reader.GetOrdinal("ImageUri"))
+                            ? null
+                            : reader.GetString(reader.GetOrdinal("ImageUri")),
+
+                        TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
+                            ? 0
+                            : reader.GetInt32(reader.GetOrdinal("TotalCards")),
+
+                        TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
+                            ? 0
+                            : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
+                    });
+                }
+            }
+        }
+
+        return Ok(collections);
     }
+}
 
 
 
@@ -107,7 +150,7 @@ public class CollectionsController : ControllerBase
 
             // SQL query to select the collection based on the collection ID and user ID
             var query = @"
-            SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate
+            SELECT CollectionID, UserID, CollectionName, ImageUri, Notes, CreatedDate, TotalCards, TotalValue
             FROM UserCardCollection
             WHERE CollectionID = @CollectionID AND UserID = @UserID";
 
@@ -129,7 +172,14 @@ public class CollectionsController : ControllerBase
                             CollectionName = reader.GetString(reader.GetOrdinal("CollectionName")),
                             ImageUri = reader["ImageUri"] as string,
                             Notes = reader["Notes"] as string,
-                            CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate"))
+                            CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate")),
+                            TotalCards = reader.IsDBNull(reader.GetOrdinal("TotalCards"))
+                            ? 0
+                            : reader.GetInt32(reader.GetOrdinal("TotalCards")),
+
+                            TotalValue = reader.IsDBNull(reader.GetOrdinal("TotalValue"))
+                            ? 0
+                            : reader.GetDecimal(reader.GetOrdinal("TotalValue"))
                         };
                     }
                 }
@@ -215,7 +265,7 @@ public class CollectionsController : ControllerBase
 
             // Execute and get the new CollectionID
             var newCollectionId = Convert.ToInt32(await command.ExecuteScalarAsync());
-
+    
             return Ok(new { CollectionID = newCollectionId, message = "Collection created successfully." });
         }
     }
@@ -290,11 +340,6 @@ public class CollectionsController : ControllerBase
             return Unauthorized("User is not authenticated.");
         }
 
-        if (string.IsNullOrEmpty(request.CollectionName))
-        {
-            return BadRequest("Collection name is required.");
-        }
-
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
@@ -307,9 +352,36 @@ public class CollectionsController : ControllerBase
 
             command.Parameters.AddWithValue("@CollectionID", collectionId);  // Pass the existing CollectionID
             command.Parameters.AddWithValue("@UserID", userId);
-            command.Parameters.AddWithValue("@CollectionName", request.CollectionName);
-            command.Parameters.AddWithValue("@ImageUri", (object)request.ImageUri ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Notes", (object)request.Notes ?? DBNull.Value);
+
+            // Only pass CollectionName if it's provided in the request
+            if (!string.IsNullOrEmpty(request.CollectionName))
+            {
+                command.Parameters.AddWithValue("@CollectionName", request.CollectionName);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@CollectionName", DBNull.Value); // Or handle this differently in your stored procedure
+            }
+
+            // Only pass ImageUri if it's provided
+            if (!string.IsNullOrEmpty(request.ImageUri))
+            {
+                command.Parameters.AddWithValue("@ImageUri", request.ImageUri);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@ImageUri", DBNull.Value);
+            }
+
+            // Only pass Notes if it's provided
+            if (!string.IsNullOrEmpty(request.Notes))
+            {
+                command.Parameters.AddWithValue("@Notes", request.Notes);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("@Notes", DBNull.Value);
+            }
 
             // Execute and confirm the CollectionID
             var updatedCollectionId = Convert.ToInt32(await command.ExecuteScalarAsync());
@@ -322,6 +394,7 @@ public class CollectionsController : ControllerBase
             return Ok(new { message = "Collection updated successfully." });
         }
     }
+
 
     [HttpPost("upsert-card")]
     public async Task<IActionResult> AddCardToCollection([FromBody] AddCardToCollectionRequest request)
@@ -397,35 +470,49 @@ public class CollectionsController : ControllerBase
 
 
 
-
-    [HttpPost("delete-card")]
-    public async Task RemoveCardFromCollection(int collectionId, string cardId)
+    [HttpDelete("delete-card")]
+    public async Task<IActionResult> DeleteCard([FromBody] UpdateCardQuantityRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("User is not authenticated.");
+        }
+
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
 
-            // Remove the card from the collection
-            var deleteCardQuery = @"
-            DELETE FROM CollectionCards 
-            WHERE CollectionID = @CollectionID AND CardID = @CardID";
-
-            using (var command = new SqlCommand(deleteCardQuery, connection))
+            // Start a transaction to ensure safe operations
+            using (var transaction = connection.BeginTransaction())
             {
-                command.Parameters.AddWithValue("@CollectionID", collectionId);
-                command.Parameters.AddWithValue("@CardID", cardId);
-                await command.ExecuteNonQueryAsync();
-            }
+                try
+                {
+                    // Delete the card from the collection
+                    var deleteCardQuery = "DELETE FROM CollectionCards WHERE CollectionID = @CollectionID AND CardID = @CardID";
 
-            // Call the stored procedure to update the collection summary
-            using (var command = new SqlCommand("UpsertCollectionSummary", connection))
-            {
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@CollectionID", collectionId);
-                await command.ExecuteNonQueryAsync();
+                    using (var deleteCardCmd = new SqlCommand(deleteCardQuery, connection, transaction))
+                    {
+                        deleteCardCmd.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+                        deleteCardCmd.Parameters.AddWithValue("@CardID", request.CardId);
+                        await deleteCardCmd.ExecuteNonQueryAsync();
+                    }
+
+                    // Commit transaction after deletion
+                    transaction.Commit();
+
+                    return Ok(new { message = "Card deleted successfully." });
+                }
+                catch (Exception ex)
+                {
+                    // Roll back the transaction on error
+                    transaction.Rollback();
+                    return StatusCode(500, new { message = "An error occurred while deleting the card.", error = ex.Message });
+                }
             }
         }
     }
+
 
 
 
@@ -552,10 +639,7 @@ public class CollectionsController : ControllerBase
             // Return the combined collection and card details
             return Ok(new
             {
-                collectionDetails.CollectionName,
-                collectionDetails.ImageUri,
-                collectionDetails.Notes,
-                collectionDetails.CreatedDate,
+                collectionDetails,
                 Cards = cardDataList
             });
         }
@@ -601,5 +685,72 @@ public class CollectionsController : ControllerBase
 
         return Ok(cardIds);
     }
+
+
+    [HttpGet("symbols")]
+    public async Task<IActionResult> GetSymbols()
+    {
+        try
+        {
+            Console.WriteLine("Fetching symbols from database...");
+            var symbols = await _scryfallService.GetSymbolsFromDatabase(); // Fetch from the DB
+
+            if (symbols != null)
+            {
+                return Ok(symbols);
+            }
+            else
+            {
+                Console.WriteLine("No symbols found in the database.");
+                return NotFound();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching symbols: {ex.Message}");
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+
+
+    [HttpPost("update-card-quantity")]
+public async Task<IActionResult> UpdateCardQuantity([FromBody] UpdateCardQuantityRequest request)
+{
+    Console.WriteLine(request.CardId);
+
+    using (var connection = new SqlConnection(_connectionString))
+    {
+        await connection.OpenAsync();
+
+        // Update the quantity of the card in the collection
+        var updateCardQuery = @"
+        UPDATE CollectionCards 
+        SET Quantity = Quantity + @QuantityChange 
+        WHERE CollectionID = @CollectionID AND CardID = @CardID";
+
+        using (var command = new SqlCommand(updateCardQuery, connection))
+        {
+            command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+            command.Parameters.AddWithValue("@CardID", request.CardId);
+            command.Parameters.AddWithValue("@QuantityChange", request.QuantityChange);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        // Update the collection summary
+        using (var command = new SqlCommand("UpsertCollectionSummary", connection))
+        {
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@CollectionID", request.CollectionId);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        return Ok(new { message = "Card quantity updated successfully." });
+    }
+}
+
+
+
+
 
 }

@@ -9,17 +9,19 @@
                     <ul class="navbar-nav me-3" *ngIf="isLoggedIn">
 
                         <li class="nav-item">
-                            <a class="nav-link text-light" (click)="logout()">Home</a>
+                            <a class="nav-link text-light" (click)="home()">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-light" (click)="collections()">Collections</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light " (click)="logout()">Account</a>
-                        </li>
-                        <li class="border-end mx-4">
+                        <!--
+    <li class="nav-item">
+        <a class="nav-link text-light " (click)="account()">Account</a>
+    </li>
+    <li class="border-end mx-4">
 
-                        </li>
+    </li>
+    -->
                         <li class="nav-item ">
                             <a class="nav-link text-light" (click)="logout()">Logout</a>
                         </li>
@@ -30,7 +32,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="container flex-grow-1 pb-1 pt-5 text-light">
+    <main class="container flex-grow-1 pb-1 text-light">
         <!-- Conditional Content Based on Authentication -->
         <div *ngIf="!isLoggedIn; else mainContent">
             <!-- About and Login/Register Section -->

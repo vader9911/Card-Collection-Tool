@@ -23,8 +23,27 @@
   padding: 10px;
 }
 
+.form-group {
+  margin-bottom: 10px;
+  padding: 0 5px 0 5px;
+}
+
+.form-group label {
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration:underline;
+  margin-bottom: 4px
+}
+
+.form-group input {
+    box-shadow:#ddd 0px 0px 3px;
+
+
+}
 .form-control {
   border-radius: 8px;
+
+  
 }
 
 .btn-primary {
@@ -39,32 +58,93 @@
   margin-bottom: 20px; /* Margin below the container */
 }
 
-/* Style for the dropdown labels */
-.sort-container label {
-  font-weight: bold; /* Make the label text bold */
-  margin-right: 5px; /* Space between the label and the dropdown */
-  color: #ffffff; /* Set label text color */
+.dropdown-overlay {
+  z-index: 1050; /* Ensure it's above other elements */
+  
+  overflow-y: auto;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Style for the dropdown select boxes */
-.sort-container select {
-  padding: 8px 12px; /* Padding inside the dropdown */
-  border: 1px solid #444; /* Border color and thickness */
-  border-radius: 4px; /* Rounded corners */
-  background-color: #333; /* Background color of the dropdown */
-  color: #ffffff; /* Text color inside the dropdown */
-  font-size: 14px; /* Font size for the dropdown text */
-  outline: none; /* Remove outline when focused */
-  transition: background-color 0.3s ease; /* Smooth transition effect for background color */
+/* Style for the list items */
+.list-group-item:hover {
+  cursor: pointer;
+  background-color: #f8f9fa;
 }
 
-/* Change background color on hover */
-.sort-container select:hover {
-  background-color: #555; /* Darker background on hover */
+/* Prevent the dropdown from collapsing when clicked inside */
+.position-relative .dropdown-overlay {
+  pointer-events: auto;
+}
+.tooltip {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  border-radius: 4px !important;
+  padding: 8px !important;
+  font-size: 0.875rem !important;
+  max-width: 250px !important;
+  opacity: 1 !important;
 }
 
-/* Change border color when the dropdown is focused */
-.sort-container select:focus {
-  border-color: #00aaff; /* Highlight border color on focus */
-  box-shadow: 0 0 5px rgba(0, 170, 255, 0.5); /* Add a subtle shadow effect */
+.tooltip.show {
+  opacity: 1;
+}
+
+.tooltip .tooltip-inner {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  color: #f8f9fa !important; /* Bootstrap light color */
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.tooltip.bs-tooltip-auto[x-placement^="top"] .arrow::before,
+.tooltip.bs-tooltip-top .arrow::before {
+  border-top-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.tooltip.bs-tooltip-auto[x-placement^="bottom"] .arrow::before,
+.tooltip.bs-tooltip-bottom .arrow::before {
+  border-bottom-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.tooltip.bs-tooltip-auto[x-placement^="left"] .arrow::before,
+.tooltip.bs-tooltip-left .arrow::before {
+  border-left-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.tooltip.bs-tooltip-auto[x-placement^="right"] .arrow::before,
+.tooltip.bs-tooltip-right .arrow::before {
+  border-right-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+
+.drawer {
+  display: none; // Initially hidden
+  position: relative;
+  width: 100%;
+  padding: 20px;
+  //background-color: #f8f9fa; // Background color for the drawer
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &.drawer-open {
+    display: block;
+  }
+
+  .drawer-content {
+    padding: 10px;
+    border-top: 1px solid #ddd; // Divider between main form and drawer
+  }
+  /* card-search.component.css */
+  /* Increase size of dropdown button text */
+  .btn-secondary.dropdown-toggle {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Limit dropdown menu size */
+  .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
 }

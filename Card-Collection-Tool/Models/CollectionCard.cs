@@ -24,5 +24,13 @@ namespace Card_Collection_Tool.Models
 
 }
 
+public class UpdateCardQuantityRequest
+{
+    public int CollectionId { get; set; }
+    public string CardId { get; set; }
+    public int QuantityChange { get; set; }
+}
+
+
 
 

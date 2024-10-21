@@ -1,8 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CollectionsService } from '../../services/collections.service'
+import { CollectionsService } from '../../services/collections.service';
+import { ApiService } from '../../services/api.service';
+import { GroupByPipe } from '../../shared/group-by.pipe';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-addcard-modal',
@@ -10,22 +12,37 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    GroupByPipe
   ],
   templateUrl: './addcard-modal.component.html',
-  styleUrl: './addcard-modal.component.css'
+  styleUrls: ['./addcard-modal.component.scss']
 })
 export class AddToCollectionModalComponent implements OnInit {
   @Input() selectedCardId: string | undefined; // Card ID passed to the modal
+  @Input() selectedCardName: string | undefined;
+  @Input() selectedCardImage: string | undefined;
+  cardId: string | undefined;
+  cardName: string | undefined;
+  cardImage: string | undefined;
+  cardDetails: any;
   collections: any[] = []; // List of collections
-  selectedCollectionId: number | null = null; // Initialize selected collection ID
+  alternateVersions: any[] = [];
+  selectedCollectionId: number | null = null;
   quantity: number = 1;
   addCollectIsOpen: boolean = false;
 
-  constructor(private collectionsService: CollectionsService) { }
+  constructor(private collectionsService: CollectionsService, private apiService: ApiService) {}
 
   ngOnInit(): void {
     this.loadCollections(); // Load collections when the modal opens
+    this.cardId = this.selectedCardId;
+    this.cardName = this.selectedCardName;
+    this.cardImage = this.selectedCardImage
+    if (this.cardId && this.cardName) {
+      this.fetchCardDetails(this.cardId);
+      this.fetchAlternateVersions(this.cardName);
+    }
   }
 
   // Fetch collections from the server
@@ -38,79 +55,109 @@ export class AddToCollectionModalComponent implements OnInit {
 
   // Add card to selected collection
   addToCollection() {
-    console.log('addToCollection called');
-    console.log('Selected Collection ID:', this.selectedCollectionId);
-    console.log('Quantity:', this.quantity);
-    console.log('Card ID:', this.selectedCardId);
-
-    if (this.selectedCollectionId && this.selectedCardId && this.quantity > 0) {
-      console.log('Making request to add card:', this.selectedCardId, 'with quantity:', this.quantity);
-
-      // Convert collectionID to a number to ensure correct type
+    if (this.selectedCollectionId && this.cardId && this.quantity > 0) {
       const collectionID = Number(this.selectedCollectionId);
-
-      this.collectionsService.addCardToCollection(this.selectedCollectionId, this.selectedCardId, this.quantity).subscribe(
-        (response) => {
-          console.log('Response from server:', response);
-          console.log('Card added to collection successfully!');
-          this.closeModal(); // Close the modal after adding the card
+      this.collectionsService.addCardToCollection(collectionID, this.cardId, this.quantity, this.cardImage ).subscribe(
+        () => {
+          this.closeModal();
         },
         (error) => {
           console.error('Error adding card to collection:', error);
-          alert('Failed to add card to collection. Please try again.');
         }
       );
-    } else {
-      alert('Please select a collection, enter a valid quantity, and ensure a card is selected.');
     }
   }
-
 
   // Create a new collection and add the card to it
   createAndAddToCollection(collectionName: string) {
     if (collectionName.trim()) {
-      console.log('Making request to add card:', this.selectedCardId)
       this.collectionsService.createCollection(collectionName).subscribe(
         (newCollection) => {
-          this.collectionsService.addCardToCollection(newCollection.id, this.selectedCardId!, this.quantity).subscribe(
-            () => {
-              alert('New collection created and card added successfully!');
-              this.closeModal();
-            },
-            (error) => {
-              console.error('Error adding card to new collection:', error);
-              alert('Failed to add card to the new collection. Please try again.');
-            }
-          );
+          // Ensure newCollection.id exists before proceeding
+          if (newCollection?.collectionID) {
+            this.collectionsService.addCardToCollection(newCollection.collectionID, this.cardId!, this.quantity, this.cardImage).subscribe(
+              () => {
+                this.loadCollections()
+                this.closeModal();
+              },
+              (error) => {
+                console.error('Error adding card to new collection:', error);
+              }
+            );
+          } else {
+            console.error('New collection created but no ID was returned');
+          }
         },
         (error) => {
           console.error('Error creating new collection:', error);
-          alert('Failed to create a new collection. Please try again.');
         }
       );
-    } else {
-      alert('Please enter a collection name.');
     }
   }
 
 
-  openModal(cardId: string | undefined): void {
+
+  switchVersion(versionId: string, versionName: string, versionImage: string): void {
+    console.log('Version clicked:', versionId, versionName, versionImage);
+    this.cardId = versionId;
+    this.cardName = versionName;
+    this.cardImage = versionImage;
+    
+    this.fetchCardDetails(versionId); // Fetch details for the clicked version
+  }
+
+  // Fetch card details by ID
+  private fetchCardDetails(cardId: string | undefined): void {
+    this.apiService.getCardDetails(cardId).subscribe(
+      (details) => {
+        this.cardDetails = details;
+        if (this.cardDetails?.name) {
+          this.fetchAlternateVersions(this.cardDetails.name);
+        }
+      },
+      (error) => {
+        console.error('Error fetching card details:', error);
+      }
+    );
+  }
+
+  // Fetch alternate versions of the card by name
+  private fetchAlternateVersions(cardName: string | undefined): void {
+    this.apiService.getCardsByName(cardName).subscribe(
+      (versions) => {
+        this.alternateVersions = versions || [];
+      },
+      (error) => {
+        console.error('Error fetching alternate versions:', error);
+        this.alternateVersions = [];
+      }
+    );
+  }
+
+  // Open the modal
+  openModal(selectedCardId: string | undefined, selectedCardName: string | undefined, selectedCardImage?: string | undefined): void {
     this.addCollectIsOpen = true;
-    console.log(cardId)
-    if (cardId) {
-      console.log('card id add modal opended with:', this.selectedCardId);
-      console.log('Modal opened:', this.addCollectIsOpen);
-    } else {
-      console.error('Invalid cardId or cardName provided to openModal');
-    }
+    this.cardId = selectedCardId;
+    this.cardName = selectedCardName;
+    this.cardImage = selectedCardImage;
+    this.fetchCardDetails(this.cardId);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    document.body.appendChild(backdrop);
+    document.body.classList.add('modal-open');
   }
 
   // Close the modal
-  closeModal() {
+  closeModal(): void {
     this.addCollectIsOpen = false;
     const modal = document.getElementById('addToCollectionModal');
     if (modal) {
-      modal.style.display = 'none';
+      modal.classList.remove('show');
+      setTimeout(() => modal.style.display = 'none', 150);
+    }
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+      backdrop.remove();
     }
   }
 }

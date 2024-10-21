@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { CardSearchComponent } from '../components/card-search/card-search.component';
@@ -14,27 +14,25 @@ export class SearchService {
   searchActive$ = this.searchActiveSource.asObservable();
  constructor(private http: HttpClient) { }
 
-  // Method to call the search endpoint with filters
+   //Method to call the search endpoint with filters
   searchCards(formData: any): Observable<any> {
-    let params = new HttpParams();
+    // Log formData for debugging
+    console.log('Search request formData:', formData);
 
-    // Iterate over formData and add each parameter to HttpParams
-    Object.keys(formData).forEach(key => {
-      if (formData[key] !== null && formData[key] !== '') {
-        params = params.set(key, formData[key].toString());
-      }
+    // Send formData as the body of the POST request
+    return this.http.post<any>(`${this.apiUrl}/search`, formData, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      })
     });
-
-    console.log('Search request parameters:', params.toString()); // Log parameters for debugging
-
-    return this.http.get<any>(`${this.apiUrl}/search`, { params })
-      .pipe(
-        catchError(error => {
-          console.error('Search request failed:', error);
-          return of([]); // Handle errors gracefully
-        })
-      );
   }
+
+
+  fetchSetNames(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/set-names`);
+  }
+
+
 
   autocomplete(field: string, searchTerm: string): Observable<string[]> {
     console.log("Autocomplete method called");
@@ -56,6 +54,52 @@ export class SearchService {
       );
   }
 
+
+
 }
+
+
+
+
+export interface CardSearchRequest {
+  name?: string;
+  set?: string;
+  oracleText?: string;
+  type?: string;
+  colors?: string;
+  colorCriteria?: string;
+  colorIdentity?: string;
+  colorIdentityCriteria?: string;
+  manaValue?: number;
+  manaValueComparator?: string;
+  power?: string;
+  powerComparator?: string;
+  toughness?: string;
+  toughnessComparator?: string;
+  loyalty?: string;
+  loyaltyComparator?: string;
+  sortOrder?: string;
+  sortDirection?: string;
+}
+
+
+export interface Card {
+  id: string;
+  name: string;
+  manaCost: string;
+  typeLine: string;
+  oracleText: string;
+  power?: string;
+  toughness?: string;
+  flavorText?: string;
+  artist: string;
+  collectorNumber: string;
+  releaseDate: string;
+  rarity: string;
+  colors?: string[];
+  colorIdentity?: string[];
+  usd?: string;
+}
+
 
 

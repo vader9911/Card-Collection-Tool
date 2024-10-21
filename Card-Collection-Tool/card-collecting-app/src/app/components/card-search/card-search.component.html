@@ -1,205 +1,172 @@
-<div class="container mt-5 col-8">
-    
-    <h2 class="text-center mb-2  fs-2 ">Search For Cards To Start Collecting!</h2>
+<div class="flex-column my-5 ">
+    <h2 class="text-center mb-2 fs-2">Search For Cards To Start Collecting!</h2>
+
+    <div class="col-8 container-fluid mb-5">
 
 
-    <!-- Basic Search Form -->
-    <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
-        <div class="input-group mb-3 mt-5 pt-2 ">
-            <input type="text" class="form-control" placeholder="Search card by name..." formControlName="name">
-            <button class="btn btn-success" type="submit">Search</button>
-        </div>
-
-        <!-- Sorting Options -->
-        <div class="sort-container mb-3">
-            <!-- Advanced Search Button -->
-            <button type="button" class="btn btn-primary mb-3 col-3 me-4" (click)="openModal()">Advanced Search</button>
-            
-            <label for="sortOrder">Sort By:</label>
-            <select id="sortOrder" class="form-control" formControlName="sortOrder">
-                <option value="name">Name</option>
-                <option value="cmc">CMC</option>
-                <option value="price">Price</option>
-                <option value="toughness">Toughness</option>
-                <option value="power">Power</option>
-            </select>
-
-            <label for="sortDirection">Direction:</label>
-            <select id="sortDirection" class="form-control" formControlName="sortDirection">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-            </select>
-        </div>
-    </form>
-</div>
-
-<!-- Loading Indicator -->
-<div *ngIf="loading" class="loading-indicator">
-    <p class="text-center fs-2 m-5">Loading results, please wait...</p>
-</div>
-
-<!-- No Results Message -->
-<div *ngIf="noResultsReturned && !loading" class="no-results">
-    <p class="text-center fs-2 m-5">No results found.</p>
-</div>
-
-<!-- Results Section -->
-<div *ngIf="!loading && !noResultsReturned">
-    <app-card-list [cards]="cards"></app-card-list>
-</div>
-
-<!-- Advanced Search Modal -->
-<div *ngIf="isModalOpen" class="modal-backdrop fade show"></div>
-<div class="modal" tabindex="-1" role="dialog" [class.show]="isModalOpen" [style.display]="isModalOpen ? 'block' : 'none'">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content text-dark bg-light">
-            <div class="modal-header justify-content-between">
-                <h5 class="modal-title fs-4 text-decoration-underline">Advanced Search</h5>
-                <button type="button" class="btn btn-danger m-1" (click)="closeModal()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        <!-- Basic Search Form -->
+        <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+            <div class="input-group mb-3 mt-5 pt-2">
+                <input type="text" class="form-control" placeholder="Search card by name..." formControlName="name">
+                <button class="btn btn-success" type="submit">Search</button>
             </div>
-            <div class="modal-body">
-                <!-- Advanced Search Form -->
-                <form [formGroup]="searchForm">
-                    <!-- Card Name -->
-                    <div class="form-group">
-                        <label for="name">Card Name</label>
-                        <input type="text" class="form-control mb-1" placeholder="Card Name..." formControlName="name">
-                    </div>
+
+            <!-- Sorting Options -->
+            <div class="sort-container mb-3">
+                <!-- Advanced Search Drawer Toggle Dropdown -->
+                <div class="dropdown m-1 flex-grow-1 text-end">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="advancedSearchToggle" (click)="toggleDrawer()">
+                        Advanced Search
+                    </button>
+                </div>
+
+                <label for="sortOrder">Sort By:</label>
+                <select id="sortOrder" class="form-select" formControlName="sortOrder">
+                    <option value="name">Name</option>
+                    <option value="cmc">CMC</option>
+                    <option value="price">Price</option>
+                    <option value="toughness">Toughness</option>
+                    <option value="power">Power</option>
+                </select>
+
+                <label for="sortDirection">Direction:</label>
+                <select id="sortDirection" class="form-select" formControlName="sortDirection">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+        </form>
+
+
+
+
+        <!-- Advanced Search Drawer (Initially Hidden) -->
+        <div class="drawer" [ngClass]="{'drawer-open': isDrawerOpen}">
+            <div class="drawer-content border-0 bg-dark">
+                <h5 class="fs-4 text-decoration-underline my-2">Advanced Search</h5>
+                <button class="btn btn-primary mb-3" (click)="resetForm()">Reset</button>
+                <form [formGroup]="searchForm" class="row g-3">
 
                     <!-- Set Name -->
-                    <div class="form-group">
+                    <div class="col-md-4 form-group position-relative">
                         <label for="set">Set Name</label>
-                        <input type="text" class="form-control mb-1" placeholder="Set Name..." formControlName="set">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Set Name..."
+                               formControlName="set"
+                               (input)="filterSetNames($event)"
+                               (focus)="showDropdown = true"
+                               (blur)="hideDropdown()"
+                               data-bs-toggle="tooltip"
+                               title="Enter the Set you're looking for (e.g., Innistrad, Double Masters, Ravnica)">
+                        <ul *ngIf="showDropdown && filteredSetNames.length > 0" class="list-group position-absolute w-100 dropdown-overlay">
+                            <li *ngFor="let setName of filteredSetNames"
+                                (mousedown)="selectSetName(setName)"
+                                class="list-group-item list-group-item-action">
+                                {{ setName }}
+                            </li>
+                        </ul>
                     </div>
 
-                    <!-- Card Type -->
-                    <div class="form-group">
+                    <!-- Card Type Single-select Dropdown -->
+                    <div class="col-md-4 form-group">
                         <label for="type">Card Type</label>
-                        <input type="text" class="form-control mb-1" placeholder="Card Type..." formControlName="type">
+                        <div class="dropdown text-start">
+                            <button #cardTypeDropdown
+                                    class="btn btn-light dropdown-toggle w-100 text-start"
+                                    type="button"
+                                    id="cardTypeDropdown"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    data-bs-toggle="tooltip"
+                                    title="Select the type of card (e.g., Creature, Artifact, Sorcery).">
+                                {{ selectedType ? selectedType : 'Select Card Type' }}
+                            </button>
+                            <ul class="dropdown-menu w-100 text-e">
+                                <li *ngFor="let type of cardTypes">
+                                    <a class="dropdown-item"
+                                       (click)="onTypeSelectionChange(type)"
+                                       [class.active]="selectedType === type">
+                                        {{ type }}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- Oracle Text -->
-                    <div class="form-group">
+                    <div class="col-md-4 form-group">
                         <label for="oracleText">Oracle Text</label>
-                        <input type="text" class="form-control mb-1" placeholder="Oracle Text..." formControlName="oracleText">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Oracle Text..."
+                               formControlName="oracleText"
+                               data-bs-toggle="tooltip"
+                               title="Search for cards with specific rules or abilities in their text.">
                     </div>
 
                     <!-- Mana Value -->
-                    <div class="form-group">
+                    <div class="col-md-4 form-group">
                         <label for="manaValue">Mana Value</label>
-                        <input type="number" class="form-control mb-1" placeholder="Mana Value..." formControlName="manaValue">
-                        <select class="form-control" formControlName="manaValueComparator">
-                            <option value="equals">Equals</option>
-                            <option value="lessThan">Less Than</option>
-                            <option value="greaterThan">Greater Than</option>
-                        </select>
+                        <div class="input-group">
+                            <input type="number"
+                                   class="form-control"
+                                   placeholder="Mana Value..."
+                                   formControlName="manaValue"
+                                   data-bs-toggle="tooltip"
+                                   title="Filter cards by their mana cost value.">
+                        </div>
                     </div>
 
                     <!-- Power -->
-                    <div class="form-group">
+                    <div class="col-md-4 form-group">
                         <label for="power">Power</label>
-                        <input type="number" class="form-control mb-1" placeholder="Power..." formControlName="power">
-                        <select class="form-control" formControlName="powerComparator">
-                            <option value="equals">Equals</option>
-                            <option value="lessThan">Less Than</option>
-                            <option value="greaterThan">Greater Than</option>
-                        </select>
+                        <div class="input-group">
+                            <input type="number"
+                                   class="form-control"
+                                   placeholder="Power..."
+                                   formControlName="power"
+                                   data-bs-toggle="tooltip"
+                                   title="Filter cards by their power value.">
+                        </div>
                     </div>
 
                     <!-- Toughness -->
-                    <div class="form-group">
+                    <div class="col-md-4 form-group">
                         <label for="toughness">Toughness</label>
-                        <input type="number" class="form-control mb-1" placeholder="Toughness..." formControlName="toughness">
-                        <select class="form-control" formControlName="toughnessComparator">
-                            <option value="equals">Equals</option>
-                            <option value="lessThan">Less Than</option>
-                            <option value="greaterThan">Greater Than</option>
-                        </select>
-                    </div>
-
-                    <!-- Loyalty -->
-                    <div class="form-group">
-                        <label for="loyalty">Loyalty</label>
-                        <input type="number" class="form-control mb-1" placeholder="Loyalty..." formControlName="loyalty">
-                        <select class="form-control" formControlName="loyaltyComparator">
-                            <option value="equals">Equals</option>
-                            <option value="lessThan">Less Than</option>
-                            <option value="greaterThan">Greater Than</option>
-                        </select>
-                    </div>
-
-                    <!-- Colors Section -->
-                    <div class="form-group">
-                        <label>Colors</label>
-                        <div class="d-flex flex-wrap gap-3 mb-2">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="W" formControlName="colors" id="colorWhite">
-                                <label class="form-check-label" for="colorWhite">White</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="U" formControlName="colors" id="colorBlue">
-                                <label class="form-check-label" for="colorBlue">Blue</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="B" formControlName="colors" id="colorBlack">
-                                <label class="form-check-label" for="colorBlack">Black</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="R" formControlName="colors" id="colorRed">
-                                <label class="form-check-label" for="colorRed">Red</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="G" formControlName="colors" id="colorGreen">
-                                <label class="form-check-label" for="colorGreen">Green</label>
-                            </div>
+                        <div class="input-group">
+                            <input type="number"
+                                   class="form-control"
+                                   placeholder="Toughness..."
+                                   formControlName="toughness"
+                                   data-bs-toggle="tooltip"
+                                   title="Filter cards by their toughness value.">
                         </div>
-                        <label for="colorParams">Color Matching</label>
-                        <select class="form-control" formControlName="colorParams">
-                            <option value="any">Any</option>
-                            <option value="exactly">Exactly</option>
-                            <option value="atMost">At Most These</option>
-                        </select>
-                    </div>
-                    <!-- Color Identity Section -->
-                    <div class="form-group">
-                        <label>Color Identity</label>
-                        <div class="d-flex flex-wrap gap-3 mb-2">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="W" formControlName="colorIdentity" id="colorIdentityWhite">
-                                <label class="form-check-label" for="colorIdentityWhite">White</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="U" formControlName="colorIdentity" id="colorIdentityBlue">
-                                <label class="form-check-label" for="colorIdentityBlue">Blue</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="B" formControlName="colorIdentity" id="colorIdentityBlack">
-                                <label class="form-check-label" for="colorIdentityBlack">Black</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="R" formControlName="colorIdentity" id="colorIdentityRed">
-                                <label class="form-check-label" for="colorIdentityRed">Red</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" value="G" formControlName="colorIdentity" id="colorIdentityGreen">
-                                <label class="form-check-label" for="colorIdentityGreen">Green</label>
-                            </div>
-                        </div>
-                        <label for="colorIdentityParams">Color Identity Matching</label>
-                        <select class="form-control" formControlName="colorIdentityParams">
-                            <option value="any">Any</option>
-                            <option value="exactly">Exactly</option>
-                            <option value="atMost">At Most These</option>
-                        </select>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-                <button type="button" class="btn btn-success" (click)="onSearch()">Search</button>
-            </div>
         </div>
+
     </div>
-</div>
+
+        <!-- Loading Indicator -->
+        <div *ngIf="loading" class="loading-indicator">
+            <p class="text-center fs-2 m-5">Loading results, please wait...</p>
+        </div>
+
+        <!-- No Results Message -->
+        <div *ngIf="noResultsReturned && !loading" class="no-results">
+            <p class="text-center fs-2 m-5">No results found.</p>
+        </div>
+
+        <div *ngIf="showWarning" class="alert alert-warning">
+            Search fields must contain more than 3 characters.
+        </div>
+
+        <!-- Results Section -->
+
+    </div>
+
+    <div *ngIf="!loading && !noResultsReturned">
+        <app-card-list [cards]="cards"></app-card-list>
+    </div>

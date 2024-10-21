@@ -1,24 +1,65 @@
 <div *ngIf="isLoggedIn; else notLoggedIn">
     <!-- Show collection details if loaded -->
     <div *ngIf="collectionDetails; else noCollectionDetails">
-        <h2>{{ collectionDetails.collectionName }}</h2>
 
-        <!-- Delete Collection Button -->
-        <button class="btn btn-danger mb-3" (click)="openDeleteModal()">Delete Collection</button>
+        <!-- Collection Header with Stats and Notes -->
+        <div class="container-fluid p-0 my-4">
+            <div class="row align-items-start">
+                <!-- Left Side: Collection Name and Edit Button -->
+                <div class="col-3 d-flex align-items-start flex-column">
+                    <h1 class="text-capitalize me-3 mb-0 text-decoration-underline mb-2">{{ collectionDetails.collectionDetails.collectionName }}</h1>
+                    <button class="btn btn-primary" (click)="openEditModal()" title="Edit Collection">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
+                </div>
 
-        <!-- Toggle buttons for display formats -->
-        <div class="mb-3">
-            <button class="btn btn-primary me-2" (click)="toggleDisplayFormat('grid')">Grid View</button>
-            <button class="btn btn-secondary" (click)="toggleDisplayFormat('table')">Table View</button>
-        </div>
+                <!-- Right Side: Stacked Cards and Notes -->
+                <div class="col-9 pt-2">
+                    
+                    <div class="d-flex justify-content-between">
+                        <div class="row mx-2">
+                            <!-- Total Cards -->
+                            <div class="card info-card p-3 mb-2 bg-light shadow-sm me-2 flex-grow-1">
+                                <h4 class="card-title text-muted">Total Cards</h4>
+                                <p class="h4 mb-0">{{ collectionDetails.collectionDetails.totalCards || 0 }} Cards</p>
+                            </div>
+
+                            <!-- Total Value -->
+                            <div class="card info-card p-3 mb-2 bg-light shadow-sm me-2 flex-grow-1">
+                                <h4 class="card-title text-muted">Total Value</h4>
+                                <p class="h4 mb-0">{{ collectionDetails.collectionDetails.totalValue || 0 | currency:'USD': 'symbol':'1.2-2' }}</p>
+                            </div>
+                        </div>
+                        <!-- Notes -->
+                        <div class="card p-3 bg-light shadow-sm flex-grow-1 col-6 mb-2">
+                            <h4 class="card-title text-muted">Notes</h4>
+                            <div class="custom-scroll" style="max-height: 180px; overflow-y: auto;">
+                                <p class="h6 mb-0">{{ collectionDetails.collectionDetails.notes || 'No notes available.' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+       
+
+
+        <!-- Edit Button -->
+
+    </div>
 
         <!-- Grid View -->
         <div *ngIf="displayFormat === 'grid'" class="d-flex flex-wrap justify-content-center p-4 card-collection">
             <div *ngFor="let card of collectionDetails.cards" class="carm-2 " style="width: 18rem;">
-                <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.id}} " (click)="openCardDetailModal(card.cardID, card.name)" />
-                <div class="container  rounded-1  my-3 col-6" id="card-info">
+                <img class="card-image" src="{{ card.imageUri }}" alt="{{card.name}}" data-id="{{card.cardID}} " (click)="openCardDetailModal(card.cardID, card.name)" />
+                <div class="container  rounded-1  my-3  py-2 col-6" id="card-info">
                     <div class="text-center">In Collection: {{ card.quantity }}</div>
-                    <div class="text-center">Current Value: ${{ card.usd }}</div>
+                    <div class="text-center">Current Value: {{ card.usd | currency:'USD': 'symbol':'1.2-2' }}</div>
+                    <div class="btn-group container mt-2 p-2">
+
+                        <button class="btn btn-sm btn-primary " (click)="updateCardQuantity(card.cardID, -1)">-</button>
+                        <button class="btn btn-sm btn-danger " (click)="removeCardButton(card.cardID)">X</button>
+                        <button class="btn btn-sm btn-success " (click)="updateCardQuantity(card.cardID, 1)">+</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -60,20 +101,84 @@
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-light shadow-lg border-0">
-            <div class="modal-header border-0">
+        <div class="modal-content bg-light text-dark shadow-lg border-0">
+            <div class="modal-header">
                 <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 Are you sure you want to delete this collection? This action cannot be undone.
             </div>
-            <div class="modal-footer border-0">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" (click)="deleteCollection()">Delete</button>
+                <button type="button" class="btn btn-outline-danger" (click)="deleteCollection()">Delete</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Remove Confirmation Modal -->
+<div class="modal fade" id="removeModal" tabindex="-1" aria-labelledby="removeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-light text-dark shadow-lg border-0">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="removeModalLabel">Confirm Removal</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this card from this collection?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-danger" id="confirmRemoveBtn">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Collection Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-light text-dark shadow-lg border-0">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Collection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form *ngIf="editCollectionForm" [formGroup]="editCollectionForm" (ngSubmit)="saveCollectionEdits()">
+                    <!-- Collection Name -->
+                    <div class="mb-3">
+                        <label for="collectionName" class="form-label">Collection Name</label>
+                        <input type="text"  class="form-control" id="collectionName" formControlName="collectionName" />
+                    </div>
+
+                    <!-- Select Background Image -->
+                    <div class="mb-3">
+                        <label for="collectionImage" class="form-label">Background Image</label>
+                        <select class="form-select" id="collectionImage" formControlName="collectionImage">
+                            <option *ngFor="let card of collectionDetails.cards" [value]="card.imageUri">
+                                {{ card.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" formControlName="notes" rows="3"></textarea>
+                    </div>
+
+                    <!-- Save Changes Button -->
+                    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                </form>
+
+                <!-- Delete Collection Button -->
+                <hr />
+                <button class="btn btn-outline-danger w-100" (click)="openDeleteModal()">Delete Collection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <app-card-detail-modal></app-card-detail-modal>

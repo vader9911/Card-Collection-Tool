@@ -1,12 +1,13 @@
-<div *ngIf="cards && cards.length > 0; else noResults" class="d-flex p-4 search-results">
+<div *ngIf="cards && cards.length > 0; else noResults" class="d-flex mw-100 search-results">
     <div *ngFor="let card of cards" class="position-relative card-item">
         <!-- Display each card -->
-        <div class="position-relative">
-            <img class="card-image" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="openCardDetailModal(card.id, card.name)" />
+        <div class="card bg-transparent text-light border-0 m-1">
+            <img class="card-image rounded-3" src="{{ card.imageUris.normal }}" alt="{{card.name}}" data-id="{{card.id}}" (click)="openCardDetailModal(card.id, card.name)" />
             <div class="text-center fw-bold">{{card.name}}</div>
-            <div class="text-center mb-1">{{card.prices.usd}}</div>
+            <div class="text-center mb-1">{{ card.prices.usd || card.prices.usd_Foil || card.prices.usd_Etched | currency:'USD':'symbol':'1.2-2' }}
+            </div>
             <!-- Button positioned at the bottom of the card image -->
-            <button *ngIf="isLoggedIn" class="btn btn-info btn-sm position-absolute bottom-0 start-0 m-2" (click)="openAddToCollectionModal(card.id)">+</button>
+            <button *ngIf="isLoggedIn" class="btn btn-outline-primary  text-light fw-bold" (click)="openAddToCollectionModal(card.id, card.name, card.imageUris.normal)">Add to collection</button>
 
         </div>
 
@@ -14,7 +15,7 @@
 </div>
 
 <app-card-detail-modal></app-card-detail-modal>
-<app-addcard-modal [selectedCardId]="selectedCardId"></app-addcard-modal>
+<app-addcard-modal [selectedCardId]="selectedCardId" [selectedCardName]="selectedCardName" [selectedCardImage]="selectedCardImage"></app-addcard-modal>
 
     <ng-template #noResults>
         <p *ngIf="noResultsReturned === true">No cards found. Try a different search.</p>

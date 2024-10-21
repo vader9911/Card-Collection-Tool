@@ -49,12 +49,12 @@ namespace Card_Collection_Tool.Models
 
     public class UpdateCollectionRequest
     {
-        public string CollectionName { get; set; }
+        public string? CollectionName { get; set; }
 
 
-        public string ImageUri { get; set; }
+        public string? ImageUri { get; set; }
 
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
     }
 
 

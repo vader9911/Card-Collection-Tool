@@ -31,6 +31,7 @@ export class CardListComponent implements OnInit {
   authSubscription?: Subscription;
   selectedCardId: string | undefined;
   selectedCardName: string | undefined;
+  selectedCardImage: string | undefined;
   showModal: boolean = false;
   @ViewChild(CardDetailModalComponent) cardDetailModal!: CardDetailModalComponent;
   @ViewChild(AddToCollectionModalComponent) addToCollectionModal!: AddToCollectionModalComponent;
@@ -73,11 +74,13 @@ export class CardListComponent implements OnInit {
     }
   }
 
- openAddToCollectionModal(cardId: string | undefined) {
-  console.log("Modal for add card opened with ID:", cardId); // Log card ID
-  this.selectedCardId = cardId; // Store the selected card ID
+  openAddToCollectionModal(cardId: string | undefined, cardName: string | undefined, cardImage: string | undefined) {
+  console.log("Modal for add card opened with ID:", cardId, cardImage); // Log card ID
+   this.selectedCardId = cardId; 
+    this.selectedCardName = cardName;
+    this.selectedCardImage = cardImage;
    if (this.addToCollectionModal) {
-     this.addToCollectionModal.openModal(this.selectedCardId);
+     this.addToCollectionModal.openModal(this.selectedCardId, this.selectedCardName, this.selectedCardImage);
    }
 }
 }

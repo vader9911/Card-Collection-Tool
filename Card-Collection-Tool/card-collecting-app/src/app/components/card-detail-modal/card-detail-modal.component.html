@@ -23,9 +23,41 @@
                         <span><strong>Set:</strong> {{ cardDetails?.setName }}</span>
                     </div>
                     <p><strong>Keywords:</strong> {{ cardDetails?.keywords?.join(', ') }}</p>
-                    <p><strong>Oracle Text:</strong> {{ cardDetails?.oracleText }}</p>
+                    <p><strong>Oracle Text:</strong> <span [innerHTML]="cardDetails?.oracleText"></span></p>
                     <p *ngIf="cardDetails?.flavorText"><strong>Flavor Text:</strong> {{ cardDetails?.flavorText }}</p>
                 </div>
+
+                <!-- Additional Details -->
+                <div class="card p-3 my-4">
+                    <p *ngIf="cardDetails?.manaCost">
+                        <strong>Mana Cost:</strong> <span [innerHTML]="cardDetails?.manaCost"></span>
+                    </p>
+
+                    <p *ngIf="cardDetails?.power && cardDetails?.toughness">
+                        <strong>Power/Toughness:</strong> {{ cardDetails?.power }}/{{ cardDetails?.toughness }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.artist">
+                        <strong>Artist:</strong> {{ cardDetails?.artist }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.collectorNumber">
+                        <strong>Collector Number:</strong> {{ cardDetails?.collectorNumber }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.releaseDate">
+                        <strong>Release Date:</strong> {{ cardDetails?.releaseDate | date: 'yyyy-MM-dd' }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.reprint !== undefined">
+                        <strong>Reprint:</strong> {{ cardDetails?.reprint ? 'Yes' : 'No' }}
+                    </p>
+
+                    <p *ngIf="cardDetails?.set">
+                        <strong>Set Code:</strong><span class="text-uppercase"> {{ cardDetails?.set }}</span>
+                    </p>
+                </div>
+
 
                 <!-- Tabs for Variations and Legalities -->
                 <ul class="nav nav-tabs mb-3" id="cardDetailTabs" role="tablist">
@@ -49,16 +81,17 @@
                     <!-- Variations Tab -->
                     <div class="tab-pane fade show active" id="variations" role="tabpanel" aria-labelledby="variations-tab">
                         <div class="mb-3">
-                            <h6>Alternate Versions:</h6>
+                            <h6 class="fw-bold fs-4 text-decoration-underline">Alternate Versions:</h6>
                             <div *ngFor="let set of alternateVersions | groupBy: 'setName'" class="mb-2">
                                 <h6 class="text-muted">{{ set.key }}</h6>
                                 <ul class="list-group">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                                        *ngFor="let version of set.values" (click)="onVersionClick(version.id, version.name)">
-                                        <span>{{ version.name }}</span>
+                                    <li class="list-group-item d-flex justify-content-start align-items-center"
+                                        *ngFor="let version of set.values" (click)="onVersionClick(version.id, version.name)" style="cursor: pointer;">
+                                        <img src="{{ version.normal }}" class="img-fluid w-25 rounded px-2 pe-5" alt="{{ version.name }}" />
                                         <span>
-                                            <strong>USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
-                                            
+                                            <strong class="px-2">USD:</strong> ${{ version.usd || version.usdFoil || version.usdEtched || 'N/A' }}
+                                            <strong class="px-2">Release Date:</strong> ${{ version.releaseDate }}
+
                                         </span>
                                     </li>
                                 </ul>
@@ -82,29 +115,14 @@
                     </div>
                 </div>
 
-                <!-- Additional Details -->
-                <div class="card p-3 mt-4">
-                    <p><strong>Mana Cost:</strong> {{ cardDetails?.manaCost }}</p>
-                    <p *ngIf="cardDetails?.power && cardDetails?.toughness">
-                        <strong>Power/Toughness:</strong> {{ cardDetails?.power }}/{{ cardDetails?.toughness }}
-                    </p>
-                    <p><strong>Artist:</strong> {{ cardDetails?.artist }}</p>
-                    <p><strong>Collector Number:</strong> {{ cardDetails?.collectorNumber }}</p>
-                    <p><strong>Full Art:</strong> {{ cardDetails?.fullArt ? 'Yes' : 'No' }}</p>
-                    <p><strong>Games:</strong> {{ cardDetails?.games?.join(', ') }}</p>
-                    <p><strong>Release Date:</strong> {{ cardDetails?.releaseDate | date: 'yyyy-MM-dd' }}</p>
-                    <p><strong>Reprint:</strong> {{ cardDetails?.reprint ? 'Yes' : 'No' }}</p>
-                    <p><strong>Set Code:</strong><span class="text-uppercase"> {{ cardDetails?.set }}</span></p>
-                    <p><strong>Colors:</strong> {{ cardDetails?.colors?.join(', ') }}</p>
-                    <p><strong>Color Identity:</strong> {{ cardDetails?.colorIdentity?.join(', ') }}</p>
-                </div>
+
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id)">Add To Collection</button>
+                <button type="button" class="btn btn-primary" (click)="openAddToCollectionModal(cardDetails?.id, cardDetails.imageUris.normal, cardDetails.name)">Add To Collection</button>
                 <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-<app-addcard-modal [selectedCardId]="cardId"></app-addcard-modal>
+<app-addcard-modal [selectedCardId]="cardId" [selectedCardName]="cardName" [selectedCardImage]="cardImage"></app-addcard-modal>

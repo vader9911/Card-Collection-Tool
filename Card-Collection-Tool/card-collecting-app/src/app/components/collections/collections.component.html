@@ -1,37 +1,80 @@
 <div class="container py-4">
-   <section class="text-center p-4 mb-5 mx-auto my-2">
-    <div class="container">
-        <h2>Your Collections</h2>
-    </div>
+    <section class="text-center p-4 mb-5 mx-auto my-2">
+        <div class="container">
+            <h2>Your Collections</h2>
+        </div>
     </section>
-        <!-- Create Collections Bar -->
-        <div class="d-flex justify-content-center align-items-center mb-4">
-            <input type="text" class="form-control w-50 me-2" placeholder="Enter Collection Name" [(ngModel)]="newCollectionName" />
-            <button class="btn btn-outline-success text-light" (click)="createCollection()">Create New Collection</button>
+    <!-- Create Collections Bar -->
+    <form class="d-flex mb-5" (ngSubmit)="createCollection()">
+        <div class="align-content-start col-3 m-1">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Enter Collection Name"
+                   [(ngModel)]="newCollectionName"
+                   name="newCollectionName" /> <!-- Add name attribute for ngModel -->
+        </div>
+        <span class="m-1">
+            <button type="submit" class="btn btn-success text-light me-3">
+                Create New Collection
+            </button>
+        </span>
+
+
+        <div class="d-flex justify-content-end align-items-center mb-3 flex-grow-1">
+            <!-- Sort Form -->
+            <form [formGroup]="sortForm" class="d-flex align-items-center">
+                <!-- Sort By Dropdown -->
+                <div class="d-flex align-items-center me-4">
+                    <label for="sortOrder" class="me-2 mb-0">Sort By:</label>
+                    <select id="sortOrder" class="form-select me-4" formControlName="sortOrder">
+                        <option value="name">Name</option>
+                        
+                        <option value="totalValue">Value</option>
+                        <option value="totalCards">Cards</option>
+                    </select>
+                </div>
+
+                <!-- Sort Direction Dropdown -->
+                <div class="d-flex align-items-center">
+                    <label for="sortDirection" class="me-2 mb-0">Direction:</label>
+                    <select id="sortDirection" class="form-select" formControlName="sortDirection">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </div>
+            </form>
         </div>
 
-        <!-- Collection Cards Grid -->
-        <div class="container py-4">
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-                <!-- Loop through collections and display each one as a card -->
-                <div class="col" *ngFor="let collection of collections">
-                    <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden"
-                         (click)="goToCollectionDetails(collection.collectionID)"
-                         [style.backgroundImage]="'url(' + (cardImages[collection.collectionID] || defaultImageUrl) + ')'"
-                         style="background-size: cover; background-position: center; aspect-ratio: 3/4; width: 100%;">
 
-                        <!-- Info Box with Gradient Background -->
-                        <div class="info-box p-3 pb-5 text-light">
-                            <h3 class="card-title text-capitalize mb-1">{{ collection.collectionName }}</h3>
-                            <p class="medium mb-0">{{ collection.totalCards }} Cards</p>
-                            <p class="medium mb-0">${{ collection.totalValue }}</p>
-                        </div>
+
+
+    </form>
+
+
+
+    <!-- Collection Cards Grid -->
+    <div class="container py-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            <!-- Loop through collections and display each one as a card -->
+            <div class="col" *ngFor="let collection of collections">
+                <div class="card h-100 shadow-sm border-0 position-relative overflow-hidden"
+                     (click)="goToCollectionDetails(collection.collectionID)"
+                     [style.backgroundImage]="'url(' + (collection.imageUri || 'https://i.imgur.com/LdOBU1I.jpeg') + ')'"
+                     style="background-size: cover; background-position: center; width: 100%;">
+
+                    <!-- Info Box with Gradient Background -->
+                    <div class="info-box p-1 pb-5 text-light">
+                        <h3 class="card-title text-capitalize mb-1">{{ collection.collectionName }}</h3>
+                        <p class="medium mb-0"> Cards</p>
+                        <p class="medium mb-0">{{ collection.totalCards }} Cards</p>
+                        <p class="medium mb-0">{{ collection.totalValue | currency:'USD': 'symbol':'1.2-2' }}</p>
                     </div>
                 </div>
             </div>
         </div>
-
-        <ng-template #notLoggedIn>
-            <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view your collections.</p>
-        </ng-template>
     </div>
+
+    <ng-template #notLoggedIn>
+        <p>Please <a routerLink="/login">log in</a> or <a routerLink="/register">register</a> to view your collections.</p>
+    </ng-template>
+</div>
